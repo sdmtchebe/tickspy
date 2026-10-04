@@ -1,0 +1,3 @@
+local-config.js
+.tmp_*
+__pycache__/

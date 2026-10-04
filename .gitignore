@@ -1,0 +1,33 @@
+# Dependencies and build output
+node_modules/
+frontend/node_modules/
+build/
+frontend/build/
+
+# Python
+.venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Environment and secrets — never commit these
+.env
+.env.*
+!.env.example
+frontend/.env
+backend/.env
+desk/local-config.js
+
+# Generated: frontend/scripts/sync-desk.js copies desk/index.html here on
+# `yarn start` / `yarn build`. The real source is desk/index.html.
+frontend/public/desk/
+
+# Emergent tooling state (session recordings, markers, cron runs)
+.emergent/
+
+# Reports and OS noise
+test_reports/
+.DS_Store
+*.log

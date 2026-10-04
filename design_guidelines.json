@@ -1,0 +1,105 @@
+{
+  "project_title": "SPYtick - Free Day Trading Desk Landing Page",
+  "app_type": "landing_page",
+  "theme": {
+    "mode": "dark",
+    "background_color": "#06080F",
+    "surface_glass_bg": "rgba(12, 16, 32, 0.55)",
+    "surface_glass_blur": "14px",
+    "surface_glass_border": "rgba(255, 255, 255, 0.08)",
+    "surface_glass_hover_border": "rgba(255, 255, 255, 0.15)"
+  },
+  "colors": {
+    "primary_accent": "#00E5A0",
+    "primary_text": "#E8ECF4",
+    "secondary_text": "#8A93A6",
+    "bullish": "#00E5A0",
+    "bearish": "#FF4D6A",
+    "warning": "#FFB347",
+    "background": "#06080F",
+    "card_bg": "rgba(12, 16, 32, 0.55)",
+    "border_default": "rgba(255, 255, 255, 0.08)",
+    "border_hover": "rgba(255, 255, 255, 0.15)"
+  },
+  "typography": {
+    "heading_font": "Sora, sans-serif (weights 500, 600)",
+    "body_font": "DM Sans, sans-serif",
+    "numeric_font": "JetBrains Mono, monospace (font-variant-numeric: tabular-nums)",
+    "font_imports": [
+      "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap"
+    ],
+    "rules": [
+      "Headings MUST use Sora 500/600 with clean white text (#E8ECF4). NEVER use gradient text.",
+      "Body text MUST use DM Sans with neutral secondary tone (#8A93A6) for crisp legibility.",
+      "All tabular figures, tickers, prices, metrics, percentages MUST use JetBrains Mono tabular-nums.",
+      "BANNED FONTS: Inter, Space Grotesk, Roboto, Open Sans, serif italics."
+    ]
+  },
+  "brand_identity": {
+    "name": "SPYtick",
+    "concept": "SPY (surveillance, sharp eye) + tick (price tick). Precision optics and crosshair reticle aesthetic fused with pulse/tick motif.",
+    "logo_design": "Custom inline SVG wordmark where the letter 'Y' in SPY features a subtle crosshair notch cut out, and the dot on 'i' in tick is a sharp upward-pointing tick arrow icon in #00E5A0.",
+    "favicon": "SVG favicon featuring the custom SPYtick icon (crosshair reticle with accent green tick arrow)."
+  },
+  "layout_and_grids": {
+    "hero_section": "Full viewport height, starry sky canvas/CSS backdrop with 3-5 CSS animated shooting stars, clean un-gradient hero headline with masked line-by-line reveal animation on load, subtitle, dual CTAs ('Open App' solid accent button and 'See How It Works' ghost glow button), and an interactive 3D mouse-tilt glass card embedding a live Lightweight-Charts candlestick chart + ATR-14 line + live score badges.",
+    "feature_grid": "'Everything you need. Nothing you don't.' 6 feature cards in a 2-column desktop (1-col mobile) bento grid with custom interactive mini SVG illustrations. NO badges above titles, NO colored left borders.",
+    "demo_section": "'The Desk in Action' tabbed interactive demo with 4 tabs (Chart Analysis, News & AI Overview, Volatility Dashboard, Alerts Panel) with smooth crossfade animations and interactive tooltips.",
+    "how_it_works": "Vertical staggered timeline with 3 distinct steps: 1. Pick any stock (with search UI animation), 2. Get instant analysis, 3. Make informed decisions.",
+    "why_spytick": "Single wide glass card with 3-4 honest, bold value statements.",
+    "contact_and_feedback": "Two side-by-side glass cards: General Contact (name, email, message) and Feedback/Bug Report/Feature Request form with category selector & optional screenshot upload input.",
+    "footer": "Minimalist Apple-grade glass footer with copyright, brand wordmark, live market status indicator, and secondary links."
+  },
+  "motion_and_animations": {
+    "smooth_scroll": "Lenis smooth scroll initialized globally across the entire landing page.",
+    "hero_reveal": "Kinetic line-by-line masked text reveal for headline on page load.",
+    "hero_tilt": "3D subtle mouse-tilt translation effect on the main interactive hero trading desk mock card.",
+    "ticker_marquee": "One slow, smooth editorial market ticker marquee tape featuring major tickers (SPY, QQQ, AAPL, NVDA, TSLA, MSFT, AMZN) with live price changes.",
+    "button_interactions": "Button hover: scale 1.02 and subtle glow ring in #00E5A0. NO opacity fades on hover.",
+    "card_interactions": "Card hover: translateY(-4px) and border transition from rgba(255,255,255,0.08) to rgba(255,255,255,0.15).",
+    "shooting_stars": "3-5 CSS shooting stars with transform-only keyframe animation against coprime tile size starry night background.",
+    "accessibility": "Respect prefers-reduced-motion media query by stripping ambient movements for users who request it."
+  },
+  "out_list_prohibitions": [
+    "NO purple-blue gradients or generic tech gradients",
+    "NO gradient text under any circumstance",
+    "NO AI assistant emojis (🤖, 🧠, 💡, 🔮, 🎯, etc.) anywhere",
+    "NO Inter or Space Grotesk font usage",
+    "NO serif italic text",
+    "NO colored left borders on cards",
+    "NO floating badges above section titles",
+    "NO relying solely on generic Lucide icons everywhere; use custom precision SVGs for reticles, candles, and charts",
+    "NO raw default Vercel or unstyled Shadcn look",
+    "NO universal section fade-in clutter",
+    "NO custom trailing cursor beam or cursor follower",
+    "NO fade-out on hover for action buttons",
+    "NO em dashes (—) in marketing copy",
+    "NO buzzwords or AI slop fluff",
+    "NO grainy paper textures or noise overlays",
+    "NO scroll parallax effects (only 3D mouse tilt allowed)",
+    "NO confetti or floating party particles"
+  ],
+  "image_urls": {
+    "candlestick_preview": "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "bitcoin_screen": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "trading_gui": "https://images.unsplash.com/photo-1651341050677-24dba59ce0fd?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "component_path": "/app/frontend/src/App.js",
+  "instructions_to_main_agent": [
+    "All React code should be in JavaScript (.js / .jsx) format.",
+    "Ensure 'lightweight-charts' or interactive SVG/Recharts candlestick renderer is implemented for the Hero desk card and Tabbed Demo section.",
+    "Ensure Lenis is installed/integrated for smooth scrolling experience.",
+    "Implement Sonner toast notification when clicking 'Open App' CTA buttons, displaying a sleek dark toast saying 'Trading Desk App Coming Soon! You are on the early access list.'",
+    "Make sure all interactive and key informational elements include `data-testid` attributes (e.g. `data-testid=\"nav-open-app-button\"`, `data-testid=\"hero-cta-open-app\"`, `data-testid=\"demo-tab-chart\"`, `data-testid=\"contact-form-submit\"`, `data-testid=\"feedback-form-submit\"`).",
+    "Ensure the feedback form handles screenshot uploads (client-side file selection preview and toast confirmation) and sending feedback via API endpoints.",
+    "Follow all rules in the OUT list strictly."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "Avoid generic AI slop aesthetic: use precision dark void colors (#06080F), crisp glassmorphism (rgba(12,16,32,0.55)), and sharp custom reticle optics.",
+    "DO NOT use dark background color gradients; keep solid abyssal dark void #06080F with starry sky CSS layers.",
+    "Never use transparent backgrounds without blur in navigation or sticky headers.",
+    "Use 2-3x more spacing than typical for clean breathing room.",
+    "Every button and input MUST include proper hover, focus, and data-testid attributes.",
+    "Ensure high contrast WCAG AA compliance for text: #E8ECF4 on dark card backgrounds."
+  ]
+}
