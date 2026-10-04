@@ -26,9 +26,10 @@ export function scrollToId(id) {
   else el.scrollIntoView({ behavior: "smooth" });
 }
 
-// The trading desk is bundled into this site at /desk (see scripts/sync-desk.js).
-// Point REACT_APP_DESK_PATH at a full URL if you host the desk elsewhere.
-const DESK_PATH = process.env.REACT_APP_DESK_PATH || "/desk/index.html";
+// The desk is published on GitHub Pages and needs nothing running locally.
+// Point REACT_APP_DESK_PATH at "/desk/index.html" to use the copy bundled into
+// this site instead, or at any other URL.
+const DESK_PATH = process.env.REACT_APP_DESK_PATH || "https://sdmtchebe.github.io/tickspy/";
 
 export function openApp() {
   const win = window.open(DESK_PATH, "_blank", "noopener,noreferrer");

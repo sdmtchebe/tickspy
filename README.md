@@ -18,9 +18,9 @@ desk.
 - `frontend/scripts/sync-desk.js` copies `desk/index.html` and `desk/volmodel.js`
   into `frontend/public/desk/` before `yarn start` and `yarn build`. `public/desk/`
   is generated and git-ignored, so `desk/` stays the single source.
-- `frontend/src/lib/site.js` `openApp()` opens `/desk/index.html` in a new tab.
-  Set `REACT_APP_DESK_PATH` to a full URL (e.g. the Pages address above) to point
-  it somewhere else.
+- `frontend/src/lib/site.js` `openApp()` opens the Pages desk in a new tab. Set
+  `REACT_APP_DESK_PATH=/desk/index.html` to use the copy bundled into this site
+  instead, or any other URL.
 - The desk detects how it is served: from its own Python server (default port
   8000) it routes through that server's proxy and gets the full two-stage
   volatility model; on any static host it talks straight to Alpaca/Gemini and uses
