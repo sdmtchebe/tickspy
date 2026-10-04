@@ -9,18 +9,26 @@ desk/       The trading helper: a self-contained dashboard (index.html) with an
             optional local Python server and an in-browser volatility engine
 ```
 
-The desk is published on its own at **https://sdmtchebe.github.io/tickspy/** —
-no Python, nothing running locally. Pressing **Open App** on the website opens the
-desk.
+Published on GitHub Pages with nothing running locally:
+
+- **https://sdmtchebe.github.io/tickspy/** — the landing page
+- **https://sdmtchebe.github.io/tickspy/desk/** — the trading desk
+
+**Open App** on the landing page opens the desk. `.github/workflows/pages.yml`
+builds the site, bundles the desk into it and publishes the whole thing.
 
 ## How the two connect
 
 - `frontend/scripts/sync-desk.js` copies `desk/index.html` and `desk/volmodel.js`
   into `frontend/public/desk/` before `yarn start` and `yarn build`. `public/desk/`
   is generated and git-ignored, so `desk/` stays the single source.
-- `frontend/src/lib/site.js` `openApp()` opens the Pages desk in a new tab. Set
-  `REACT_APP_DESK_PATH=/desk/index.html` to use the copy bundled into this site
-  instead, or any other URL.
+- `frontend/src/lib/site.js` `openApp()` opens `<base>/desk/index.html` in a new
+  tab, where `<base>` is CRA's `PUBLIC_URL`, so it resolves at a domain root, a
+  subpath such as `/tickspy/`, or in local dev. `REACT_APP_DESK_PATH` overrides it.
+- The contact and feedback forms post to `REACT_APP_BACKEND_URL`. The Pages build
+  leaves that unset (the local backend is not reachable from the public site), so
+  the forms report that messaging is not configured. Set the repository variable
+  `REACT_APP_BACKEND_URL` to a publicly reachable backend to enable them.
 - The desk detects how it is served: from its own Python server (default port
   8000) it routes through that server's proxy and gets the full two-stage
   volatility model; on any static host it talks straight to Alpaca/Gemini and uses

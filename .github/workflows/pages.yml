@@ -1,13 +1,14 @@
-name: Deploy desk to GitHub Pages
+name: Deploy site + desk to GitHub Pages
 
-# Publishes the standalone desk (desk/index.html + desk/volmodel.js) so it works
-# with nothing running locally. The marketing site is not deployed here: its
-# contact/feedback forms need the FastAPI backend.
+# Publishes the marketing site at the Pages root and the trading desk at
+# /desk/. "Open App" on the landing page opens the desk, so the whole thing
+# works with nothing running locally.
 
 on:
   push:
     branches: [main]
     paths:
+      - "frontend/**"
       - "desk/**"
       - ".github/workflows/pages.yml"
   # The economic calendar is a "this week" file, so refresh it regularly.
@@ -27,43 +28,73 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # CRA uses this as PUBLIC_URL, so the site's assets and the Open App link
+      # resolve correctly under the /tickspy/ Pages subpath.
+      PUBLIC_URL: https://sdmtchebe.github.io/tickspy
     steps:
       - uses: actions/checkout@v4
 
-      - name: Assemble static site
-        run: |
-          mkdir -p _site
-          # Only the files the page actually loads. No secrets, no local config.
-          cp desk/index.html desk/volmodel.js _site/
-          cp desk/DISCLAIMER.md desk/PRIVACY.md desk/TERMS.md _site/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-          # The calendar host sends no CORS headers, so a browser cannot fetch it
-          # directly. Fetch it here and ship it same-origin with the site.
+      - name: Install frontend dependencies
+        working-directory: frontend
+        # The lockfile pins eslint 9 while @typescript-eslint still asks for
+        # eslint <= 8, so a plain `npm ci` exits ERESOLVE. The project was
+        # installed with the legacy resolver; match that here.
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Build landing page (bundles the desk at /desk/)
+        working-directory: frontend
+        env:
+          # Optional: set a repository variable of this name to enable the
+          # contact and feedback forms. Left unset, the forms say they are not
+          # configured instead of failing.
+          REACT_APP_BACKEND_URL: ${{ vars.REACT_APP_BACKEND_URL }}
+        run: npm run build
+
+      - name: Add the same-origin economic calendar
+        run: |
+          OUT=frontend/build/calendar.json
           if curl -fsS --max-time 30 \
               https://nfs.faireconomy.media/ff_calendar_thisweek.json \
-              -o _site/calendar.json.tmp; then
-            if python3 -c "import json,sys; json.load(open('_site/calendar.json.tmp'))" 2>/dev/null; then
-              mv _site/calendar.json.tmp _site/calendar.json
+              -o "$OUT.tmp"; then
+            # The calendar host sends no CORS headers, so a browser cannot fetch
+            # it directly; ship it with the site instead.
+            if python3 -c "import json; json.load(open('$OUT.tmp'))" 2>/dev/null; then
+              mv "$OUT.tmp" "$OUT"
             else
-              echo "::warning::calendar payload was not valid JSON; keeping previous file"
-              rm -f _site/calendar.json.tmp
+              echo "::warning::calendar payload was not valid JSON; ignoring this run"
+              rm -f "$OUT.tmp"
             fi
           else
             echo "::warning::could not fetch the economic calendar this run"
           fi
-          # Fail loudly if we would publish an empty calendar with no fallback.
-          test -s _site/calendar.json || echo "[]" > _site/calendar.json
-          echo "calendar bytes: $(wc -c < _site/calendar.json)"
+          test -s "$OUT" || echo "[]" > "$OUT"
+          echo "calendar bytes: $(wc -c < "$OUT")"
 
-      # enablement makes this succeed even on a fresh clone where the Pages site
-      # has not been created yet (otherwise configure-pages 404s).
+      - name: Sanity-check the artifact
+        run: |
+          test -f frontend/build/index.html || { echo "::error::no landing page"; exit 1; }
+          test -f frontend/build/desk/index.html || { echo "::error::desk missing"; exit 1; }
+          test -f frontend/build/desk/volmodel.js || { echo "::error::desk engine missing"; exit 1; }
+          # Never publish secrets.
+          if [ -e frontend/build/desk/local-config.js ]; then
+            echo "::error::local-config.js must not be published"; exit 1
+          fi
+          echo "artifact ok"
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: frontend/build
 
   deploy:
     needs: build

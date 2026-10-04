@@ -3,7 +3,11 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Reveal, SplitWords } from "@/components/site/motion";
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+// The contact/feedback forms post to the FastAPI backend. When no backend URL is
+// configured (e.g. the GitHub Pages build), there is nowhere to post to, so the
+// forms say so plainly instead of failing with a generic error.
+const API = process.env.REACT_APP_BACKEND_URL ? `${process.env.REACT_APP_BACKEND_URL}/api` : "";
+const API_MISSING = "Messaging is not configured on this deployment.";
 const errMsg = (e) => {
   const d = e?.response?.data?.detail;
   if (typeof d === "string") return d;
@@ -30,6 +34,7 @@ const ContactForm = () => {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const submit = async (e) => {
     e.preventDefault();
+    if (!API) { toast.error(API_MISSING); return; }
     setBusy(true);
     try {
       await axios.post(`${API}/contact`, f);
@@ -84,6 +89,7 @@ const FeedbackForm = () => {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!API) { toast.error(API_MISSING); return; }
     setBusy(true);
     const fd = new FormData();
     Object.entries(f).forEach(([k, v]) => fd.append(k, v));

@@ -26,10 +26,12 @@ export function scrollToId(id) {
   else el.scrollIntoView({ behavior: "smooth" });
 }
 
-// The desk is published on GitHub Pages and needs nothing running locally.
-// Point REACT_APP_DESK_PATH at "/desk/index.html" to use the copy bundled into
-// this site instead, or at any other URL.
-const DESK_PATH = process.env.REACT_APP_DESK_PATH || "https://sdmtchebe.github.io/tickspy/";
+// The desk is bundled into this site at <base>/desk/index.html (a copy of
+// desk/index.html added by scripts/sync-desk.js). PUBLIC_URL is the site's base
+// path, so this resolves correctly at a domain root, under a subpath such as
+// /tickspy/ on GitHub Pages, and in local dev. Override with REACT_APP_DESK_PATH
+// to point anywhere else.
+const DESK_PATH = process.env.REACT_APP_DESK_PATH || `${process.env.PUBLIC_URL || ""}/desk/index.html`;
 
 export function openApp() {
   const win = window.open(DESK_PATH, "_blank", "noopener,noreferrer");
