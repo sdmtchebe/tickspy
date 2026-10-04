@@ -6,6 +6,7 @@ import { scrollToId, openApp } from "@/lib/site";
 export const NAV_LINKS = [
   { id: "home", label: "Home" },
   { id: "how-it-works", label: "How It Works" },
+  { id: "setup", label: "Setup" },
   { id: "features", label: "Features" },
   { id: "contact", label: "Contact" },
 ];

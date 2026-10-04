@@ -1,0 +1,17 @@
+{
+  "name": "tickspy-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Edge API for TickSPY: a globally cached Gemini overview, aggregated market news, and the economic calendar. Keeps every API key server-side.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "secrets": "wrangler secret put GEMINI_API_KEY",
+    "test": "node tests/run.js"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0 || ^4.0.0"
+  }
+}

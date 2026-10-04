@@ -1,0 +1,74 @@
+name: Deploy edge API (Cloudflare Worker)
+
+# Deploys worker/ to Cloudflare on every change. The Gemini key is NOT here: it
+# lives as a Worker secret set with `wrangler secret put`, so it never passes
+# through GitHub or this repository.
+#
+# Requires two repository secrets (Settings -> Secrets and variables -> Actions):
+#   CLOUDFLARE_API_TOKEN   - token with the "Edit Cloudflare Workers" template
+#   CLOUDFLARE_ACCOUNT_ID  - from the Cloudflare dashboard URL
+#
+# Until those exist the tests still run and the deploy step is skipped, so an
+# unconfigured repo does not sit on a red build.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # No dependencies to install: the Worker and its tests are dependency-free.
+      - name: Run worker tests
+        run: node tests/run.js
+        working-directory: worker
+
+      - name: Check for Cloudflare credentials
+        id: creds
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set - skipping the deploy. See worker/README.md."
+          fi
+
+      - name: Guard against a placeholder KV id
+        id: kv
+        run: |
+          if grep -q "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" wrangler.toml; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::wrangler.toml still has the placeholder KV id - run 'npx wrangler kv namespace create CACHE' and paste the id in."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+        working-directory: worker
+
+      - name: Deploy
+        if: steps.creds.outputs.ready == 'true' && steps.kv.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy
+
+      - name: Confirm the deployment is live
+        if: steps.creds.outputs.ready == 'true' && steps.kv.outputs.ready == 'true'
+        run: |
+          URL="$(cd worker && npx wrangler deployments list --json 2>/dev/null | head -c 200 || true)"
+          echo "Deployed. Verify with: curl -s <worker-url>/api/health"

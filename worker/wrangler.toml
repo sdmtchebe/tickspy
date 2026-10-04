@@ -1,0 +1,34 @@
+# TickSPY edge API — Cloudflare Worker configuration.
+#
+# Deploy:  cd worker && npx wrangler deploy
+# Secrets: npx wrangler secret put GEMINI_API_KEY      (never goes in this file)
+
+name = "tickspy-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Rebuild the cache on a schedule. This is what makes upstream calls track the
+# clock rather than the audience: 72 Gemini calls a day no matter how many
+# people visit. The 20-minute interval is shorter than the 25-minute TTL, so
+# visitors almost always read an entry that is already fresh.
+[triggers]
+crons = ["*/20 * * * *"]
+
+# Global, durable cache shared by every isolate and every region.
+# Create it once with:  npx wrangler kv namespace create CACHE
+# then paste the printed id below.
+[[kv_namespaces]]
+binding = "CACHE"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+[vars]
+# A stable alias, so a model rename upstream does not take the endpoint down.
+# Any model from the account's ListModels response works here.
+GEMINI_MODEL = "gemini-flash-lite-latest"
+
+# Browser origins allowed to call this API. Add your own domain if you move the
+# site off GitHub Pages. "*" would work but is needlessly permissive.
+ALLOWED_ORIGINS = "https://sdmtchebe.github.io,http://localhost:3000,http://localhost:8000,http://localhost:8767"
+
+[observability]
+enabled = true

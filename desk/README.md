@@ -12,6 +12,7 @@ Files:
 | `index.html` | The whole UI (single page, no build step) |
 | `volmodel.js` | Browser stage 1: Garman-Klass -> HAR walk-forward -> GARCH(1,1) |
 | `volmodel2.js` | Browser stage 2: the 2x64 LSTM, trained in the browser with TensorFlow.js |
+| `edge-config.js` | Where the optional Cloudflare edge API lives (`window.DESK_EDGE_API`); public, no secret |
 | `server.py` | Optional local server: API proxy and the `/vol` endpoint |
 | `volatility_predictor.py` | The reference two-stage model in Python (HAR + GARCH -> LSTM) |
 | `tests/volmodel_parity.js` | Checks browser stage 1 against the Python stage 1 |
@@ -57,6 +58,13 @@ same-origin server, or a full URL.
   the moment it is published, tagged `NEW`. The REST endpoint is only used to
   backfill the list on load — on its own it lags, which is why the feed used to
   look stale. Ages are shown relative ("4m ago") and update as you read.
+- **Market news and the shared overview come from the edge API** when
+  `window.DESK_EDGE_API` is set in `edge-config.js`. A small Cloudflare Worker
+  (see `../worker/`) aggregates keyless feeds that send no CORS headers, and
+  writes one Gemini overview every 20 minutes that every visitor shares, so the
+  Gemini key never reaches the browser and 10,000 visitors cost one API call.
+  Without that URL the News tab still shows the per-symbol Alpaca feed, and the
+  calendar falls back to the baked file below.
 - **The calendar is served same-origin.** Its upstream host
   (`nfs.faireconomy.media`) sends no CORS headers, so a browser cannot call it
   from a static page. The Pages workflow fetches it on a six-hour schedule and
@@ -74,6 +82,10 @@ Enter your Alpaca keys (and optionally a Gemini key) in **Settings**. They are
 stored in the browser's local storage only and sent only to the providers you
 choose. `local-config.js` can hold local defaults and is git-ignored — never
 commit it.
+
+New here? The Settings tab has a collapsible **"How to get your free Alpaca
+keys"** guide (five steps, plus why each one is needed), and the published site
+has an illustrated version at `/#setup` with a mock of every screen.
 
 ## Volatility engine parity
 

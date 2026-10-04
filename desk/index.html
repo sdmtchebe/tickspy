@@ -147,11 +147,17 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><h2>Backtest <span class="tagline">chronological hold-out, no look-ahead</span></h2><div id="vbt" class="pbody"><p class="x">Metrics appear with the forecast.</p></div></div>
 <div class="panel"><h2>Realized vs predicted volatility</h2><div class="pbody"><canvas id="vch" style="width:100%;height:190px;display:block" aria-label="Realized versus predicted volatility"></canvas><p class="x">Out-of-sample test window. Grey is realized Garman-Klass volatility, amber is the stage-1 HAR forecast, green adds the LSTM residual correction. Values are percent per bar; lower means calmer.</p></div></div>
 </div></section>
-<section class="tab" id="t-news"><div class="panel"><h2>News <span class="tagline" id="nstat">connecting...</span></h2>
+<section class="tab" id="t-news"><div class="cols">
+<div class="panel"><h2>Market news <span class="tagline" id="mstat"></span></h2><div class="pbody" style="padding-bottom:0"><p class="x">Headlines from MarketWatch, CNBC, Investing.com, Nasdaq and Seeking Alpha, aggregated and cached by our own server so the browser never has to talk to those sites directly. Updated every few minutes.</p></div><div id="ml" class="stack"><p class="x" style="padding:12px">Loading market headlines...</p></div><div class="pbody"><button class="btn" id="mbtn">Refresh headlines</button></div></div>
+<div class="panel"><h2>AI market overview <span class="tagline" id="ostat"></span></h2><div class="pbody"><div id="ovw" class="ai">Loading the shared overview...</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the headlines and scheduled events above. It is written once on the server and shared by every visitor, so it costs one request no matter how many people are reading. Unverified, not advice, no recommendation.</div></div></div>
+</div>
+<div class="panel"><h2>Symbol news <span class="tagline" id="nstat">connecting...</span></h2>
 <div class="pbody"><div class="row"><button class="btn" id="nbtn">Factual summary</button></div><div id="nai" class="ai">An automatic summary of the headlines appears here. It is generated text and may be wrong; always read the headlines themselves.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the headlines below. It is not verified, not advice, and not a recommendation.</div></div>
 <div id="nl" class="stack"></div></div></section>
 <section class="tab" id="t-cal"><div class="panel"><h2>Economic calendar <span class="tagline">USD · medium and high impact</span></h2>
-<div class="pbody"><div class="row"><button class="btn" id="cbtn">Factual summary</button><label><input type="checkbox" id="conly"> High impact only</label><span class="tagline" id="cstat"></span></div><div id="csum" class="x" style="margin-bottom:6px"></div><div id="cai" class="ai">An automatic summary of the scheduled events appears here. It is generated text and may be wrong.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the event list below. It does not predict market reactions and is not advice.</div></div>
+<div class="pbody"><div class="row"><button class="btn" id="cbtn">Factual summary</button><label><input type="checkbox" id="conly"> High impact only</label><span class="tagline" id="cstat"></span></div>
+<div class="row" style="border-top:1px solid var(--gb);padding-top:9px;margin-top:2px"><label><input type="checkbox" id="caon"> Alert me</label><span id="calfields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="caimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="calead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="carel"> and on release</label><label><input type="checkbox" id="casnd"> sound</label></span></div>
+<div id="csum" class="x" style="margin-bottom:6px"></div><div id="cai" class="ai">An automatic summary of the scheduled events appears here. It is generated text and may be wrong.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the event list below. It does not predict market reactions and is not advice.</div></div>
 <div id="cl" class="stack"></div></div></section>
 <section class="tab" id="t-alert"><div class="panel"><h2>Alerts</h2><div class="pbody">
 <p class="x">Fire while this page is open, on the current symbol. Each alert is removed once it triggers.</p>
@@ -171,6 +177,14 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
 <p class="x">Keys stay in this browser only. Alpaca market-data access is enough. A Gemini key is optional and is used only for the factual news and calendar summaries. <span id="use" class="num"></span></p>
+<details id="setuphelp" style="margin:4px 0 10px;border:1px solid var(--gb);border-radius:10px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px">New here? How to get your free Alpaca keys</summary>
+<div style="padding:0 12px 10px"><ol style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.6">
+<li><b>Make a free account</b> at <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>. No card, no cost.</li>
+<li><b>Stay on the Paper account.</b> Paper uses pretend money but gives the same live market data.</li>
+<li><b>Open <i>API Keys</i></b> in the left-hand menu. Cannot find it? Search the word "API".</li>
+<li><b>Click <i>Generate New Key</i></b> and copy the <b>Key ID</b> and the <b>Secret Key</b>. The secret is shown once.</li>
+<li><b>Paste them into the two boxes below</b> and press <b>Save and connect</b>.</li>
+</ol><p class="x">Why: TickSPY shows real prices, and Alpaca is the free service that supplies them. Your keys stay in this browser, are sent only to Alpaca, and never reach us. Prefer pictures? <a href="../index.html#setup" target="_blank" rel="noopener">See the illustrated guide</a>.</p></div></details>
 <div class="row"><input id="ak" placeholder="Alpaca key ID" style="width:100%" aria-label="Alpaca key ID"></div>
 <div class="row"><input id="as" type="password" placeholder="Alpaca secret" style="width:100%" aria-label="Alpaca secret"></div>
 <div class="row"><input id="gk" type="password" placeholder="Gemini API key (aistudio.google.com)" style="width:100%" aria-label="Gemini API key"></div>
@@ -192,6 +206,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div id="gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gate-t"><div class="gate-card" id="gate-body"></div></div>
 
 <script src="local-config.js"></script>
+<script src="edge-config.js"></script>
 <script src="volmodel.js"></script>
 <script src="volmodel2.js"></script>
 <script>
@@ -217,12 +232,24 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Bullish':s<0?'Bearish':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
-function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news')news();if(k=='alert')alertRender();if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
+function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert')alertRender();if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
 // directly (the URLs are absolute and Alpaca's API answers CORS).
 const P=u=>DESK_API===null?u:DESK_API+'/p?u='+encodeURIComponent(u);
+/* ---------- edge API (optional; see worker/) ----------
+   A small Cloudflare Worker that holds the Gemini key, aggregates market news
+   from feeds that send no CORS headers, and relays the calendar. Purely
+   optional: with no URL set, every feature below falls back to what the page
+   already did. Set window.DESK_EDGE_API in edge-config.js. */
+const EDGE_API=(typeof window.DESK_EDGE_API==='string'?window.DESK_EDGE_API:'').replace(/\/$/,'');
+async function edgeGet(path,ms){if(!EDGE_API)throw Error('The edge API is not configured.');
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||15000);
+ try{const r=await fetch(EDGE_API+path,{signal:c.signal,headers:{Accept:'application/json'}});
+  if(r.status===503){const j=await r.json().catch(()=>({}));throw Error(j.message||'The server is not configured yet.')}
+  if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,120));
+  return await r.json()}finally{clearTimeout(t)}}
 async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,140));return r.json()}
 async function load(){if(!cfg().ak){go('set');return}
  try{$('#st').textContent='Loading...';const st=new Date(Date.now()-6*864e5).toISOString();
@@ -351,7 +378,7 @@ function render(){const a=S.an;
  const seen=new Set;$('#cp').innerHTML=a.cp.filter(x=>!seen.has(x.n)&&seen.add(x.n)).map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<span class="muted num">${x.age?x.age+' bars ago':'latest bar'} (${x.time})</span><button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')||'<p class="x" style="padding:12px">No candlestick pattern in the last 6 bars.</p>';
  $('#chp').innerHTML=a.chp.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')||'<p class="x" style="padding:12px">No clear chart pattern right now.</p>';
  lvRender(a.lv);mtfRender();rsRender();alerCheck();wlRender()}
-function toast(t){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000);try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);g.gain.value=.04;o.frequency.value=880;o.start();o.stop(a.currentTime+.15)}catch(_){}}
+function toast(t,quiet){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000);if(quiet)return;try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);g.gain.value=.04;o.frequency.value=880;o.start();o.stop(a.currentTime+.15)}catch(_){}}
 async function rsq(){if(!cfg().ak)return;try{const st=new Date(Date.now()-6*864e5).toISOString(),url=k=>alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);const[a,b]=await Promise.all([url(S.sym),url('QQQ')]);const ch=j=>{const x=(j.bars||[]).map(v=>v.c);return x.length>1?(x.at(-1)/x[0]-1)*100:0};const s=ch(a),q=ch(b);S.rs={s,q,d:s-q};rsRender()}catch(e){S.rs={err:e.message};rsRender()}}
 function rsRender(){const R=S.rs;if(!R){$('#rsx').innerHTML='<p class="x">Loading relative strength against QQQ...</p>';return}if(R.err){$('#rsx').innerHTML='<p class="x">RS error: '+esc(R.err)+'</p>';return}
  $('#rsx').innerHTML=`<div class="hrow"><span class="num ${cls(R.d)}" style="font-size:18px">${R.d>=0?'+':''}${f2(R.d)}%</span> <span class="${cls(R.d)}">${R.d>=0?'outperforming':'underperforming'} QQQ</span></div><p class="x">${esc(S.sym)} ${R.s>=0?'+':''}${f2(R.s)}% against QQQ ${R.q>=0?'+':''}${f2(R.q)}% over the loaded window.</p>`}
@@ -395,7 +422,9 @@ function phaseOf(m){if(m<240)return['Closed','Overnight session.'];
  if(m<960)return['Close','15:30 to 16:00 ET. Volume typically peaks around the close.'];
  return['Closed','After-hours session.']}
 function sessRender(){const t=etNow(),ph=phaseOf(t.min),hot=/volatile|Power/.test(ph[0])?'dn':ph[0]=='Lunch lull'?'nu':'up';let ev='';
- if(S.cal?.length){const nx=S.cal.find(e=>new Date(e.date).getTime()>Date.now());if(nx){const mins=Math.round((new Date(nx.date)-Date.now())/6e4),h=Math.floor(mins/60),mm=mins%60;ev=`<p class="x">Next event: <b>${esc(nx.title)}</b> (${nx.impact}) in ${h?h+'h ':''}${mm}m, ${new Date(nx.date).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET.</p>`;if(mins<=6&&mins>=0){const key=nx.title+nx.date,w=JSON.parse(LS.warned||'[]');if(!w.includes(key)){w.push(key);LS.warned=JSON.stringify(w);toast('Event in '+mins+' min: '+nx.title)}}}}
+ if(S.cal?.length){const nx=S.cal.find(e=>new Date(e.date).getTime()>Date.now());if(nx){const mins=Math.round((new Date(nx.date)-Date.now())/6e4),h=Math.floor(mins/60),mm=mins%60;ev=`<p class="x">Next event: <b>${esc(nx.title)}</b> (${nx.impact}) in ${h?h+'h ':''}${mm}m, ${new Date(nx.date).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET.</p>`}}
+/* Calendar event alerts are configurable and handled by calAlertTick(); the old
+   hard-coded six-minute warning that lived here would now double-fire. */
  $('#sess').innerHTML=`<div class="hrow"><span class="num" style="font-size:17px">${String(t.h).padStart(2,'0')}:${String(t.mi).padStart(2,'0')}:${String(t.s).padStart(2,'0')} ET</span><span class="${hot}">${ph[0]}</span></div><p class="x">${ph[1]}</p>${ev}`}
 function risk(){const a=+$('#ra').value,r=+$('#rr').value,e=+$('#re').value,s=+$('#stop').value;if(!e||!s||e==s){$('#ro').textContent='Enter an entry and a different stop.';return}
  const per=Math.abs(e-s),amt=a*r/100,sh=Math.floor(amt/per);if(sh<1){$('#ro').textContent='Account risk is smaller than one share of risk ($'+f2(per)+'). Widen the account or tighten the stop.';return}
@@ -566,6 +595,30 @@ function newsStream(){try{S.newsWs&&S.newsWs.close()}catch(_){}
     setTimeout(()=>{S.newsFresh.delete(String(x.id));newsRender()},45000)}}};
  w.onclose=()=>stat(open?'disconnected - reopen the tab to reconnect':'could not connect');
  w.onerror=()=>stat('stream error')}
+/* ---------- market news + shared overview (edge API) ---------- */
+const relIso=ms=>isFinite(ms)?new Date(ms).toISOString():'';
+let mNewsBusy=false;
+async function marketNews(force){if(mNewsBusy)return;const st=$('#mstat');
+ if(!EDGE_API){if(st)st.textContent='edge API not configured';$('#ml').innerHTML='<p class="x" style="padding:12px">Market headlines need the edge API. See worker/README.md to deploy it, then set window.DESK_EDGE_API in edge-config.js.</p>';return}
+ if(!force&&S.mnews&&Date.now()-S.mnewsAt<3e5)return;
+ mNewsBusy=true;if(st)st.textContent='loading...';
+ try{const j=await edgeGet('/api/news');S.mnews=j.news||[];S.mnewsAt=Date.now();
+  if(st)st.textContent=S.mnews.length+' headlines · '+j.sourcesOk+'/'+j.sourcesTotal+' sources'+(j.cache&&j.cache.hit?' · cached':'');
+  $('#ml').innerHTML=S.mnews.slice(0,40).map(n=>`<div class="item"><div class="hrow"><a href="${esc(n.url||'#')}" target="_blank" rel="noopener"><b>${esc(n.title)}</b></a></div><div class="muted num" style="font-size:12px">${relTime(relIso(n.publishedAt))} · ${esc(n.source)}</div>${n.summary?`<p class="x">${esc(n.summary.slice(0,180))}</p>`:''}</div>`).join('')||'<p class="x" style="padding:12px">No headlines right now.</p>';
+ }catch(e){if(st)st.textContent='unavailable';$('#ml').innerHTML='<p class="x" style="padding:12px">Market news unavailable: '+esc(e.message||e)+'</p>'}
+ finally{mNewsBusy=false}}
+let ovwBusy=false;
+async function loadOverview(force){if(ovwBusy)return;const st=$('#ostat');
+ if(!EDGE_API){if(st)st.textContent='edge API not configured';$('#ovw').innerHTML='<p class="x">The shared AI overview needs the edge API. See worker/README.md. Without it, the per-symbol summary below still works with your own Gemini key.</p>';return}
+ if(!force&&S.ovw&&Date.now()-S.ovwAt<3e5)return;
+ ovwBusy=true;if(st)st.textContent='loading...';
+ try{const j=await edgeGet('/api/overview',25000);S.ovw=j;S.ovwAt=Date.now();
+  const mins=j.cache&&j.cache.ageSeconds!=null?Math.round(j.cache.ageSeconds/60):0;
+  if(st)st.textContent='shared · '+(j.cache&&j.cache.hit?(mins?mins+'m old':'just generated'):'just generated');
+  $('#ovw').innerHTML=esc(j.text||'').replace(/\n/g,'<br>')+`<div class="hrow" style="margin-top:10px"><span class="muted" style="font-size:12px">Written by ${esc(j.model||'Gemini')} from ${(j.headlines||[]).length} headlines across ${(j.sourcesUsed||[]).length} sources${j.events&&j.events.length?' and '+j.events.length+' scheduled events':''}.</span></div>`;
+ }catch(e){if(st)st.textContent='unavailable';$('#ovw').innerHTML='<p class="x">AI overview unavailable: '+esc(e.message||e)+'</p>'}
+ finally{ovwBusy=false}}
+$('#mbtn').onclick=()=>marketNews(true);
 async function nai(){if(!S.news?.length)return;S.nk=S.news.slice(0,5).map(x=>x.id).join();S.nt=Date.now();$('#nai').textContent='Thinking...';
  try{$('#nai').textContent=await gem('Symbol: '+S.sym+'\nHeadlines (newest first):\n'+S.news.slice(0,12).map(x=>'- '+x.headline).join('\n'),'You summarise news headlines factually. Reply with 2 to 3 short bullets stating what each headline reports, and nothing more. Do not interpret. Do not judge whether it is good or bad for the company, the industry or the market. Do not predict price. Never mention buying, selling or holding. Name the source. If the headlines are old, duplicated or unrelated to the symbol, say so plainly.')}catch(e){$('#nai').textContent=e.message}}
 $('#nbtn').onclick=nai;
@@ -582,6 +635,9 @@ const EXP=[[/Inflation Expectations/i,'Survey of expected future inflation, from
 const CAL_SRC=DESK_API===null?'calendar.json':P('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
 const CAL_SRC_ALT=DESK_API===null?'../calendar.json':null;
 async function calFetch(){const srcs=DESK_API===null?[CAL_SRC,CAL_SRC_ALT]:[CAL_SRC];let last=null;
+ // Prefer the edge API when it is configured: it refreshes hourly, whereas the
+ // baked file is only as fresh as the last Pages build.
+ if(EDGE_API){try{const j=await edgeGet('/api/calendar',15000);if(Array.isArray(j.events))return j.events;throw Error('malformed response')}catch(e){last=e}}
  for(const s of srcs){try{const r=await fetch(s);if(!r.ok)throw Error(r.status);return await r.json()}catch(e){last=e}}
  throw last||Error('No calendar source.')}
 async function cal(){let d=JSON.parse(LS.calc||'null');if(!d||Date.now()-d.t>18e5){
@@ -597,17 +653,52 @@ function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checke
   return `<b class="${nx.impact=='High'?'dn':'nu'}">Next: ${esc(nx.title)}</b> in ${h?h+'h ':''}${m}m · ${t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET${nx.forecast?' · forecast '+esc(nx.forecast):''}`})():'No upcoming events in this view.';
  const dk=t=>new Date(t).toLocaleDateString('en-CA',{timeZone:'America/New_York'}),today=dk(now),tomorrow=dk(now+864e5);
  const groups=new Map();evs.forEach(e=>{const k=dk(e.date);groups.has(k)||groups.set(k,[]);groups.get(k).push(e)});
+ const soon=calAlertSoon();
  let html='';
  for(const [k,list] of groups){
   const label=k==today?'Today':k==tomorrow?'Tomorrow':new Date(list[0].date).toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'long',month:'short',day:'numeric'});
   const high=list.filter(e=>e.impact=='High').length;
   html+=`<div class="dayrow"><b>${esc(label)}</b><span class="muted num">${list.length} event${list.length==1?'':'s'}${high?' · '+high+' high':''}</span></div>`;
   html+=list.map(e=>{const t=new Date(e.date),past=t.getTime()<now,ex=(EXP.find(x=>x[0].test(e.title))||[])[1]||'';
-   return `<div class="item${past?' past':''}"><div class="hrow"><span class="evtime num">${t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})}</span><b>${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${past?'<span class="muted" style="font-size:11px">released</span>':''}</div><div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div>${ex?`<p class="x">${ex}</p>`:''}</div>`}).join('')}
+   return `<div class="item${past?' past':''}"><div class="hrow"><span class="evtime num">${t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})}</span><b>${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${soon.has(e.title+'|'+e.date)?`<span class="chipbadge nu" title="You will be alerted before this event">alert in ${Math.max(0,Math.round((t.getTime()-now)/6e4))}m</span>`:''}${past?'<span class="muted" style="font-size:11px">released</span>':''}</div><div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div>${ex?`<p class="x">${ex}</p>`:''}</div>`}).join('')}
  $('#cl').innerHTML=html||'<p class="x" style="padding:12px">No medium or high impact USD events in this view.</p>'}
 async function cai(){if(!S.cal?.length)return;LS.cai_k=S.cal.length+':'+new Date().toDateString();$('#cai').textContent='Thinking...';const now=Date.now(),n=S.cal.filter(e=>new Date(e.date)>now-864e5).slice(0,12);
  try{$('#cai').textContent=await gem('Now: '+new Date().toLocaleString('en-US',{timeZone:'America/New_York'})+' ET\nUpcoming/recent US events:\n'+n.map(e=>`${e.date} ${e.title} (${e.impact}) forecast ${e.forecast||'-'} prev ${e.previous||'-'} actual ${e.actual||'-'}`).join('\n'),'You summarise economic calendar events factually. Reply with at most 3 short bullets: the event, when it occurs in ET, and its forecast versus previous value. Do not predict market reactions. Do not say whether events are bullish or bearish. Do not advise. Never mention buying or selling. Note plainly any event that has no forecast available.')}catch(e){$('#cai').textContent=e.message}}
 $('#cbtn').onclick=cai;
+/* ---------- calendar event alerts (user-configurable) ---------- */
+/* Fires a toast (and a tone, unless silenced) a chosen number of minutes before
+   a scheduled release, and optionally when the figure is published. Preferences
+   live in localStorage; each event alerts once, keyed by title and time, so a
+   reload or a re-render cannot re-fire the same warning. */
+const CALA_DEF={on:true,impact:'High',lead:15,releases:false,sound:true};
+function calACfg(){let c={};try{c=JSON.parse(LS.calalert||'{}')}catch(_){}return Object.assign({},CALA_DEF,c)}
+function calASave(patch){LS.calalert=JSON.stringify(Object.assign(calACfg(),patch));calARender();calRender();calAlertTick()}
+function calARender(){const c=calACfg();
+ $('#caon').checked=!!c.on;$('#caimp').value=c.impact==='High'?'High':'HighMedium';
+ $('#calead').value=String(c.lead);$('#carel').checked=!!c.releases;$('#casnd').checked=c.sound!==false;
+ const f=$('#calfields');if(f){f.style.opacity=c.on?'1':'.45';f.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!c.on})}}
+function calAFired(){try{return JSON.parse(LS.calfired||'{}')}catch(_){return {}}}
+function calATime(t){return new Date(t).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})+' ET'}
+// Events currently inside the alert window, so the list can flag them.
+function calAlertSoon(){const c=calACfg();if(!c.on||!S.cal)return new Set();
+ const now=Date.now(),lead=Math.max(1,Math.min(120,+(c.lead||15)))*6e4,s=new Set();
+ for(const e of S.cal){const hi=e.impact==='High',ok=c.impact==='High'?hi:/High|Medium/.test(e.impact||'');if(!ok)continue;
+  const t=new Date(e.date).getTime();if(isFinite(t)&&t>now&&t-now<=lead)s.add(e.title+'|'+e.date)}
+ return s}
+function calAlertTick(){const c=calACfg();if(!c.on||!S.cal||!S.cal.length)return;
+ const now=Date.now(),lead=Math.max(1,Math.min(120,+(c.lead||15)))*6e4,fired=calAFired();let changed=false;
+ for(const e of S.cal){const hi=e.impact==='High',ok=c.impact==='High'?hi:/High|Medium/.test(e.impact||'');if(!ok)continue;
+  const t=new Date(e.date).getTime();if(!isFinite(t))continue;const key=e.title+'|'+e.date;
+  if(t>now&&t-now<=lead&&!fired['p:'+key]){fired['p:'+key]=now;changed=true;
+   toast((hi?'HIGH IMPACT':'Event')+' in '+Math.max(1,Math.round((t-now)/6e4))+' min: '+e.title+' — '+calATime(t),c.sound===false)}
+  if(c.releases&&e.actual&&t<=now&&t>now-36e5&&!fired['r:'+key]){fired['r:'+key]=now;changed=true;
+   toast('Released: '+e.title+' — actual '+e.actual+' vs forecast '+(e.forecast||'--'),c.sound===false)}}
+ if(changed){const cut=now-14*864e5;for(const x in fired)if(fired[x]<cut)delete fired[x];LS.calfired=JSON.stringify(fired);calRender()}}
+$('#caon').onchange=e=>calASave({on:e.target.checked});
+$('#caimp').onchange=e=>calASave({impact:e.target.value==='High'?'High':'HighMedium'});
+$('#calead').onchange=e=>calASave({lead:+e.target.value||15});
+$('#carel').onchange=e=>calASave({releases:e.target.checked});
+$('#casnd').onchange=e=>calASave({sound:e.target.checked});
 /* ---------- Gemini ---------- */
 const pday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Los_Angeles'});let lastG=0;
 const used=()=>+(LS['g'+pday()]||0);
@@ -648,7 +739,7 @@ $('#sv').onclick=()=>{LS.cfg=JSON.stringify({ak:$('#ak').value.trim(),as:$('#as'
 $('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
 $('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#jadd').onclick=journalAdd;$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
-addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});setInterval(news,12e4);setInterval(newsRender,3e4);setInterval(sessRender,1000);sessRender();
+addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});setInterval(news,12e4);setInterval(newsRender,3e4);setInterval(sessRender,1000);setInterval(calAlertTick,10000);sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
-$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();alertRender();journalRender();wlRender();fill();if(!LS.legal)gateShow();go('live');load();
+$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();alertRender();journalRender();wlRender();fill();calARender();if(!LS.legal)gateShow();go('live');load();
 </script></body></html>

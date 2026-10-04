@@ -10,6 +10,7 @@ import { Marquee } from "@/components/site/Marquee";
 import { Features } from "@/components/site/Features";
 import { Demo } from "@/components/site/Demo";
 import { HowItWorks } from "@/components/site/HowItWorks";
+import { SetupGuide } from "@/components/site/SetupGuide";
 import { Why } from "@/components/site/Why";
 import { Contact } from "@/components/site/Contact";
 import { Footer } from "@/components/site/Footer";
@@ -30,6 +31,7 @@ function App() {
         <Features />
         <Demo />
         <HowItWorks />
+        <SetupGuide />
         <Why />
         <Contact />
       </main>

@@ -88,6 +88,7 @@ jobs:
           test -f frontend/build/desk/index.html || { echo "::error::desk missing"; exit 1; }
           test -f frontend/build/desk/volmodel.js || { echo "::error::desk engine missing"; exit 1; }
           test -f frontend/build/desk/volmodel2.js || { echo "::error::desk stage-2 engine missing"; exit 1; }
+          test -f frontend/build/desk/edge-config.js || { echo "::error::desk edge config missing"; exit 1; }
           # The desk is served from /desk/ and reaches the calendar one level up,
           # so the file must exist at the site root and be a non-empty JSON list.
           # Regression guard: this is exactly what used to make the Calendar tab

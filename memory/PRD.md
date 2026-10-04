@@ -64,6 +64,13 @@ frontend/  src/App.js (Lenis + sections)
   - Added an explainer for University of Michigan Inflation Expectations, which no pattern matched.
   - Cleaned the now-dead `prov`/`lbase`/`lm` local-model fields out of the local `desk/local-config.js`.
 
+- 2026-10 (session 8):
+  - **New `worker/` (Cloudflare Worker edge API).** Delivers the requested "secure, server-side cached Gemini endpoint": the key lives only in the Worker secret `GEMINI_API_KEY` (never in the client or Git), and a 20-minute Cron Trigger plus single-flight and a KV cache guarantee one Gemini call per refresh window regardless of audience — a test proves 10,000 concurrent requests make exactly one upstream call and a warm cache makes none. Also aggregates six keyless news feeds (MarketWatch, CNBC, Investing.com, CNBC US, Nasdaq, Seeking Alpha) that send no CORS headers, and relays the economic calendar. Routes: `/api/overview`, `/api/news`, `/api/calendar`, `/api/health`; CORS restricted to `ALLOWED_ORIGINS`; upstream error bodies never echoed. 31 tests pass. `wrangler.toml`, `.env.example`, `.gitignore`, `README.md` and `.github/workflows/deploy-worker.yml` included.
+  - **User-configurable calendar alerts** in the desk: toast plus optional tone, a lead time (1–120 min), high-only or high+medium, and an optional on-release notice. Preferences persist in `localStorage`; each event fires once, keyed by title and time, so ticks, re-renders and reloads cannot repeat it. 13 browser checks pass.
+  - **Desk wired to the edge API**: new `desk/edge-config.js` (`window.DESK_EDGE_API`, added to `sync-desk.js`), a two-column News tab (market headlines + shared overview beside the per-symbol feed), and a calendar that prefers the hourly edge copy over the baked file. Verified end to end against a mock Worker in a real browser.
+  - Added an extremely clear, illustrated **Alpaca key setup tutorial** on the landing page (`SetupGuide.jsx`, `#setup`, linked from the nav), matching the site's glass/motion design: five steps with an animated mock of each screen and a plain-English "why" under every one, three "why" cards, five FAQs, and CTAs. The desk's Settings tab gains a matching five-step collapsible guide.
+
 ## Backlog
 - P0: Set the support email (`SUPPORT_EMAIL` repo variable) to enable the contact and feedback forms, then confirm the address with FormSubmit.
+- P1: Deploy the Worker (create the KV namespace, set `GEMINI_API_KEY`, set `window.DESK_EDGE_API`) so the shared Gemini overview and aggregated market news light up.
 - P2: OG image asset; favicon refresh to TickSPY mark.

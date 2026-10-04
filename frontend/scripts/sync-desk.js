@@ -13,8 +13,9 @@ const path = require("path");
 const SRC_DIR = path.join(__dirname, "..", "..", "desk");
 const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // Only the static assets the page actually loads. Secrets (local-config.js) are
-// deliberately never copied.
-const FILES = ["index.html", "volmodel.js", "volmodel2.js"];
+// deliberately never copied. edge-config.js holds only a public Worker URL, so
+// it is safe to publish.
+const FILES = ["index.html", "volmodel.js", "volmodel2.js", "edge-config.js"];
 
 function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
