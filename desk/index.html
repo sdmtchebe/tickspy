@@ -107,6 +107,15 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 .chipbadge.dn{background:rgba(229,96,95,.14);border-color:rgba(229,96,95,.45);color:var(--dn)}
 .chipbadge.nu{background:rgba(217,164,65,.14);border-color:rgba(217,164,65,.45);color:var(--accent)}
 .evtime{min-width:56px;font-size:12px;color:var(--muted)}
+/* Clickable calendar titles: the whole summary row is the toggle. */
+.evtd>summary{list-style:none;cursor:pointer}
+.evtd>summary::-webkit-details-marker{display:none}
+.evtd>summary:hover .evttl{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:2px}
+.evttl{font-weight:600}
+.evtchev{font-size:11px;opacity:.55}
+.evtd[open] .evtchev{visibility:hidden}
+.evtmore{margin-top:7px;padding-left:9px;border-left:2px solid var(--accent)}
+.evtmore .x{margin:4px 0}
 </style></head><body>
 <header class="header">
 <span class="brand">Desk</span>
@@ -138,14 +147,14 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><h2>Chart patterns</h2><div id="chp" class="stack"></div></div>
 </div></section>
 <section class="tab" id="t-vol"><div class="cols">
-<div class="panel"><h2>Volatility forecast <span class="tagline" id="vmeta"></span></h2>
-<div class="pbody"><div class="row"><button class="btn" id="vrun">Refresh forecast</button><label><input type="checkbox" id="vstrict"> Strict backtest (3-fold, much slower)</label><button class="btn" id="vcancel" style="display:none">Cancel</button><span class="tagline" id="vstatus"></span></div></div>
+<div class="panel"><h2>Volatility estimate <span class="tagline" id="vmeta"></span></h2>
+<div class="pbody"><div class="row"><button class="btn" id="vrun">Refresh estimate</button><label><input type="checkbox" id="vstrict"> Strict backtest (3-fold, much slower)</label><button class="btn" id="vcancel" style="display:none">Cancel</button><span class="tagline" id="vstatus"></span></div></div>
 <div class="track" id="vpt" style="display:none"><i class="nu" id="vpb" style="width:0%"></i></div>
 <div class="pbody" style="padding-top:0;padding-bottom:0"><span class="tagline" id="vptx"></span></div>
-<div id="vout"><p class="x" style="padding:12px">Open this tab to run the two-stage forecast: Garman-Klass realized volatility with a HAR / GARCH(1,1) filter, then an LSTM residual correction. The network is trained in your browser on the loaded history, so the first run takes a minute or two and shows its progress. Nothing needs to be installed or running.</p></div>
-<div class="disc"><b>Estimates only, not advice.</b> These are statistical estimates from historical prices. They are not investment advice, not a recommendation to buy or sell, carry no guarantee, and can be wrong. The LSTM is only allowed to influence the forecast in proportion to the accuracy it actually demonstrated out of sample.</div></div>
+<div id="vout"><p class="x" style="padding:12px">Open this tab to run the two-stage estimate: Garman-Klass realized volatility with a HAR / GARCH(1,1) filter, then an LSTM residual correction. The network is trained in your browser on the loaded history, so the first run takes a minute or two and shows its progress. Nothing needs to be installed or running.</p></div>
+<div class="disc"><b>Estimates only, not advice.</b> These are statistical estimates from historical prices. They are not investment advice, not a recommendation to buy or sell, carry no guarantee, and can be wrong. The LSTM is only allowed to influence the estimate in proportion to the accuracy it actually demonstrated out of sample.</div></div>
 <div class="panel"><h2>Backtest <span class="tagline">chronological hold-out, no look-ahead</span></h2><div id="vbt" class="pbody"><p class="x">Metrics appear with the forecast.</p></div></div>
-<div class="panel"><h2>Realized vs predicted volatility</h2><div class="pbody"><canvas id="vch" style="width:100%;height:190px;display:block" aria-label="Realized versus predicted volatility"></canvas><p class="x">Out-of-sample test window. Grey is realized Garman-Klass volatility, amber is the stage-1 HAR forecast, green adds the LSTM residual correction. Values are percent per bar; lower means calmer.</p></div></div>
+<div class="panel"><h2>Realized vs predicted volatility</h2><div class="pbody"><canvas id="vch" style="width:100%;height:190px;display:block" aria-label="Realized versus predicted volatility"></canvas><p class="x">Out-of-sample test window. Grey is realized Garman-Klass volatility, amber is the stage-1 HAR estimate, green adds the LSTM residual correction. Values are percent per bar; lower means calmer.</p></div></div>
 </div></section>
 <section class="tab" id="t-news"><div class="cols">
 <div class="panel"><h2>Market news <span class="tagline" id="mstat"></span></h2><div class="pbody" style="padding-bottom:0"><p class="x">Headlines from MarketWatch, CNBC, Investing.com, Nasdaq and Seeking Alpha, aggregated and cached by our own server so the browser never has to talk to those sites directly. Updated every few minutes.</p></div><div id="ml" class="stack"><p class="x" style="padding:12px">Loading market headlines...</p></div><div class="pbody"><button class="btn" id="mbtn">Refresh headlines</button></div></div>
@@ -162,7 +171,11 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <section class="tab" id="t-alert"><div class="panel"><h2>Alerts</h2><div class="pbody">
 <p class="x">Fire while this page is open, on the current symbol. Each alert is removed once it triggers.</p>
 <div class="row"><select id="at" aria-label="Alert type"><option value="above">Price above</option><option value="below">Price below</option><option value="vwapup">Price above VWAP</option><option value="vwapdown">Price below VWAP</option><option value="pattern">Any pattern appears</option></select><input id="av" type="number" step="0.01" placeholder="price" aria-label="Price" style="width:110px"><button class="btn" id="aadd">Add alert</button></div>
-<div id="al" class="stack"></div></div></div></section>
+<div id="al" class="stack"></div>
+<div style="border-top:1px solid var(--gb);margin-top:14px;padding-top:12px"><h3 style="margin:0 0 6px;font-size:15px">Financial calendar alerts</h3>
+<p class="x" style="margin:0 0 8px">Fire while this page is open, on scheduled US economic releases shown in the Calendar tab. The same preference is shared by both tabs and stays in this browser.</p>
+<div class="row"><label><input type="checkbox" id="faon"> Alert me</label><span id="fafields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="faimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="falead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="farel"> and on release</label><label><input type="checkbox" id="fasnd"> sound</label></span></div>
+<div id="falist" class="stack"></div></div></div></div></section>
 <section class="tab" id="t-tools"><div class="cols">
 <div class="panel"><h2>Risk calculator</h2><div class="pbody"><p class="x">Arithmetic only: divides a chosen dollar amount by the distance between the two prices you enter.</p>
 <div class="row"><label>Account $ <input id="ra" type="number" value="25000" style="width:110px"></label><label>Risk % <input id="rr" type="number" value="0.5" step="0.1" style="width:80px"></label></div>
@@ -234,7 +247,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Bullish':s<0?'Bearish':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
-function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert')alertRender();if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
+function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -494,14 +507,14 @@ function volBt(b){const o=$('#vbt');if(!b||!b.samples){o.innerHTML='<p class="x"
   +r('Combined vs stage 1',`<span class="${good(b.combined_vs_linear_pct)}">${pc(b.combined_vs_linear_pct)}</span>`)
   +r('Direction — balanced accuracy',`${pctN(b.direction_balanced_accuracy)} <span class="muted">vs ${f2(100/3)}% chance</span>`)
   +r('Direction — non-neutral accuracy',pctN(b.direction_nonneutral_accuracy))
-  +r('R2 of combined forecast',f3(b.r2_combined))
-  +`<p class="x">The model trains only on the first 80% of the bars, then forecasts the held-out last 20% one step at a time, so the test never sees its own future. Direction hit rate is a three-way call (up / flat / down). RMSE is percent per bar; lower is better.</p>`}
+  +r('R2 of combined estimate',f3(b.r2_combined))
+  +`<p class="x">The model trains only on the first 80% of the bars, then estimates the held-out last 20% one step at a time, so the test never sees its own future. Direction hit rate is a three-way call (up / flat / down). RMSE is percent per bar; lower is better.</p>`}
 function volRender(j){const dcls=j.direction_signal=='bullish'?'up':j.direction_signal=='bearish'?'dn':'nu',rcls=j.regime=='High Volatility Expansion'?'dn':j.regime=='Breakout Risk'?'nu':'up';
  $('#vmeta').textContent=`${j.symbol} ${S.tf} · ${j.bars} bars · ${j.model}${j.cached?' · cached':''}`;
  const cyc=n=>n+(n%10==1&&n%100!=11?'st':n%10==2&&n%100!=12?'nd':n%10==3&&n%100!=13?'rd':'th'),p=volPct(j.vol_percentile);
- const rows=[['Combined forecast (HAR + LSTM residual)',f3(j.predicted_volatility)+'%'],['Stage 1 linear (HAR 1 / 5 / 22)',f3(j.linear_volatility)+'%'],['Stage 2 LSTM residual',(j.residual_correction>=0?'+':'')+f3(j.residual_correction)+'%'],['GARCH(1,1) cross-check',j.garch_volatility?f3(j.garch_volatility)+'%':'--'],['Current realized (Garman-Klass)',f3(j.current_volatility)+'%'],['Forecast percentile in RV history',cyc(p)],['Uncertainty band (+/- out-of-sample RMSE)',f3(j.vol_low)+' - '+f3(j.vol_high)+'%'],['Stage-2 LSTM weight earned',((j.stage2_weight||0)*100).toFixed(0)+'%'+(j.stage2_weight>0?'':' (muted)')],['Sessions / bars / folds',((j.data_quality&&j.data_quality.sessions)||'--')+' / '+j.bars+' / '+((j.backtest&&j.backtest.folds)||1)]];
+ const rows=[['Combined estimate (HAR + LSTM residual)',f3(j.predicted_volatility)+'%'],['Stage 1 linear (HAR 1 / 5 / 22)',f3(j.linear_volatility)+'%'],['Stage 2 LSTM residual',(j.residual_correction>=0?'+':'')+f3(j.residual_correction)+'%'],['GARCH(1,1) cross-check',j.garch_volatility?f3(j.garch_volatility)+'%':'--'],['Current realized (Garman-Klass)',f3(j.current_volatility)+'%'],['Estimate percentile in RV history',cyc(p)],['Uncertainty band (+/- out-of-sample RMSE)',f3(j.vol_low)+' - '+f3(j.vol_high)+'%'],['Stage-2 LSTM weight earned',((j.stage2_weight||0)*100).toFixed(0)+'%'+(j.stage2_weight>0?'':' (muted)')],['Sessions / bars / folds',((j.data_quality&&j.data_quality.sessions)||'--')+' / '+j.bars+' / '+((j.backtest&&j.backtest.folds)||1)]];
  const bt=j.backtest||{},ba=bt.direction_balanced_accuracy,nna=bt.direction_nonneutral_accuracy;
- const relLine=(bt.samples?`<p class="x" style="margin-top:6px"><b class="${j.reliable?'up':'nu'}">${j.reliable?'Volatility forecast: reliable':'Volatility forecast: NOT reliable on this sample'}</b> — ${f2(bt.combined_vs_persistence_pct)}% ${bt.combined_vs_persistence_pct>=0?'better':'worse'} than the naive baseline (R2 ${f3(bt.r2_combined)}) across ${bt.samples} out-of-sample bars.</p>`:'<p class="x" style="margin-top:6px">No out-of-sample sample; the number above is not validated.</p>');
+ const relLine=(bt.samples?`<p class="x" style="margin-top:6px"><b class="${j.reliable?'up':'nu'}">${j.reliable?'Volatility estimate: reliable':'Volatility estimate: NOT reliable on this sample'}</b> — ${f2(bt.combined_vs_persistence_pct)}% ${bt.combined_vs_persistence_pct>=0?'better':'worse'} than the naive baseline (R2 ${f3(bt.r2_combined)}) across ${bt.samples} out-of-sample bars.</p>`:'<p class="x" style="margin-top:6px">No out-of-sample sample; the number above is not validated.</p>');
  const edgeLine=`<p class="x" style="margin-top:6px"><b class="${j.direction_edge=='usable'?'up':j.direction_edge=='none'?'nu':'muted'}">Direction edge: ${esc(j.direction_edge||'unknown')}.</b> Balanced accuracy ${ba==null?'--':f2(ba*100)+'%'} vs ${f2(100/3)}% chance, non-neutral ${nna==null?'--':f2(nna*100)+'%'}.${j.direction_edge=='none'?' The bullish/bearish bias is not trustworthy — it is close to a coin flip.':''}</p>`;
  $('#vout').innerHTML=`<div class="score"><span class="n num ${dcls}">${f3(j.predicted_volatility)}%</span><span class="muted">per bar</span><span class="call ${dcls}">${j.direction_signal}</span><span class="muted">${j.direction_confidence==null?'no directional model':Math.round(j.direction_confidence*100)+'% conf'}</span></div>`
   +`<div class="track"><i class="${dcls}" style="width:${p}%"></i></div>`
@@ -561,7 +574,7 @@ async function volRun(force){if(volBusy)return;
   st.textContent=(j.cached?'cached model':'fitted')+' on '+j.bars.toLocaleString()+' bars · '+Math.round((performance.now()-t0)/1000)+' s'
  }catch(e){
   if(volCancel){st.textContent='Cancelled.';return}
-  st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Forecast unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
+  st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Estimate unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
  finally{volBusy=false;btn.disabled=false;cb.style.display='none';cb.disabled=false;vprog(null,null,'')}}
 $('#vrun').onclick=()=>volRun(true);
 $('#vcancel').onclick=()=>{volCancel=true;$('#vcancel').disabled=true};
@@ -662,7 +675,8 @@ function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checke
   const high=list.filter(e=>e.impact=='High').length;
   html+=`<div class="dayrow"><b>${esc(label)}</b><span class="muted num">${list.length} event${list.length==1?'':'s'}${high?' · '+high+' high':''}</span></div>`;
   html+=list.map(e=>{const t=new Date(e.date),past=t.getTime()<now,ex=(EXP.find(x=>x[0].test(e.title))||[])[1]||'';
-   return `<div class="item${past?' past':''}"><div class="hrow"><span class="evtime num">${t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})}</span><b>${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${soon.has(e.title+'|'+e.date)?`<span class="chipbadge nu" title="You will be alerted before this event">alert in ${Math.max(0,Math.round((t.getTime()-now)/6e4))}m</span>`:''}${past?'<span class="muted" style="font-size:11px">released</span>':''}</div><div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div>${ex?`<p class="x">${ex}</p>`:''}</div>`}).join('')}
+   const tstr=t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'}),full=t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'long',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+   return `<div class="item${past?' past':''}"><details class="evtd"><summary class="hrow" title="Click to read more"><span class="evtime num">${tstr}</span><b class="evttl">${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${soon.has(e.title+'|'+e.date)?`<span class="chipbadge nu" title="You will be alerted before this event">alert in ${Math.max(0,Math.round((t.getTime()-now)/6e4))}m</span>`:''}${past?'<span class="muted" style="font-size:11px">released</span>':''}<span class="muted evtchev">read more</span></summary><div class="evtmore"><p class="x"><b>${esc(e.title)}</b><br>${esc(full)} ET · ${esc(e.impact)} impact${past?' · already released':''}</p>${ex?`<p class="x">${ex}</p>`:''}<div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div><p class="x">The forecast figure is the consensus economists surveyed by the data provider expected. It is not an estimate produced by TickSPY.</p></div></details></div>`}).join('')}
  $('#cl').innerHTML=html||'<p class="x" style="padding:12px">No medium or high impact USD events in this view.</p>'}
 async function cai(){if(!S.cal?.length)return;LS.cai_k=S.cal.length+':'+new Date().toDateString();$('#cai').textContent='Thinking...';const now=Date.now(),n=S.cal.filter(e=>new Date(e.date)>now-864e5).slice(0,12);
  try{$('#cai').textContent=await gem('Now: '+new Date().toLocaleString('en-US',{timeZone:'America/New_York'})+' ET\nUpcoming/recent US events:\n'+n.map(e=>`${e.date} ${e.title} (${e.impact}) forecast ${e.forecast||'-'} prev ${e.previous||'-'} actual ${e.actual||'-'}`).join('\n'),'You summarise economic calendar events factually. Reply with at most 3 short bullets: the event, when it occurs in ET, and its forecast versus previous value. Do not predict market reactions. Do not say whether events are bullish or bearish. Do not advise. Never mention buying or selling. Note plainly any event that has no forecast available.')}catch(e){$('#cai').textContent=e.message}}
@@ -675,10 +689,26 @@ $('#cbtn').onclick=cai;
 const CALA_DEF={on:true,impact:'High',lead:15,releases:false,sound:true};
 function calACfg(){let c={};try{c=JSON.parse(LS.calalert||'{}')}catch(_){}return Object.assign({},CALA_DEF,c)}
 function calASave(patch){LS.calalert=JSON.stringify(Object.assign(calACfg(),patch));calARender();calRender();calAlertTick()}
+/* The Calendar tab and the Alerts tab share one preference, so the controls are
+   rendered from the same config under two id prefixes: 'ca' and 'fa'. */
+const CAL_CTL=['ca','fa'];
 function calARender(){const c=calACfg();
- $('#caon').checked=!!c.on;$('#caimp').value=c.impact==='High'?'High':'HighMedium';
- $('#calead').value=String(c.lead);$('#carel').checked=!!c.releases;$('#casnd').checked=c.sound!==false;
- const f=$('#calfields');if(f){f.style.opacity=c.on?'1':'.45';f.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!c.on})}}
+ CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
+  const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),snd=g(p+'snd'),f=g(p+'fields');
+  if(on)on.checked=!!c.on;if(imp)imp.value=c.impact==='High'?'High':'HighMedium';
+  if(lead)lead.value=String(c.lead);if(rel)rel.checked=!!c.releases;if(snd)snd.checked=c.sound!==false;
+  if(f){f.style.opacity=c.on?'1':'.45';f.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!c.on})}});
+ calAList()}
+/* The upcoming events that would actually alert, listed in the Alerts tab. */
+function calAList(){const el=$('#falist');if(!el)return;const c=calACfg();
+ if(!S.cal||!S.cal.length){el.innerHTML='<p class="x">Open the Calendar tab once to load the events.</p>';return}
+ const now=Date.now(),lead=Math.max(1,Math.min(120,+(c.lead||15)))*6e4;
+ const rows=(S.cal||[]).filter(e=>c.impact==='High'?e.impact==='High':/High|Medium/.test(e.impact||''))
+  .filter(e=>{const t=new Date(e.date).getTime();return isFinite(t)&&t>now}).slice(0,6);
+ if(!rows.length){el.innerHTML='<p class="x">No upcoming events match this setting.</p>';return}
+ el.innerHTML=rows.map(e=>{const t=new Date(e.date),soon=t.getTime()-now<=lead;
+  return `<div class="item hrow"><span class="muted num" style="font-size:12px">${calATime(t)}</span><span>${esc(e.title)}</span><span class="chipbadge ${e.impact==='High'?'dn':'nu'}">${esc(e.impact)}</span>${soon&&c.on?'<span class="chipbadge nu">alerting</span>':''}</div>`}).join('')
+ +`<p class="x">${c.on?'Alerts are on.':'Alerts are off.'} They fire while this page is open${c.releases?', and again when the figure is published':''}, once per event. Nothing is sent anywhere.</p>`}
 function calAFired(){try{return JSON.parse(LS.calfired||'{}')}catch(_){return {}}}
 function calATime(t){return new Date(t).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})+' ET'}
 // Events currently inside the alert window, so the list can flag them.
@@ -696,11 +726,13 @@ function calAlertTick(){const c=calACfg();if(!c.on||!S.cal||!S.cal.length)return
   if(c.releases&&e.actual&&t<=now&&t>now-36e5&&!fired['r:'+key]){fired['r:'+key]=now;changed=true;
    toast('Released: '+e.title+' — actual '+e.actual+' vs forecast '+(e.forecast||'--'),c.sound===false)}}
  if(changed){const cut=now-14*864e5;for(const x in fired)if(fired[x]<cut)delete fired[x];LS.calfired=JSON.stringify(fired);calRender()}}
-$('#caon').onchange=e=>calASave({on:e.target.checked});
-$('#caimp').onchange=e=>calASave({impact:e.target.value==='High'?'High':'HighMedium'});
-$('#calead').onchange=e=>calASave({lead:+e.target.value||15});
-$('#carel').onchange=e=>calASave({releases:e.target.checked});
-$('#casnd').onchange=e=>calASave({sound:e.target.checked});
+CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
+ const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),snd=g(p+'snd');
+ if(on)on.onchange=e=>calASave({on:e.target.checked});
+ if(imp)imp.onchange=e=>calASave({impact:e.target.value==='High'?'High':'HighMedium'});
+ if(lead)lead.onchange=e=>calASave({lead:+e.target.value||15});
+ if(rel)rel.onchange=e=>calASave({releases:e.target.checked});
+ if(snd)snd.onchange=e=>calASave({sound:e.target.checked})});
 /* ---------- Gemini ---------- */
 const pday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Los_Angeles'});let lastG=0;
 const used=()=>+(LS['g'+pday()]||0);

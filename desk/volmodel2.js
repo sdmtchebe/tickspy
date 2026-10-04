@@ -494,16 +494,16 @@
     var cap = st.linNext ? 0.5 * Math.abs(st.linNext) : 0;
     if (cap && Math.abs(rawResidual) > cap) {
       rawResidual = Math.sign(rawResidual) * cap;
-      st.warnings.push("LSTM residual clipped to +/-50% of the linear forecast.");
+      st.warnings.push("LSTM residual clipped to +/-50% of the linear estimate.");
     }
     if (stage2Weight <= 0) {
       st.warnings.push(
         "Stage 2 added no measurable accuracy out of sample, so its correction was " +
-          "weighted to zero and the forecast is effectively stage 1 only."
+          "weighted to zero and the estimate is effectively stage 1 only."
       );
     }
 
-    report({ stage: "done", pct: 1, etaMs: 0, message: "Scoring the forecast..." });
+    report({ stage: "done", pct: 1, etaMs: 0, message: "Scoring the estimate..." });
 
     return V.finish(st, {
       resByPos: resByPos,

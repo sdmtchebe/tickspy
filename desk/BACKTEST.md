@@ -152,3 +152,59 @@ Top third of |12-bar moves| = anything beyond 0.249%. Base rate 33.3%.
   than 5,239 and the intervals above are narrower than they look.
 - Only SPY and 5-minute bars; the pattern and multi-timeframe overlays are
   reported but not separately scored.
+
+---
+
+# AI overview — reliability audit
+
+```bash
+node /tmp/tfjstest/aicheck.js
+```
+
+There is no ground truth for a summary, so this cannot be scored like the
+volatility model. Instead it probes the two failure modes that would make the
+overview untrustworthy: it giving advice or predictions, and it inventing
+figures that are not in the material it was given.
+
+The script fetches the live `/api/overview`, `/api/news` and `/api/calendar`
+through Chrome (the Worker's CORS allowlist and this machine's CLI TLS both
+block a plain `curl`), then compares the summary against the exact input list
+that `/api/overview` echoes back in its `headlines` field.
+
+## Result (live sample)
+
+| probe | result |
+|---|---|
+| HTTP status | 200 on overview, news and calendar |
+| Bullets returned | 4, plain text, no markdown |
+| Banned advice/prediction language (buy, sell, hold, recommend, predict, bullish, bearish, should, target…) | **none** |
+| Grounding sources available | 8 echoed headlines, 80 news items, 79 calendar events |
+| Figures in the summary | 1.6, 20, 5, 7, 8, 9 |
+| **Ungrounded figures** | **none** — every number traced back to a supplied headline or event |
+| Sources credited in the text | not named (see below) |
+| Page errors | none |
+
+## Honest limitations
+
+- **One sample.** The overview is cached for ~25 minutes, so repeated fetches
+  return the same text. This is a point check, not a distribution, and a single
+  clean sample does not prove the prompt never leaks advice. The always-on
+  guards are the prompt itself and the caching, not this script.
+- **The grounding probe is deliberately cheap.** It checks whether a numeric
+  token appears anywhere in the supplied material. It cannot detect a claim
+  that is *qualitatively* wrong (a headline about one company attributed to
+  another), only invented numbers.
+- **No source attribution in the shared overview**, unlike the per-symbol news
+  summary, which is instructed to name the source. Adding that to the overview
+  prompt would make each bullet auditable against a named feed.
+- The probe's first run reported a false "1.6 ungrounded" because it looked for
+  headlines under the wrong key. That was a bug in the check, not the model; the
+  numbers above come from the corrected run against the correct input list.
+
+## What the UI already discloses
+
+The overview panel states that it is machine text restating the headlines and
+scheduled events, is shared by every visitor, is unverified, and is not advice
+or a recommendation. The landing page's volatility demo — which is generated in
+the browser rather than computed from real bars — now says so in plain words
+instead of presenting its numbers as model output.

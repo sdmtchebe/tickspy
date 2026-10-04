@@ -80,7 +80,7 @@ export const VolForecastChart = ({ m }) => {
   const bandPath = `${path(upper, x, y, off)} ${[...lower].reverse().map((v, i) => `L${x(lower.length - 1 - i + off).toFixed(1)} ${y(v).toFixed(1)}`).join(" ")} Z`;
   return (
     <div ref={ref} className="relative min-h-[220px] w-full flex-1" data-testid="vol-forecast-chart">
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="absolute inset-0" aria-label="Volatility forecast chart">
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="absolute inset-0" aria-label="Volatility estimate chart">
       {[0.25, 0.5, 0.75].map((f) => <line key={f} x1={PAD.l} x2={W - PAD.r} y1={PAD.t + f * (H - PAD.t - PAD.b)} y2={PAD.t + f * (H - PAD.t - PAD.b)} stroke="rgba(255,255,255,0.05)" />)}
       <path d={bandPath} fill="rgba(0,229,160,0.10)" />
       <path d={path(rv, x, y)} fill="none" stroke="rgba(232,236,244,0.85)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />

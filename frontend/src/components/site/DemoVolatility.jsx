@@ -29,11 +29,17 @@ export const DemoVolatility = ({ active }) => {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* The values on this panel are generated in the browser (see lib/volmodel),
+          not computed from live data. Saying so is the whole point: the real
+          engine, and its measured backtest, live in the desk. */}
+      <p className="text-[12px] leading-relaxed text-steel">
+        <span className="font-medium text-mint">Illustrative simulation.</span> These figures are generated in the browser to show the shape of the pipeline. They are not a live model run on real bars — open the desk for the real engine, which is backtested against years of market history.
+      </p>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <div className="glass-inner flex min-w-0 flex-col rounded-2xl p-5 lg:col-span-8" data-testid="vol-chart-card">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="text-[12px] text-steel">Realized volatility, next-bar forecast</div>
+              <div className="text-[12px] text-steel">Realized volatility, next-bar estimate</div>
               <div className="font-display text-[18px] font-semibold text-ink">Two-stage model, out-of-sample</div>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-[12px] text-steel">
@@ -49,16 +55,16 @@ export const DemoVolatility = ({ active }) => {
         <div className="glass-inner flex min-w-0 flex-col rounded-2xl p-5 lg:col-span-4" data-testid="vol-readout-card">
           <div className="flex items-start justify-between">
             <div>
-              <div className="text-[12px] text-steel">Forecast RV, t+1</div>
+              <div className="text-[12px] text-steel">Estimated RV, t+1</div>
               <Num value={`${m.forecast.toFixed(2)}%`} className={`text-[32px] font-medium leading-none ${TONE[regime].text}`} testId="vol-forecast-value" />
               <div className="num mt-1 text-[12px] text-steel">± {m.rmse.toFixed(2)}% band</div>
             </div>
             <span className={`rounded-full border px-3 py-1 text-[12px] font-semibold ${TONE[regime].border} ${TONE[regime].bg} ${TONE[regime].text}`} data-testid="vol-regime">{regimeText}</span>
           </div>
           <div className="mt-4 divide-y divide-white/[0.06] border-t border-white/[0.06]">
-            <Row id="linear" k="HAR(1,5,22) linear" v={`${m.linear.toFixed(3)}%`} c="text-amber" tip="Stage 1 forecast. Heterogeneous autoregression on the 1, 5 and 22 bar realized vol, refit with an expanding window so every forecast is out-of-sample." />
+            <Row id="linear" k="HAR(1,5,22) linear" v={`${m.linear.toFixed(3)}%`} c="text-amber" tip="Stage 1 estimate. Heterogeneous autoregression on the 1, 5 and 22 bar realized vol, refit with an expanding window so every estimate is out-of-sample." />
             <Row id="garch" k="GARCH(1,1) check" v={`${m.garch.toFixed(3)}%`} tip="A second, independent volatility model on log returns. If it disagrees sharply with HAR, the desk flags it." />
-            <Row id="delta" k="LSTM correction Δ" v={sign(m.delta)} c={m.delta >= 0 ? "text-bear" : "text-mint"} tip="Stage 2 output. A 2x64 LSTM predicts the HAR residual from [residual, ATR%, return, relative volume, volume z]. Capped at ±50% of the linear forecast." />
+            <Row id="delta" k="LSTM correction Δ" v={sign(m.delta)} c={m.delta >= 0 ? "text-bear" : "text-mint"} tip="Stage 2 output. A 2x64 LSTM predicts the HAR residual from [residual, ATR%, return, relative volume, volume z]. Capped at ±50% of the linear estimate." />
           </div>
           <div className="mt-4">
             <div className="flex items-center justify-between text-[12px]">

@@ -628,7 +628,7 @@
       strict = !!s2.strict;
     } else {
       warnings.push(
-        "Stage 2 (LSTM) did not run, so this is a stage-1 forecast and the " +
+        "Stage 2 (LSTM) did not run, so this is a stage-1 estimate and the " +
           "directional read is unavailable."
       );
     }
@@ -802,7 +802,7 @@
     }
     if (stale)
       warnings.push(
-        "The most recent bar is much older than the typical bar spacing; the forecast may be based on a stale feed."
+        "The most recent bar is much older than the typical bar spacing; the estimate may be based on a stale feed."
       );
     var sessions = 1;
     for (i = 1; i < n; i++) if (boundary[i]) sessions++;
@@ -861,7 +861,7 @@
         "Breakout Risk",
         "Volatility is in the bottom third of its recent range (" +
           f0(pct * 100) +
-          "th pct) but the forecast is rising (" +
+          "th pct) but the estimate is rising (" +
           f2(cur) +
           "% -> " +
           f2(pred) +
@@ -871,7 +871,7 @@
     if (pct >= 0.7 || pred > cur * 1.3) {
       return [
         "High Volatility Expansion",
-        "The forecast sits in the " +
+        "The estimate sits in the " +
           f0(pct * 100) +
           "th percentile of recent realized volatility and is expanding (" +
           f2(cur) +
@@ -882,7 +882,7 @@
     }
     return [
       "Low Volatility Ranging",
-      "The forecast (" +
+      "The estimate (" +
         f2(pred) +
         "%) is contained relative to recent realized volatility (" +
         f0(pct * 100) +
