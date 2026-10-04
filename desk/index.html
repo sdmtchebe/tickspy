@@ -570,14 +570,22 @@ async function nai(){if(!S.news?.length)return;S.nk=S.news.slice(0,5).map(x=>x.i
  try{$('#nai').textContent=await gem('Symbol: '+S.sym+'\nHeadlines (newest first):\n'+S.news.slice(0,12).map(x=>'- '+x.headline).join('\n'),'You summarise news headlines factually. Reply with 2 to 3 short bullets stating what each headline reports, and nothing more. Do not interpret. Do not judge whether it is good or bad for the company, the industry or the market. Do not predict price. Never mention buying, selling or holding. Name the source. If the headlines are old, duplicated or unrelated to the symbol, say so plainly.')}catch(e){$('#nai').textContent=e.message}}
 $('#nbtn').onclick=nai;
 /* ---------- calendar ---------- */
-const EXP=[[/CPI|PCE|PPI/i,'Inflation measure: the change in the price of a basket of consumer goods and services.'],[/Non-Farm|Employment Change|NFP/i,'Jobs report: the change in the number of employed people.'],[/FOMC|Fed|Powell|Funds Rate/i,'Central bank policy decision and target interest rate.'],[/Unemployment Claims|JOLTS|ADP/i,'Labour-market data: unemployment claims and job openings.'],[/GDP|Retail Sales|ISM|PMI/i,'Growth data: economic output, consumer spending and activity surveys.'],[/Sentiment|Confidence/i,'Survey of consumer or business sentiment.']];
+const EXP=[[/Inflation Expectations/i,'Survey of expected future inflation, from the University of Michigan consumer survey.'],[/CPI|PCE|PPI/i,'Inflation measure: the change in the price of a basket of consumer goods and services.'],[/Non-Farm|Employment Change|NFP/i,'Jobs report: the change in the number of employed people.'],[/FOMC|Fed|Powell|Funds Rate/i,'Central bank policy decision and target interest rate.'],[/Unemployment Claims|JOLTS|ADP/i,'Labour-market data: unemployment claims and job openings.'],[/GDP|Retail Sales|ISM|PMI/i,'Growth data: economic output, consumer spending and activity surveys.'],[/Sentiment|Confidence/i,'Survey of consumer or business sentiment.']];
 /* The upstream calendar sends no CORS headers, so a static build cannot call it
    directly. GitHub Pages bakes the same file into the site as calendar.json (see
    .github/workflows/pages.yml) and we read it same-origin. With a server we can
-   keep using the proxy. */
+   keep using the proxy.
+
+   The desk is published under /desk/, so a relative "calendar.json" would look
+   for /desk/calendar.json and 404 - the file lives at the site root. Try beside
+   the page first, then one level up, so the desk works from either mount point. */
 const CAL_SRC=DESK_API===null?'calendar.json':P('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+const CAL_SRC_ALT=DESK_API===null?'../calendar.json':null;
+async function calFetch(){const srcs=DESK_API===null?[CAL_SRC,CAL_SRC_ALT]:[CAL_SRC];let last=null;
+ for(const s of srcs){try{const r=await fetch(s);if(!r.ok)throw Error(r.status);return await r.json()}catch(e){last=e}}
+ throw last||Error('No calendar source.')}
 async function cal(){let d=JSON.parse(LS.calc||'null');if(!d||Date.now()-d.t>18e5){
- try{const r=await fetch(CAL_SRC);if(!r.ok)throw Error(r.status);const j=await r.json();d={t:Date.now(),e:Array.isArray(j)?j:[]};LS.calc=JSON.stringify(d)}
+ try{const j=await calFetch();d={t:Date.now(),e:Array.isArray(j)?j:[]};LS.calc=JSON.stringify(d)}
  catch(e){if(!d){$('#cl').innerHTML='<p class="x" style="padding:12px">Calendar unavailable: '+esc(netErr(e))+'</p>';['#cstat','#csum'].forEach(s=>{const el=$(s);if(el)el.textContent=''});return}}}
  S.cal=(d.e||[]).filter(e=>e.country=='USD'&&/High|Medium/.test(e.impact||'')).sort((a,b)=>new Date(a.date)-new Date(b.date));
  calRender();

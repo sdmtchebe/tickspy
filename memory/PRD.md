@@ -59,6 +59,11 @@ frontend/  src/App.js (Lenis + sections)
   - `desk/tests/volmodel_stage2.js` guards the stage-1/stage-2 bridge (29 checks, no extra dependencies).
   - Bug found by a real-browser test: `<select id="tf">` makes `window.tf` the dropdown, so the TensorFlow.js loader would never load the library. `loadTf()` now checks for the actual API (`tensor` + `sequential`).
 
+- 2026-10 (session 7):
+  - **Fixed: the economic calendar never loaded on the published site.** Moving the desk to `/desk/` in session 6's predecessor left the baked `calendar.json` at the site root while the desk fetched it relative to its own page, so every visit hit `/desk/calendar.json` → 404 and the tab reported "Calendar unavailable: 404". The desk now looks beside itself first and falls back one directory up, and the workflow ships a copy in both places (plus sanity-checks both), so the desk works from any mount point.
+  - Added an explainer for University of Michigan Inflation Expectations, which no pattern matched.
+  - Cleaned the now-dead `prov`/`lbase`/`lm` local-model fields out of the local `desk/local-config.js`.
+
 ## Backlog
 - P0: Set the support email (`SUPPORT_EMAIL` repo variable) to enable the contact and feedback forms, then confirm the address with FormSubmit.
 - P2: OG image asset; favicon refresh to TickSPY mark.

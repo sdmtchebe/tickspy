@@ -60,9 +60,13 @@ same-origin server, or a full URL.
 - **The calendar is served same-origin.** Its upstream host
   (`nfs.faireconomy.media`) sends no CORS headers, so a browser cannot call it
   from a static page. The Pages workflow fetches it on a six-hour schedule and
-  ships it as `calendar.json`; when a local server is present, the existing proxy
-  is used instead. Events are filtered to USD medium/high impact and grouped by
-  day, with a countdown to the next release and forecast vs previous values.
+  ships it as `calendar.json`, both beside the desk and at the site root; when a
+  local server is present, the existing proxy is used instead. The desk looks
+  beside itself first and falls back one directory up, so it works from any mount
+  point — reading it relative to the page alone is what made the tab report
+  "Calendar unavailable: 404". Events are filtered to USD medium/high impact and
+  grouped by day, with a countdown to the next release and forecast vs previous
+  values.
 
 ## Keys and privacy
 

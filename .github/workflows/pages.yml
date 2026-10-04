@@ -60,6 +60,9 @@ jobs:
 
       - name: Add the same-origin economic calendar
         run: |
+          # Written beside the desk as well as at the site root: the desk looks in
+          # its own folder first, so this avoids a wasted 404 round-trip, and the
+          # root copy stays for anyone linking to it directly.
           OUT=frontend/build/calendar.json
           if curl -fsS --max-time 30 \
               https://nfs.faireconomy.media/ff_calendar_thisweek.json \
@@ -76,6 +79,7 @@ jobs:
             echo "::warning::could not fetch the economic calendar this run"
           fi
           test -s "$OUT" || echo "[]" > "$OUT"
+          cp "$OUT" frontend/build/desk/calendar.json
           echo "calendar bytes: $(wc -c < "$OUT")"
 
       - name: Sanity-check the artifact
@@ -84,6 +88,14 @@ jobs:
           test -f frontend/build/desk/index.html || { echo "::error::desk missing"; exit 1; }
           test -f frontend/build/desk/volmodel.js || { echo "::error::desk engine missing"; exit 1; }
           test -f frontend/build/desk/volmodel2.js || { echo "::error::desk stage-2 engine missing"; exit 1; }
+          # The desk is served from /desk/ and reaches the calendar one level up,
+          # so the file must exist at the site root and be a non-empty JSON list.
+          # Regression guard: this is exactly what used to make the Calendar tab
+          # report "Calendar unavailable: 404".
+          test -s frontend/build/calendar.json || { echo "::error::calendar.json missing at the site root"; exit 1; }
+          test -s frontend/build/desk/calendar.json || { echo "::error::calendar.json missing beside the desk"; exit 1; }
+          python3 -c "import json,sys; d=json.load(open('frontend/build/calendar.json')); sys.exit(0 if isinstance(d,list) and len(d) else 1)" \
+            || { echo "::error::calendar.json is not a non-empty JSON list"; exit 1; }
           # Never publish secrets.
           if [ -e frontend/build/desk/local-config.js ]; then
             echo "::error::local-config.js must not be published"; exit 1
