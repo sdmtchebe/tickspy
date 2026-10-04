@@ -88,3 +88,67 @@ Does **not** establish, and the UI must not imply:
 - **GARCH(1,1) frequently fails to converge** on daily bars and the engine says
   so ("GARCH did not converge; using HAR only") instead of reporting a
   meaningless number. On 5-minute data it converges.
+
+---
+
+# Confidence labels — backtest record
+
+```bash
+node desk/tests/score_backtest.js /tmp/bt_SPY_5Min.json
+```
+
+This one runs the desk's **own** `analyze()` in Chrome, once per bar, over the
+same five years of SPY 5-minute bars (5,239 evaluations, stride 20, trailing
+300-bar window), and scores the labels the UI shows against moves the scorer
+never saw. Nothing is re-implemented.
+
+## 1. The 0–100 score does not predict direction
+
+| score bucket | n | mean forward return (12 bars) | up-rate |
+|---|---:|---:|---:|
+| 20–39 | 866 | +0.011% | 52.4% |
+| 40–59 | 3,287 | +0.002% | 51.8% |
+| 60–79 | 1,085 | +0.006% | 55.2% |
+| 80–100 | 1 | +0.062% | 100% |
+
+- "Bullish" (≥60): mean **+0.007%**, up-rate **55.2%**
+- "Bearish" (≤40): mean **+0.004%**, up-rate **51.7%**
+- All bars: mean +0.005%, up-rate 52.6%
+- **Spread (Bullish − Bearish) = +0.002% per 12 bars.**
+
+A positive mean on the *bearish* bucket and a two-thousandths-of-a-percent
+spread means the score carries no usable directional edge on this sample. It is
+a description of the indicator readings right now, not a forecast of the next
+move. The wording was changed accordingly: the pill now reads "Bullish
+readings" / "Bearish readings" / "Mixed readings", and its explanation states
+the measured result rather than implying an edge.
+
+## 2. The big-move label is real, but two of its names were wrong
+
+Top third of |12-bar moves| = anything beyond 0.249%. Base rate 33.3%.
+
+| count | OLD label | NEW label | n | P(big move) | mean range |
+|---|---|---|---:|---:|---:|
+| 0 | Low | Quiet | 1,792 | 20.7% | 0.319% |
+| 1 | **Low** | Normal | 2,586 | **35.3%** | 0.467% |
+| 2 | Medium | Elevated | 814 | 53.1% | 0.698% |
+| 3 | High | High | 47 | 61.7% | 0.799% |
+
+- The ordering is genuine and monotonic: **20.7% → 35.3% → 53.1% → 61.7%**
+  against a 33.3% base rate. Low vs Medium+High is 20.7% vs 53.5%.
+- **The defect was the naming.** `['Low','Low','Medium','High']` labelled the
+  middle band "Low" when a big move followed it *more* often than average
+  (35.3% > 33.3%). Two of four bands sharing the name "Low", one of them above
+  base rate, overstates the quiet case.
+- Fixed to a monotonic four-band scale (Quiet / Normal / Elevated / High), and
+  "Chance of a big move" was renamed "Big-move conditions", because these are
+  ordered bands from a count of three conditions, not calibrated probabilities.
+
+## Still outstanding on the confidence labels
+
+- No significance testing yet (a bootstrap or block-permutation test would put
+  error bars on the 55.2% vs 51.7% up-rate difference).
+- Stride 20 means overlapping horizons, so the effective sample is far smaller
+  than 5,239 and the intervals above are narrower than they look.
+- Only SPY and 5-minute bars; the pattern and multi-timeframe overlays are
+  reported but not separately scored.
