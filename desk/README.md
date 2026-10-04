@@ -44,6 +44,20 @@ default). You then get the `/p` proxy, the PyTorch LSTM stage, and local model
 support. Set `window.DESK_API_BASE` in `local-config.js` to force it elsewhere:
 `''` for a same-origin server, or a full URL.
 
+## Live news and the economic calendar
+
+- **News is streamed, not polled.** The feed subscribes to Alpaca's dedicated news
+  websocket (`wss://stream.data.alpaca.markets/v1beta1/news`) and shows a headline
+  the moment it is published, tagged `NEW`. The REST endpoint is only used to
+  backfill the list on load — on its own it lags, which is why the feed used to
+  look stale. Ages are shown relative ("4m ago") and update as you read.
+- **The calendar is served same-origin.** Its upstream host
+  (`nfs.faireconomy.media`) sends no CORS headers, so a browser cannot call it
+  from a static page. The Pages workflow fetches it on a six-hour schedule and
+  ships it as `calendar.json`; when a local server is present, the existing proxy
+  is used instead. Events are filtered to USD medium/high impact and grouped by
+  day, with a countdown to the next release and forecast vs previous values.
+
 ## Keys and privacy
 
 Enter your Alpaca keys (and optionally a Gemini key) in **Settings**. They are

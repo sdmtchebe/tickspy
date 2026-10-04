@@ -10,6 +10,9 @@ on:
     paths:
       - "desk/**"
       - ".github/workflows/pages.yml"
+  # The economic calendar is a "this week" file, so refresh it regularly.
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -33,6 +36,24 @@ jobs:
           # Only the files the page actually loads. No secrets, no local config.
           cp desk/index.html desk/volmodel.js _site/
           cp desk/DISCLAIMER.md desk/PRIVACY.md desk/TERMS.md _site/
+
+          # The calendar host sends no CORS headers, so a browser cannot fetch it
+          # directly. Fetch it here and ship it same-origin with the site.
+          if curl -fsS --max-time 30 \
+              https://nfs.faireconomy.media/ff_calendar_thisweek.json \
+              -o _site/calendar.json.tmp; then
+            if python3 -c "import json,sys; json.load(open('_site/calendar.json.tmp'))" 2>/dev/null; then
+              mv _site/calendar.json.tmp _site/calendar.json
+            else
+              echo "::warning::calendar payload was not valid JSON; keeping previous file"
+              rm -f _site/calendar.json.tmp
+            fi
+          else
+            echo "::warning::could not fetch the economic calendar this run"
+          fi
+          # Fail loudly if we would publish an empty calendar with no fallback.
+          test -s _site/calendar.json || echo "[]" > _site/calendar.json
+          echo "calendar bytes: $(wc -c < _site/calendar.json)"
 
       # enablement makes this succeed even on a fresh clone where the Pages site
       # has not been created yet (otherwise configure-pages 404s).

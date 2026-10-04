@@ -98,6 +98,15 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 .banner{background:rgba(255,255,255,.07);border-bottom:1px solid rgba(255,255,255,.22);color:var(--text);padding:8px 14px;font-size:12.5px;line-height:1.5;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2)}
 .ask{font:inherit;font-size:11.5px;color:var(--muted);background:var(--glass-2);border:1px solid var(--gb);border-radius:var(--r);padding:2px 9px;cursor:pointer;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim);transition:color 150ms ease,border-color 150ms ease,background-color 150ms ease}
 .ask:hover{color:var(--text);border-color:rgba(255,255,255,.30);background:var(--glass-3)}
+/* news feed + economic calendar */
+.item.fresh{background:rgba(61,190,139,.07)}
+.tagnew{font-size:10px;font-weight:700;letter-spacing:.05em;padding:1px 6px;border-radius:5px;background:rgba(61,190,139,.16);border:1px solid rgba(61,190,139,.5);color:var(--up)}
+.dayrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:7px 12px;border-bottom:1px solid var(--gb);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);position:sticky;top:0;z-index:1}
+.item.past{opacity:.5}
+.chipbadge{font-size:10.5px;font-weight:600;letter-spacing:.04em;padding:1px 7px;border-radius:5px;border:1px solid}
+.chipbadge.dn{background:rgba(229,96,95,.14);border-color:rgba(229,96,95,.45);color:var(--dn)}
+.chipbadge.nu{background:rgba(217,164,65,.14);border-color:rgba(217,164,65,.45);color:var(--accent)}
+.evtime{min-width:56px;font-size:12px;color:var(--muted)}
 </style></head><body>
 <header class="header">
 <span class="brand">Desk</span>
@@ -136,11 +145,11 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><h2>Backtest <span class="tagline">chronological hold-out, no look-ahead</span></h2><div id="vbt" class="pbody"><p class="x">Metrics appear with the forecast.</p></div></div>
 <div class="panel"><h2>Realized vs predicted volatility</h2><div class="pbody"><canvas id="vch" style="width:100%;height:190px;display:block" aria-label="Realized versus predicted volatility"></canvas><p class="x">Out-of-sample test window. Grey is realized Garman-Klass volatility, amber is the stage-1 HAR forecast, green adds the LSTM residual correction. Values are percent per bar; lower means calmer.</p></div></div>
 </div></section>
-<section class="tab" id="t-news"><div class="panel"><h2>News <span class="tagline">Benzinga via Alpaca, refreshes every minute</span></h2>
+<section class="tab" id="t-news"><div class="panel"><h2>News <span class="tagline" id="nstat">connecting...</span></h2>
 <div class="pbody"><div class="row"><button class="btn" id="nbtn">Factual summary</button></div><div id="nai" class="ai">An automatic summary of the headlines appears here. It is generated text and may be wrong; always read the headlines themselves.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the headlines below. It is not verified, not advice, and not a recommendation.</div></div>
 <div id="nl" class="stack"></div></div></section>
-<section class="tab" id="t-cal"><div class="panel"><h2>Economic calendar <span class="tagline">USD, medium and high impact, this week</span></h2>
-<div class="pbody"><div class="row"><button class="btn" id="cbtn">Factual summary</button></div><div id="cai" class="ai">An automatic summary of the scheduled events appears here. It is generated text and may be wrong.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the event list below. It does not predict market reactions and is not advice.</div></div>
+<section class="tab" id="t-cal"><div class="panel"><h2>Economic calendar <span class="tagline">USD · medium and high impact</span></h2>
+<div class="pbody"><div class="row"><button class="btn" id="cbtn">Factual summary</button><label><input type="checkbox" id="conly"> High impact only</label><span class="tagline" id="cstat"></span></div><div id="csum" class="x" style="margin-bottom:6px"></div><div id="cai" class="ai">An automatic summary of the scheduled events appears here. It is generated text and may be wrong.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the event list below. It does not predict market reactions and is not advice.</div></div>
 <div id="cl" class="stack"></div></div></section>
 <section class="tab" id="t-alert"><div class="panel"><h2>Alerts</h2><div class="pbody">
 <p class="x">Fire while this page is open, on the current symbol. Each alert is removed once it triggers.</p>
@@ -202,7 +211,7 @@ const DESK_API = (typeof window.DESK_API_BASE === 'string')
   : (location.port === '8000' ? '' : null);
 const netErr=e=>{const m=String((e&&e.message)||e);return /failed to fetch|networkerror|load failed|err_|connection/i.test(m)?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':m};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
-const S={sym:'SPY',tf:'1Min',bars:[],price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null};
+const S={sym:'SPY',tf:'1Min',bars:[],price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set()};
 const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['set','Settings']];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Bullish':s<0?'Bearish':'Neutral';
@@ -218,7 +227,7 @@ async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.mark
 async function load(){if(!cfg().ak){go('set');return}
  try{$('#st').textContent='Loading...';const st=new Date(Date.now()-6*864e5).toISOString();
  const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);
- S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.at(-1)?.c;S.lastPx=null;refresh();stream();news();mtf();rsq();wlQuotes();
+ S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.at(-1)?.c;S.lastPx=null;refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
  }catch(e){$('#st').textContent='Error: '+netErr(e)}}
 function refresh(){analyze();draw();head();render()}
 function head(){const B=S.bars;if(!B.length)return;const pxEl=$('#px'),prev=S.lastPx;S.lastPx=S.price;pxEl.textContent='$'+f2(S.price);
@@ -499,18 +508,68 @@ async function volRun(){if(volBusy)return;const st=$('#vstatus'),btn=$('#vrun');
  finally{volBusy=false;btn.disabled=false}}
 $('#vrun').onclick=()=>volRun();
 /* ---------- news ---------- */
-async function news(){if(!cfg().ak)return;try{const j=await alp(`/v1beta1/news?symbols=${S.sym}&limit=15`),n=j.news||[];
- $('#nl').innerHTML=n.map(x=>`<div class="item"><a href="${esc(x.url)}" target="_blank" rel="noopener"><b>${esc(x.headline)}</b></a><br><span class="muted num">${new Date(x.created_at).toLocaleString('en-US',{timeZone:'America/New_York'})} ET - ${esc(x.source)}</span><p class="x">${esc((x.summary||'').slice(0,220))}</p></div>`).join('')||'<p class="x" style="padding:12px">No recent news for this symbol.</p>';
- S.news=n;const k=n.slice(0,5).map(x=>x.id).join();if(k!=S.nk&&Date.now()-S.nt>6e5&&cfg().gk)nai()}catch(e){$('#nl').innerHTML='<p class="x" style="padding:12px">News unavailable: '+esc(netErr(e))+'</p>'}}
+const relTime=iso=>{const t=new Date(iso).getTime();if(!isFinite(t))return '--';const s=Math.max(0,Math.round((Date.now()-t)/1000));
+ if(s<45)return 'just now';if(s<3600)return Math.round(s/60)+'m ago';if(s<86400)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago'};
+function newsRender(){const o=$('#nl');if(!o)return;
+ o.innerHTML=S.news.slice(0,40).map(x=>{const fresh=S.newsFresh.has(String(x.id));
+  return `<div class="item${fresh?' fresh':''}"><div class="hrow"><a href="${esc(x.url||'#')}" target="_blank" rel="noopener"><b>${esc(x.headline)}</b></a>${fresh?'<span class="tagnew">NEW</span>':''}</div><div class="muted num" style="font-size:12px">${relTime(x.created_at)} · ${new Date(x.created_at).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})} ET${x.source?' · '+esc(x.source):''}</div><p class="x">${esc((x.summary||'').slice(0,220))}</p></div>`}).join('')
+  ||'<p class="x" style="padding:12px">No recent news for this symbol yet.</p>'}
+function newsPush(items){for(const x of items||[]){const id=String(x.id);if(id=='undefined'||S.newsIds.has(id))continue;S.newsIds.add(id);S.news.push(x)}
+ S.news.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));S.news=S.news.slice(0,60)}
+async function news(){if(!cfg().ak)return;
+ try{const j=await alp(`/v1beta1/news?symbols=${S.sym}&limit=30`),n=j.news||[];
+  newsPush(n);newsRender();
+  const k=n.slice(0,5).map(x=>x.id).join();if(k!=S.nk&&Date.now()-S.nt>6e5&&cfg().gk)nai()}
+ catch(e){$('#nl').innerHTML='<p class="x" style="padding:12px">News unavailable: '+esc(netErr(e))+'</p>'}}
+/* The REST endpoint above only backfills; it lags. Alpaca also pushes news over a
+   websocket, which is the only way to see a headline as it lands. */
+function newsStream(){try{S.newsWs&&S.newsWs.close()}catch(_){}
+ const c=cfg();if(!c.ak){const e=$('#nstat');if(e)e.textContent='needs your Alpaca keys';return}
+ const w=S.newsWs=new WebSocket('wss://stream.data.alpaca.markets/v1beta1/news'),sym=S.sym;let open=false;
+ const stat=t=>{const e=$('#nstat');if(e&&S.newsWs==w)e.textContent=t};
+ w.onopen=()=>w.send(JSON.stringify({action:'auth',key:c.ak,secret:c.as}));
+ w.onmessage=m=>{let d;try{d=JSON.parse(m.data)}catch(_){return}
+  for(const x of [].concat(d)){
+   if(x.T=='success'&&x.msg=='authenticated'){w.send(JSON.stringify({action:'subscribe',news:['*']}))}
+   else if(x.T=='error'){stat('stream error: '+x.msg)}
+   else if(x.T=='subscription'){open=true;stat('live · waiting for '+sym+' headlines')}
+   else if(x.T=='n'&&(x.symbols||[]).includes(sym)){
+    S.newsFresh.add(String(x.id));newsPush([x]);newsRender();
+    stat('live · '+sym+' · updated '+new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})+' ET');
+    setTimeout(()=>{S.newsFresh.delete(String(x.id));newsRender()},45000)}}};
+ w.onclose=()=>stat(open?'disconnected - reopen the tab to reconnect':'could not connect');
+ w.onerror=()=>stat('stream error')}
 async function nai(){if(!S.news?.length)return;S.nk=S.news.slice(0,5).map(x=>x.id).join();S.nt=Date.now();$('#nai').textContent='Thinking...';
  try{$('#nai').textContent=await gem('Symbol: '+S.sym+'\nHeadlines (newest first):\n'+S.news.slice(0,12).map(x=>'- '+x.headline).join('\n'),'You summarise news headlines factually. Reply with 2 to 3 short bullets stating what each headline reports, and nothing more. Do not interpret. Do not judge whether it is good or bad for the company, the industry or the market. Do not predict price. Never mention buying, selling or holding. Name the source. If the headlines are old, duplicated or unrelated to the symbol, say so plainly.')}catch(e){$('#nai').textContent=e.message}}
 $('#nbtn').onclick=nai;
 /* ---------- calendar ---------- */
 const EXP=[[/CPI|PCE|PPI/i,'Inflation measure: the change in the price of a basket of consumer goods and services.'],[/Non-Farm|Employment Change|NFP/i,'Jobs report: the change in the number of employed people.'],[/FOMC|Fed|Powell|Funds Rate/i,'Central bank policy decision and target interest rate.'],[/Unemployment Claims|JOLTS|ADP/i,'Labour-market data: unemployment claims and job openings.'],[/GDP|Retail Sales|ISM|PMI/i,'Growth data: economic output, consumer spending and activity surveys.'],[/Sentiment|Confidence/i,'Survey of consumer or business sentiment.']];
-async function cal(){let d=JSON.parse(LS.calc||'null');if(!d||Date.now()-d.t>18e5){try{const r=await fetch(P('https://nfs.faireconomy.media/ff_calendar_thisweek.json'));if(!r.ok)throw Error(r.status);d={t:Date.now(),e:await r.json()};LS.calc=JSON.stringify(d)}catch(e){if(!d){$('#cl').innerHTML='<p class="x" style="padding:12px">Calendar unavailable: '+esc(netErr(e))+'.</p>';return}}}
- S.cal=d.e.filter(e=>e.country=='USD'&&/High|Medium/.test(e.impact)).sort((a,b)=>new Date(a.date)-new Date(b.date));
- $('#cl').innerHTML=S.cal.map(e=>{const t=new Date(e.date),ex=(EXP.find(x=>x[0].test(e.title))||[])[1]||'';return`<div class="item"><div class="hrow"><b>${esc(e.title)}</b><span class="${e.impact=='High'?'dn':'nu'}">${e.impact}</span><span class="muted num">${t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET</span></div><div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} - Previous ${esc(e.previous||'--')}${e.actual?' - Actual '+esc(e.actual):''}</div><p class="x">${ex}</p></div>`}).join('')||'<p class="x" style="padding:12px">No medium or high USD events this week.</p>';
+/* The upstream calendar sends no CORS headers, so a static build cannot call it
+   directly. GitHub Pages bakes the same file into the site as calendar.json (see
+   .github/workflows/pages.yml) and we read it same-origin. With a server we can
+   keep using the proxy. */
+const CAL_SRC=DESK_API===null?'calendar.json':P('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+async function cal(){let d=JSON.parse(LS.calc||'null');if(!d||Date.now()-d.t>18e5){
+ try{const r=await fetch(CAL_SRC);if(!r.ok)throw Error(r.status);const j=await r.json();d={t:Date.now(),e:Array.isArray(j)?j:[]};LS.calc=JSON.stringify(d)}
+ catch(e){if(!d){$('#cl').innerHTML='<p class="x" style="padding:12px">Calendar unavailable: '+esc(netErr(e))+'</p>';['#cstat','#csum'].forEach(s=>{const el=$(s);if(el)el.textContent=''});return}}}
+ S.cal=(d.e||[]).filter(e=>e.country=='USD'&&/High|Medium/.test(e.impact||'')).sort((a,b)=>new Date(a.date)-new Date(b.date));
+ calRender();
  if(cfg().gk&&LS.cai_k!=S.cal.length+':'+new Date().toDateString())cai()}
+function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checked)||e.impact=='High'),now=Date.now();
+ const stat=$('#cstat');if(stat)stat.textContent=evs.length+' event'+(evs.length==1?'':'s')+(evs.length<S.cal.length?' (filtered)':'');
+ const nx=evs.find(e=>new Date(e.date).getTime()>=now),sum=$('#csum');
+ if(sum)sum.innerHTML=nx?(()=>{const t=new Date(nx.date),mins=Math.max(0,Math.round((t.getTime()-now)/6e4)),h=Math.floor(mins/60),m=mins%60;
+  return `<b class="${nx.impact=='High'?'dn':'nu'}">Next: ${esc(nx.title)}</b> in ${h?h+'h ':''}${m}m · ${t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET${nx.forecast?' · forecast '+esc(nx.forecast):''}`})():'No upcoming events in this view.';
+ const dk=t=>new Date(t).toLocaleDateString('en-CA',{timeZone:'America/New_York'}),today=dk(now),tomorrow=dk(now+864e5);
+ const groups=new Map();evs.forEach(e=>{const k=dk(e.date);groups.has(k)||groups.set(k,[]);groups.get(k).push(e)});
+ let html='';
+ for(const [k,list] of groups){
+  const label=k==today?'Today':k==tomorrow?'Tomorrow':new Date(list[0].date).toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'long',month:'short',day:'numeric'});
+  const high=list.filter(e=>e.impact=='High').length;
+  html+=`<div class="dayrow"><b>${esc(label)}</b><span class="muted num">${list.length} event${list.length==1?'':'s'}${high?' · '+high+' high':''}</span></div>`;
+  html+=list.map(e=>{const t=new Date(e.date),past=t.getTime()<now,ex=(EXP.find(x=>x[0].test(e.title))||[])[1]||'';
+   return `<div class="item${past?' past':''}"><div class="hrow"><span class="evtime num">${t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})}</span><b>${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${past?'<span class="muted" style="font-size:11px">released</span>':''}</div><div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div>${ex?`<p class="x">${ex}</p>`:''}</div>`}).join('')}
+ $('#cl').innerHTML=html||'<p class="x" style="padding:12px">No medium or high impact USD events in this view.</p>'}
 async function cai(){if(!S.cal?.length)return;LS.cai_k=S.cal.length+':'+new Date().toDateString();$('#cai').textContent='Thinking...';const now=Date.now(),n=S.cal.filter(e=>new Date(e.date)>now-864e5).slice(0,12);
  try{$('#cai').textContent=await gem('Now: '+new Date().toLocaleString('en-US',{timeZone:'America/New_York'})+' ET\nUpcoming/recent US events:\n'+n.map(e=>`${e.date} ${e.title} (${e.impact}) forecast ${e.forecast||'-'} prev ${e.previous||'-'} actual ${e.actual||'-'}`).join('\n'),'You summarise economic calendar events factually. Reply with at most 3 short bullets: the event, when it occurs in ET, and its forecast versus previous value. Do not predict market reactions. Do not say whether events are bullish or bearish. Do not advise. Never mention buying or selling. Note plainly any event that has no forecast available.')}catch(e){$('#cai').textContent=e.message}}
 $('#cbtn').onclick=cai;
@@ -560,10 +619,10 @@ $('#gl').onclick=async()=>{try{const r=await fetch('https://generativelanguage.g
  const m=j.models.filter(x=>x.supportedGenerationMethods?.includes('generateContent')&&/flash/.test(x.name)).map(x=>x.name.replace('models/','')).sort((a,b)=>(/lite/.test(b)-/lite/.test(a))||b.localeCompare(a));$('#gm').innerHTML=m.map(x=>`<option>${x}</option>`).join('')}catch(e){alert('Could not load models: '+e.message)}};
 $('#lml').onclick=async()=>{const base=($('#lbase').value||'http://127.0.0.1:11434').trim().replace(/\/$/,'');try{const r=await fetch(P(base+'/v1/models'));if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,120));const j=await r.json();const ids=(j.data||j.models||[]).map(m=>m.id||m.name).filter(Boolean);if(!ids.length)throw Error('No models reported.');$('#lm').innerHTML=ids.map(x=>`<option>${esc(x)}</option>`).join('')}catch(e){alert('Could not load local models: '+e.message+'\n\nIs your local model server running at '+base+'?')}};
 $('#sv').onclick=()=>{LS.cfg=JSON.stringify({ak:$('#ak').value.trim(),as:$('#as').value.trim(),gk:$('#gk').value.trim(),gm:$('#gm').value,cap:+$('#cap').value||400,prov:$('#prov').value,lbase:$('#lbase').value.trim(),lm:$('#lm').value});showUse();go('live');load()};
-$('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
+$('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
 $('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#jadd').onclick=journalAdd;$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
-addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});setInterval(news,6e4);setInterval(sessRender,1000);sessRender();
+addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});setInterval(news,12e4);setInterval(newsRender,3e4);setInterval(sessRender,1000);sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
-$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};alertRender();journalRender();wlRender();fill();if(!LS.legal)gateShow();go('live');load();
+$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();alertRender();journalRender();wlRender();fill();if(!LS.legal)gateShow();go('live');load();
 </script></body></html>

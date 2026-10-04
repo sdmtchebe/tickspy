@@ -48,6 +48,9 @@ frontend/  src/App.js (Lenis + sections)
   - Volatility tab ported to the browser as `desk/volmodel.js` (stage 1: Garman-Klass -> HAR(1,5,22) expanding walk-forward -> GARCH(1,1), plus the hold-out backtest, band, regime and reliability gating). Stage-2 LSTM and the local-model provider remain server-only and are reported as unavailable rather than faked.
   - `desk/tests/volmodel_parity.js` compares the port against the Python model on identical bars; HAR/RMSE/window/band match to machine precision, GARCH is documented as an approximate independent MLE.
   - `.github/workflows/pages.yml` publishes `desk/` to GitHub Pages at https://sdmtchebe.github.io/tickspy/.
+- 2026-10 (session 5):
+  - News is now **live**: the desk subscribes to Alpaca's news websocket (`v1beta1/news`) and prepends headlines as they are published, with a `NEW` tag, relative ages and a feed status line. REST is only used to backfill.
+  - Economic calendar is served same-origin as `calendar.json`, fetched and refreshed by the Pages workflow on a six-hour schedule (the upstream sends no CORS headers). Display regrouped by day with day headers, a next-release countdown, impact badges, released/past dimming, and a "high impact only" filter.
 
 ## Backlog
 - P1: Optional screenshot upload on feedback form (object storage).
