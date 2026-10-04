@@ -15,4 +15,4 @@
  * to the calendar baked into the site at build time. Nothing here is secret —
  * this is just a public URL — so this file is committed and published.
  */
-window.DESK_EDGE_API = "";
+window.DESK_EDGE_API = "https://tickspy-api.sdmtchebe.workers.dev";

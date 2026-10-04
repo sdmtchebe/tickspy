@@ -19,7 +19,7 @@ crons = ["*/20 * * * *"]
 # then paste the printed id below.
 [[kv_namespaces]]
 binding = "CACHE"
-id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+id = "573639379943402dacd732d04e27ee93"
 
 [vars]
 # A stable alias, so a model rename upstream does not take the endpoint down.
