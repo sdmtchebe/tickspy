@@ -34,7 +34,11 @@ jobs:
           cp desk/index.html desk/volmodel.js _site/
           cp desk/DISCLAIMER.md desk/PRIVACY.md desk/TERMS.md _site/
 
+      # enablement makes this succeed even on a fresh clone where the Pages site
+      # has not been created yet (otherwise configure-pages 404s).
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
