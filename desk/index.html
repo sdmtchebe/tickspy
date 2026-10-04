@@ -184,14 +184,22 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div id="gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gate-t"><div class="gate-card" id="gate-body"></div></div>
 
 <script src="local-config.js"></script>
+<script src="volmodel.js"></script>
 <script>
 const $=s=>document.querySelector(s),LS=localStorage,cfg=()=>JSON.parse(LS.cfg||'{}');
 if(window.DESK_KEYS){try{LS.cfg=JSON.stringify({...window.DESK_KEYS,...JSON.parse(LS.cfg||'{}')})}catch(e){}}
-/* The desk is served two ways: by its own Python server at http://localhost:8000
-   (everything same-origin) and bundled into the marketing site at /desk/
-   (its proxy endpoints live on the local server, so talk to it cross-origin).
-   Override with window.DESK_API_BASE if you host the server elsewhere. */
-const DESK_API = window.DESK_API_BASE || (location.pathname.indexOf('/desk')===0 ? 'http://localhost:8000' : '');
+/* Two ways to run. With the desk's own Python server present we route through
+   its /p, /vol and /lm endpoints, which also gives the full two-stage model.
+   Without one (a static host such as GitHub Pages) the page talks straight to
+   Alpaca and Gemini - their APIs answer CORS - and the volatility tab uses the
+   in-browser stage-1 engine. DESK_API is null in that direct case.
+
+   Server mode is auto-detected when the page is served by the desk server
+   (default port 8000), or forced by setting window.DESK_API_BASE in
+   local-config.js: '' for a same-origin server, or a full URL for a remote one. */
+const DESK_API = (typeof window.DESK_API_BASE === 'string')
+  ? (window.DESK_API_BASE || '')
+  : (location.port === '8000' ? '' : null);
 const netErr=e=>{const m=String((e&&e.message)||e);return /failed to fetch|networkerror|load failed|err_|connection/i.test(m)?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':m};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
 const S={sym:'SPY',tf:'1Min',bars:[],price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null};
@@ -203,7 +211,9 @@ $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}<
 function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news')news();if(k=='alert')alertRender();if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun();if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
-const P=u=>DESK_API+'/p?u='+encodeURIComponent(u);
+// With a server, route through its /p proxy; without one, call the provider
+// directly (the URLs are absolute and Alpaca's API answers CORS).
+const P=u=>DESK_API===null?u:DESK_API+'/p?u='+encodeURIComponent(u);
 async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,140));return r.json()}
 async function load(){if(!cfg().ak){go('set');return}
  try{$('#st').textContent='Loading...';const st=new Date(Date.now()-6*864e5).toISOString();
@@ -433,16 +443,17 @@ function drawVolChart(s){const cv=$('#vch');if(!cv||!cv.clientWidth)return;const
  series.forEach(a=>{x.strokeStyle=a[2];x.lineWidth=1.4;x.beginPath();let f=1;a[1].forEach((v,i)=>{if(v==null||!isFinite(v))return;f?x.moveTo(X(i),Y(v)):x.lineTo(X(i),Y(v));f=0});x.stroke();x.lineWidth=1});
  x.fillStyle='#8A94A3';const l0=(s.labels[0]||'').slice(5,16),l1=(s.labels[N-1]||'').slice(5,16);x.fillText(l0,pad.l,H-5);x.fillText(l1,W-pad.r-x.measureText(l1).width,H-5)}
 function volBt(b){const o=$('#vbt');if(!b||!b.samples){o.innerHTML='<p class="x">Not enough clean out-of-sample bars for a backtest.</p>';return}
- const pc=v=>v==null||!isFinite(v)?'--':(v>=0?'+':'')+f2(v)+'%',good=v=>v>=0?'up':'dn',r=(a,v)=>`<div class="mrow"><span>${a}</span><span class="num">${v}</span></div>`;
+ const pc=v=>v==null||!isFinite(v)?'--':(v>=0?'+':'')+f2(v)+'%',good=v=>v>=0?'up':'dn',r=(a,v)=>`<div class="mrow"><span>${a}</span><span class="num">${v}</span></div>`,
+  pctN=v=>v==null||!isFinite(v)?'--':f2(v*100)+'%';
  o.innerHTML=r('Out-of-sample test bars',b.samples)
-  +r('Direction hit rate',`${f2(b.direction_accuracy*100)}% <span class="muted">vs always-neutral ${f2(b.direction_baseline*100)}%</span>`)
+  +r('Direction hit rate',`${pctN(b.direction_accuracy)} <span class="muted">vs always-neutral ${pctN(b.direction_baseline)}</span>`)
   +r('Vol RMSE — combined',f3(b.vol_rmse_combined)+'%')
   +r('Vol RMSE — stage 1 linear',f3(b.vol_rmse_linear)+'%')
   +r('Vol RMSE — persistence',f3(b.vol_rmse_persistence)+'%')
   +r('Combined vs persistence',`<span class="${good(b.combined_vs_persistence_pct)}">${pc(b.combined_vs_persistence_pct)}</span>`)
   +r('Combined vs stage 1',`<span class="${good(b.combined_vs_linear_pct)}">${pc(b.combined_vs_linear_pct)}</span>`)
-  +r('Direction — balanced accuracy',`${f2((b.direction_balanced_accuracy||0)*100)}% <span class="muted">vs ${f2(100/3)}% chance</span>`)
-  +r('Direction — non-neutral accuracy',`${f2((b.direction_nonneutral_accuracy||0)*100)}%`)
+  +r('Direction — balanced accuracy',`${pctN(b.direction_balanced_accuracy)} <span class="muted">vs ${f2(100/3)}% chance</span>`)
+  +r('Direction — non-neutral accuracy',pctN(b.direction_nonneutral_accuracy))
   +r('R2 of combined forecast',f3(b.r2_combined))
   +`<p class="x">The model trains only on the first 80% of the bars, then forecasts the held-out last 20% one step at a time, so the test never sees its own future. Direction hit rate is a three-way call (up / flat / down). RMSE is percent per bar; lower is better.</p>`}
 function volRender(j){const dcls=j.direction_signal=='bullish'?'up':j.direction_signal=='bearish'?'dn':'nu',rcls=j.regime=='High Volatility Expansion'?'dn':j.regime=='Breakout Risk'?'nu':'up';
@@ -452,7 +463,7 @@ function volRender(j){const dcls=j.direction_signal=='bullish'?'up':j.direction_
  const bt=j.backtest||{},ba=bt.direction_balanced_accuracy,nna=bt.direction_nonneutral_accuracy;
  const relLine=(bt.samples?`<p class="x" style="margin-top:6px"><b class="${j.reliable?'up':'nu'}">${j.reliable?'Volatility forecast: reliable':'Volatility forecast: NOT reliable on this sample'}</b> — ${f2(bt.combined_vs_persistence_pct)}% ${bt.combined_vs_persistence_pct>=0?'better':'worse'} than the naive baseline (R2 ${f3(bt.r2_combined)}) across ${bt.samples} out-of-sample bars.</p>`:'<p class="x" style="margin-top:6px">No out-of-sample sample; the number above is not validated.</p>');
  const edgeLine=`<p class="x" style="margin-top:6px"><b class="${j.direction_edge=='usable'?'up':j.direction_edge=='none'?'nu':'muted'}">Direction edge: ${esc(j.direction_edge||'unknown')}.</b> Balanced accuracy ${ba==null?'--':f2(ba*100)+'%'} vs ${f2(100/3)}% chance, non-neutral ${nna==null?'--':f2(nna*100)+'%'}.${j.direction_edge=='none'?' The bullish/bearish bias is not trustworthy — it is close to a coin flip.':''}</p>`;
- $('#vout').innerHTML=`<div class="score"><span class="n num ${dcls}">${f3(j.predicted_volatility)}%</span><span class="muted">per bar</span><span class="call ${dcls}">${j.direction_signal}</span><span class="muted">${Math.round(j.direction_confidence*100)}% conf</span></div>`
+ $('#vout').innerHTML=`<div class="score"><span class="n num ${dcls}">${f3(j.predicted_volatility)}%</span><span class="muted">per bar</span><span class="call ${dcls}">${j.direction_signal}</span><span class="muted">${j.direction_confidence==null?'no directional model':Math.round(j.direction_confidence*100)+'% conf'}</span></div>`
   +`<div class="track"><i class="${dcls}" style="width:${p}%"></i></div>`
   +`<div class="pbody"><div class="hrow"><span class="regime ${rcls}">${esc(j.regime)}</span>${j.predicted_vol_annual_pct!=null?`<span class="muted">${f2(j.predicted_vol_annual_pct)}% annualized</span>`:''}</div><p class="x" style="margin-top:6px">${esc(j.regime_reason)}</p>${relLine}${edgeLine}</div>`
   +rows.map(x=>`<div class="mrow"><span>${x[0]}</span><span class="num">${x[1]}</span></div>`).join('')
@@ -473,9 +484,18 @@ async function volRun(){if(volBusy)return;const st=$('#vstatus'),btn=$('#vrun');
  try{
   const bars=await volHistory();
   if(bars.length<120)throw Error('Only '+bars.length+' bars available for '+S.sym+' '+S.tf+'.');
-  st.textContent='Fitting on '+bars.length.toLocaleString()+' bars (first run trains the LSTM)...';
-  const r=await fetch(DESK_API+'/vol',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:S.sym,timeframe:S.tf,periods_per_year:ppy,strict,bars})});const j=await r.json();if(j.error)throw Error(j.error);S.vol=j;volRender(j);
-  st.textContent=(j.cached?'cached model':'trained')+' on '+j.bars.toLocaleString()+' bars · '+Math.round((performance.now()-t0)/1000)+' s'}catch(e){st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Forecast unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
+  let j;
+  if(DESK_API===null){
+   // Static host: the Python two-stage model cannot run, so use the browser
+   // stage-1 engine (Garman-Klass -> HAR walk-forward -> GARCH cross-check).
+   st.textContent='Fitting stage 1 on '+bars.length.toLocaleString()+' bars...';
+   j=window.DeskVol.run(bars,{symbol:S.sym,periodsPerYear:ppy});
+  }else{
+   st.textContent='Fitting on '+bars.length.toLocaleString()+' bars (first run trains the LSTM)...';
+   const r=await fetch(DESK_API+'/vol',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:S.sym,timeframe:S.tf,periods_per_year:ppy,strict,bars})});j=await r.json();if(j.error)throw Error(j.error);
+  }
+  S.vol=j;volRender(j);
+  st.textContent=(j.cached?'cached model':'fitted')+' on '+j.bars.toLocaleString()+' bars · '+Math.round((performance.now()-t0)/1000)+' s'}catch(e){st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Forecast unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
  finally{volBusy=false;btn.disabled=false}}
 $('#vrun').onclick=()=>volRun();
 /* ---------- news ---------- */
@@ -503,6 +523,7 @@ async function lmChat(messages){const c=cfg();if(!c.lm)throw Error('Choose a loc
  if(!r.ok||!j)throw Error('Local model error: '+((j&&j.error&&(j.error.message||j.error))||txt.slice(0,150)||r.status));
  const t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;if(!t)throw Error('Local model returned no text.');return t}
 async function gem(text,sys,hist=[]){const c=cfg();
+ if(c.provider=='local'&&DESK_API===null)throw Error('Local models need the desk server. On the hosted build choose Gemini in Settings.');
  if(c.provider=='local'){const conv=h=>({role:h.role,content:h.content!=null?h.content:(h.parts||[]).map(p=>p.text).join('')});return lmChat([{role:'system',content:sys},...hist.map(conv),{role:'user',content:text}])}
  if(!c.gk||!c.gm)throw Error('Add your Gemini key and choose a model in Settings.');if(used()>=(c.cap||400))throw Error('Daily safety cap reached. Raise it in Settings or wait until midnight Pacific.');
  await new Promise(r=>setTimeout(r,Math.max(0,lastG+5000-Date.now())));lastG=Date.now();LS['g'+pday()]=used()+1;showUse();
@@ -532,7 +553,9 @@ function legalOpen(){$('#gate-body').innerHTML=legalBody(false);$('#gate').class
 $('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
-function fill(){const c=cfg();['ak','as','gk','cap','lbase'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]));if(!$('#lbase').value)$('#lbase').value='http://127.0.0.1:11434';if(c.prov)$('#prov').value=c.prov;if(c.gm)$('#gm').innerHTML=`<option>${c.gm}</option>`;if(c.lm)$('#lm').innerHTML=`<option>${esc(c.lm)}</option>`;showUse()}
+function fill(){const c=cfg();['ak','as','gk','cap','lbase'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]));if(!$('#lbase').value)$('#lbase').value='http://127.0.0.1:11434';if(c.prov)$('#prov').value=c.prov;if(c.gm)$('#gm').innerHTML=`<option>${c.gm}</option>`;if(c.lm)$('#lm').innerHTML=`<option>${esc(c.lm)}</option>`;
+ if(DESK_API===null){const lo=document.querySelector('#prov option[value=local]');if(lo){lo.disabled=true;lo.textContent='Local model (needs the desk server)';}$('#prov').value='gemini';const vl=$('#vstrict');if(vl&&vl.closest('label'))vl.closest('label').style.display='none'}
+ showUse()}
 $('#gl').onclick=async()=>{try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':$('#gk').value}});const j=await r.json();if(!r.ok)throw Error(j.error?.message);
  const m=j.models.filter(x=>x.supportedGenerationMethods?.includes('generateContent')&&/flash/.test(x.name)).map(x=>x.name.replace('models/','')).sort((a,b)=>(/lite/.test(b)-/lite/.test(a))||b.localeCompare(a));$('#gm').innerHTML=m.map(x=>`<option>${x}</option>`).join('')}catch(e){alert('Could not load models: '+e.message)}};
 $('#lml').onclick=async()=>{const base=($('#lbase').value||'http://127.0.0.1:11434').trim().replace(/\/$/,'');try{const r=await fetch(P(base+'/v1/models'));if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,120));const j=await r.json();const ids=(j.data||j.models||[]).map(m=>m.id||m.name).filter(Boolean);if(!ids.length)throw Error('No models reported.');$('#lm').innerHTML=ids.map(x=>`<option>${esc(x)}</option>`).join('')}catch(e){alert('Could not load local models: '+e.message+'\n\nIs your local model server running at '+base+'?')}};

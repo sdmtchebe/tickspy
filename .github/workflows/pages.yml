@@ -1,0 +1,51 @@
+name: Deploy desk to GitHub Pages
+
+# Publishes the standalone desk (desk/index.html + desk/volmodel.js) so it works
+# with nothing running locally. The marketing site is not deployed here: its
+# contact/feedback forms need the FastAPI backend.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desk/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble static site
+        run: |
+          mkdir -p _site
+          # Only the files the page actually loads. No secrets, no local config.
+          cp desk/index.html desk/volmodel.js _site/
+          cp desk/DISCLAIMER.md desk/PRIVACY.md desk/TERMS.md _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

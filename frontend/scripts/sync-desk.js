@@ -10,18 +10,23 @@
 const fs = require("fs");
 const path = require("path");
 
-const SRC = path.join(__dirname, "..", "..", "desk", "index.html");
+const SRC_DIR = path.join(__dirname, "..", "..", "desk");
 const OUT_DIR = path.join(__dirname, "..", "public", "desk");
-const OUT = path.join(OUT_DIR, "index.html");
+// Only the static assets the page actually loads. Secrets (local-config.js) are
+// deliberately never copied.
+const FILES = ["index.html", "volmodel.js"];
 
 function main() {
-  if (!fs.existsSync(SRC)) {
-    console.error(`[sync-desk] source not found: ${SRC}`);
-    process.exit(1);
-  }
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.copyFileSync(SRC, OUT);
-  console.log(`[sync-desk] bundled desk -> ${path.relative(process.cwd(), OUT)}`);
+  for (const name of FILES) {
+    const from = path.join(SRC_DIR, name);
+    if (!fs.existsSync(from)) {
+      console.error(`[sync-desk] source not found: ${from}`);
+      process.exit(1);
+    }
+    fs.copyFileSync(from, path.join(OUT_DIR, name));
+  }
+  console.log(`[sync-desk] bundled desk -> ${path.relative(process.cwd(), OUT_DIR)} (${FILES.join(", ")})`);
 }
 
 main();

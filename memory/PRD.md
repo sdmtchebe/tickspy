@@ -43,6 +43,11 @@ frontend/  src/App.js (Lenis + sections)
   - Merged the trading desk into the repo at `desk/` and bundled it into the site at `/desk/index.html` via `frontend/scripts/sync-desk.js`.
   - "Open App" (nav + hero) now opens the desk instead of a placeholder toast; `REACT_APP_DESK_PATH` overrides the target.
   - Desk page resolves its API base automatically (same-origin behind its own server, `http://localhost:8000` when served by the website); `desk/server.py` gained CORS/preflight support.
+- 2026-10 (session 4):
+  - Desk now runs with **no local server**: Alpaca/Gemini are called directly from the browser (Alpaca answers CORS). `DESK_API` selects server mode only when the page is served by the desk's own server (port 8000) or `window.DESK_API_BASE` is set.
+  - Volatility tab ported to the browser as `desk/volmodel.js` (stage 1: Garman-Klass -> HAR(1,5,22) expanding walk-forward -> GARCH(1,1), plus the hold-out backtest, band, regime and reliability gating). Stage-2 LSTM and the local-model provider remain server-only and are reported as unavailable rather than faked.
+  - `desk/tests/volmodel_parity.js` compares the port against the Python model on identical bars; HAR/RMSE/window/band match to machine precision, GARCH is documented as an approximate independent MLE.
+  - `.github/workflows/pages.yml` publishes `desk/` to GitHub Pages at https://sdmtchebe.github.io/tickspy/.
 
 ## Backlog
 - P1: Optional screenshot upload on feedback form (object storage).
