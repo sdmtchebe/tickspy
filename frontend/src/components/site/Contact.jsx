@@ -1,19 +1,46 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { toast } from "sonner";
 import { Reveal, SplitWords } from "@/components/site/motion";
 
-// The contact/feedback forms post to the FastAPI backend. When no backend URL is
-// configured (e.g. the GitHub Pages build), there is nowhere to post to, so the
-// forms say so plainly instead of failing with a generic error.
-const API = process.env.REACT_APP_BACKEND_URL ? `${process.env.REACT_APP_BACKEND_URL}/api` : "";
+// The contact/feedback forms post straight to a support inbox through FormSubmit
+// (formsubmit.co), a serverless relay that answers CORS and forwards the message
+// as an email. Nothing has to be running for this to work, so the forms behave
+// identically on GitHub Pages and on a local machine.
+//
+// To enable them, set the destination address once, either:
+//   - build time: REACT_APP_SUPPORT_EMAIL in the environment, or
+//   - runtime:    window.DESK_SUPPORT_EMAIL in a small script in index.html.
+// Until an address is set the forms say so plainly instead of failing vaguely.
+const SUPPORT_EMAIL =
+  (typeof window !== "undefined" && window.DESK_SUPPORT_EMAIL) ||
+  process.env.REACT_APP_SUPPORT_EMAIL ||
+  "";
+const ENDPOINT = SUPPORT_EMAIL ? `https://formsubmit.co/ajax/${SUPPORT_EMAIL}` : "";
 const API_MISSING = "Messaging is not configured on this deployment.";
+
+// Returns a human-readable reason when FormSubmit rejects the POST.
 const errMsg = (e) => {
-  const d = e?.response?.data?.detail;
-  if (typeof d === "string") return d;
-  if (Array.isArray(d)) return "Please check your name, email and message.";
+  const m = String(e?.message || e || "");
+  if (/failed to fetch|networkerror|load failed/i.test(m)) {
+    return "Could not reach the mail service. Check your connection and try again.";
+  }
   return "Something went wrong. Please try again.";
 };
+
+// Send one message. `body` is either a plain object (sent as JSON) or FormData
+// (used by the feedback form so an optional screenshot rides along).
+async function send(body) {
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: isForm ? undefined : { "Content-Type": "application/json", Accept: "application/json" },
+    body: isForm ? body : JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`send failed (${res.status})`);
+  const j = await res.json().catch(() => ({}));
+  if (String(j.success) === "false") throw new Error(j.message || "send failed");
+  return j;
+}
 
 const Field = ({ id, label, children }) => (
   <label htmlFor={id} className="block">
@@ -34,10 +61,16 @@ const ContactForm = () => {
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const submit = async (e) => {
     e.preventDefault();
-    if (!API) { toast.error(API_MISSING); return; }
+    if (!ENDPOINT) { toast.error(API_MISSING); return; }
     setBusy(true);
     try {
-      await axios.post(`${API}/contact`, f);
+      await send({
+        name: f.name,
+        email: f.email,
+        message: f.message,
+        _subject: `TickSPY contact from ${f.name || "a visitor"}`,
+        _template: "table",
+      });
       toast.success("Message sent.", { description: "Thanks. We will get back to you soon." });
       setF({ name: "", email: "", message: "" });
     } catch (err) {
@@ -89,13 +122,18 @@ const FeedbackForm = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!API) { toast.error(API_MISSING); return; }
+    if (!ENDPOINT) { toast.error(API_MISSING); return; }
     setBusy(true);
     const fd = new FormData();
-    Object.entries(f).forEach(([k, v]) => fd.append(k, v));
-    if (file) fd.append("screenshot", file);
+    fd.append("Category", f.category);
+    fd.append("Name", f.name);
+    fd.append("Email", f.email);
+    fd.append("Message", f.message);
+    fd.append("_subject", `TickSPY ${f.category} from ${f.name || "a visitor"}`);
+    fd.append("_template", "table");
+    if (file) fd.append("attachment", file);
     try {
-      await axios.post(`${API}/feedback`, fd);
+      await send(fd);
       toast.success(`${f.category} received.`, { description: "Thanks for helping make TickSPY better." });
       setF(empty);
       clear();

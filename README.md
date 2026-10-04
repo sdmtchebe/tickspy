@@ -19,20 +19,25 @@ builds the site, bundles the desk into it and publishes the whole thing.
 
 ## How the two connect
 
-- `frontend/scripts/sync-desk.js` copies `desk/index.html` and `desk/volmodel.js`
-  into `frontend/public/desk/` before `yarn start` and `yarn build`. `public/desk/`
-  is generated and git-ignored, so `desk/` stays the single source.
+- `frontend/scripts/sync-desk.js` copies `desk/index.html`, `desk/volmodel.js` and
+  `desk/volmodel2.js` into `frontend/public/desk/` before `yarn start` and
+  `yarn build`. `public/desk/` is generated and git-ignored, so `desk/` stays the
+  single source.
 - `frontend/src/lib/site.js` `openApp()` opens `<base>/desk/index.html` in a new
   tab, where `<base>` is CRA's `PUBLIC_URL`, so it resolves at a domain root, a
   subpath such as `/tickspy/`, or in local dev. `REACT_APP_DESK_PATH` overrides it.
-- The contact and feedback forms post to `REACT_APP_BACKEND_URL`. The Pages build
-  leaves that unset (the local backend is not reachable from the public site), so
-  the forms report that messaging is not configured. Set the repository variable
-  `REACT_APP_BACKEND_URL` to a publicly reachable backend to enable them.
+- The contact and feedback forms need **no server**: they post the message (and an
+  optional screenshot) straight to a support inbox through
+  [formsubmit.co](https://formsubmit.co), which answers CORS. Set the destination
+  address once — repository variable `SUPPORT_EMAIL` for the Pages build, or
+  `REACT_APP_SUPPORT_EMAIL`, or `window.DESK_SUPPORT_EMAIL` in
+  `frontend/public/index.html`. Until one is set the forms say messaging is not
+  configured rather than failing vaguely.
 - The desk detects how it is served: from its own Python server (default port
-  8000) it routes through that server's proxy and gets the full two-stage
-  volatility model; on any static host it talks straight to Alpaca/Gemini and uses
-  the browser stage-1 engine instead. See `desk/README.md`.
+  8000) it routes through that server's proxy and gets the Python two-stage
+  volatility model; on any static host it talks straight to Alpaca/Gemini and runs
+  both volatility stages in the browser, training the LSTM with TensorFlow.js. See
+  `desk/README.md`.
 - `.github/workflows/pages.yml` publishes `desk/` to GitHub Pages.
 
 ## Running locally
@@ -49,13 +54,15 @@ yarn start
 
 ```bash
 cd desk
-python3 server.py            # http://localhost:8000  (full LSTM model)
+python3 server.py            # http://localhost:8000  (Python-side LSTM)
 ```
 
 You can also just open `desk/index.html` through any static server; it runs
-without Python and uses the browser volatility engine.
+without Python and trains the LSTM in the browser.
 
-**Backend API** (contact/feedback forms):
+**Backend API** — no longer needed. The contact and feedback forms go straight to
+the support inbox through formsubmit.co, so there is nothing to run. `backend/` is
+kept for reference:
 
 ```bash
 cd backend
@@ -63,16 +70,17 @@ python -m pytest             # tests
 uvicorn server:app --reload  # run
 ```
 
-See `backend/.env` for `MONGO_URL`, `DB_NAME` and related settings. The backend
-tests expect the Emergent container layout (`/app/frontend/.env`) and do not run
-outside it.
+The backend tests expect the Emergent container layout (`/app/frontend/.env`) and
+do not run outside it.
 
 ## Verifying the volatility port
 
-The browser engine is checked against the Python model on identical bars:
+Browser stage 1 is checked against the Python model on identical bars, and the
+stage-1/stage-2 bridge is checked separately:
 
 ```bash
-node desk/tests/volmodel_parity.js
+node desk/tests/volmodel_parity.js    # needs python3 with pandas/sklearn/torch/arch
+node desk/tests/volmodel_stage2.js    # no extra dependencies
 ```
 
 ## Notes

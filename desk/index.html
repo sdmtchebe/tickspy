@@ -139,8 +139,10 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 </div></section>
 <section class="tab" id="t-vol"><div class="cols">
 <div class="panel"><h2>Volatility forecast <span class="tagline" id="vmeta"></span></h2>
-<div class="pbody"><div class="row"><button class="btn" id="vrun">Refresh forecast</button><label><input type="checkbox" id="vstrict"> Strict backtest (3-fold, slower)</label><span class="tagline" id="vstatus"></span></div></div>
-<div id="vout"><p class="x" style="padding:12px">Open this tab to run the two-stage forecast: Garman-Klass realized volatility with a HAR / GARCH(1,1) filter, then an LSTM residual correction. The first run trains the network and takes a few seconds.</p></div>
+<div class="pbody"><div class="row"><button class="btn" id="vrun">Refresh forecast</button><label><input type="checkbox" id="vstrict"> Strict backtest (3-fold, much slower)</label><button class="btn" id="vcancel" style="display:none">Cancel</button><span class="tagline" id="vstatus"></span></div></div>
+<div class="track" id="vpt" style="display:none"><i class="nu" id="vpb" style="width:0%"></i></div>
+<div class="pbody" style="padding-top:0;padding-bottom:0"><span class="tagline" id="vptx"></span></div>
+<div id="vout"><p class="x" style="padding:12px">Open this tab to run the two-stage forecast: Garman-Klass realized volatility with a HAR / GARCH(1,1) filter, then an LSTM residual correction. The network is trained in your browser on the loaded history, so the first run takes a minute or two and shows its progress. Nothing needs to be installed or running.</p></div>
 <div class="disc"><b>Estimates only, not advice.</b> These are statistical estimates from historical prices. They are not investment advice, not a recommendation to buy or sell, carry no guarantee, and can be wrong. The LSTM is only allowed to influence the forecast in proportion to the accuracy it actually demonstrated out of sample.</div></div>
 <div class="panel"><h2>Backtest <span class="tagline">chronological hold-out, no look-ahead</span></h2><div id="vbt" class="pbody"><p class="x">Metrics appear with the forecast.</p></div></div>
 <div class="panel"><h2>Realized vs predicted volatility</h2><div class="pbody"><canvas id="vch" style="width:100%;height:190px;display:block" aria-label="Realized versus predicted volatility"></canvas><p class="x">Out-of-sample test window. Grey is realized Garman-Klass volatility, amber is the stage-1 HAR forecast, green adds the LSTM residual correction. Values are percent per bar; lower means calmer.</p></div></div>
@@ -168,15 +170,12 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 </div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
-<p class="x">Keys stay in this browser only. Alpaca market-data access is enough. The optional text-summary provider below is used only for the factual news and calendar summaries. <span id="use" class="num"></span></p>
+<p class="x">Keys stay in this browser only. Alpaca market-data access is enough. A Gemini key is optional and is used only for the factual news and calendar summaries. <span id="use" class="num"></span></p>
 <div class="row"><input id="ak" placeholder="Alpaca key ID" style="width:100%" aria-label="Alpaca key ID"></div>
 <div class="row"><input id="as" type="password" placeholder="Alpaca secret" style="width:100%" aria-label="Alpaca secret"></div>
 <div class="row"><input id="gk" type="password" placeholder="Gemini API key (aistudio.google.com)" style="width:100%" aria-label="Gemini API key"></div>
 <div class="row"><select id="gm" aria-label="Gemini model"></select><button class="btn" id="gl">Load models</button></div>
-<div class="row"><label>Text-summary provider <select id="prov" aria-label="Text summary provider"><option value="gemini">Gemini</option><option value="local">Local model</option></select></label></div>
-<p class="x">Used only to summarise news headlines and economic-calendar events factually. It has no chat, sees no advice request, and never comments on the current symbol's outlook. Local mode talks to any OpenAI-compatible server on this machine (Ollama 11434, LM Studio 1234, llama.cpp 8080) through the built-in proxy.</p>
-<div class="row"><input id="lbase" placeholder="http://127.0.0.1:11434" style="width:100%" aria-label="Local model base URL"></div>
-<div class="row"><select id="lm" aria-label="Local model"></select><button class="btn" id="lml">Load local models</button></div>
+<p class="x">Used only to summarise news headlines and economic-calendar events factually. It has no chat, sees no advice request, and never comments on the current symbol's outlook.</p>
 <div class="row"><label>Daily summary request cap <input id="cap" type="number" value="400" style="width:80px"></label></div>
 <button class="btn" id="sv">Save and connect</button>
 <p class="x">Tip: pick a Flash-Lite model. They have the highest free daily allowance.</p>
@@ -194,14 +193,15 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 
 <script src="local-config.js"></script>
 <script src="volmodel.js"></script>
+<script src="volmodel2.js"></script>
 <script>
 const $=s=>document.querySelector(s),LS=localStorage,cfg=()=>JSON.parse(LS.cfg||'{}');
 if(window.DESK_KEYS){try{LS.cfg=JSON.stringify({...window.DESK_KEYS,...JSON.parse(LS.cfg||'{}')})}catch(e){}}
 /* Two ways to run. With the desk's own Python server present we route through
-   its /p, /vol and /lm endpoints, which also gives the full two-stage model.
+   its /p and /vol endpoints. The /vol path is the reference two-stage model;
    Without one (a static host such as GitHub Pages) the page talks straight to
-   Alpaca and Gemini - their APIs answer CORS - and the volatility tab uses the
-   in-browser stage-1 engine. DESK_API is null in that direct case.
+   Alpaca and Gemini - their APIs answer CORS -   and the volatility tab uses the
+   in-browser volatility engine. DESK_API is null in that direct case.
 
    Server mode is auto-detected when the page is served by the desk server
    (default port 8000), or forced by setting window.DESK_API_BASE in
@@ -217,7 +217,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Bullish':s<0?'Bearish':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
-function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news')news();if(k=='alert')alertRender();if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun();if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
+function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news')news();if(k=='alert')alertRender();if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -478,7 +478,14 @@ function volRender(j){const dcls=j.direction_signal=='bullish'?'up':j.direction_
   +rows.map(x=>`<div class="mrow"><span>${x[0]}</span><span class="num">${x[1]}</span></div>`).join('')
   +(j.warnings&&j.warnings.length?`<p class="x" style="padding:8px 12px 12px">Notes: ${j.warnings.map(esc).join(' ')}</p>`:'');
  volBt(j.backtest);drawVolChart(j.series)}
-let volBusy=false;
+let volBusy=false,volCancel=false;
+const vkey=()=>S.sym+'|'+S.tf+'|'+(($('#vstrict')&&$('#vstrict').checked)?'strict':'single');
+function fmtEta(ms){const s=Math.max(0,Math.round(ms/1000));return s<60?s+' s':Math.floor(s/60)+' min '+String(s%60).padStart(2,'0')+' s'}
+// Percentage bar plus a time-left estimate, driven by the trainer's callbacks.
+function vprog(pct,etaMs,text){const t=$('#vpt'),b=$('#vpb'),x=$('#vptx');if(!t)return;
+ if(pct==null){t.style.display='none';x.textContent='';return}
+ t.style.display='';b.style.width=Math.round(Math.max(0,Math.min(1,pct))*100)+'%';
+ x.textContent=(text||'')+(etaMs!=null?' · up to '+fmtEta(etaMs)+' left':'')}
 // The chart only loads 500 bars, which is far too little to fit or judge a
 // volatility model (~1 hour of test data). Pull a deep history with pagination
 // specifically for this tab.
@@ -487,26 +494,46 @@ async function volHistory(){if(!cfg().ak)throw Error('Add your Alpaca keys in Se
  const start=new Date(Date.now()-80*864e5).toISOString();let tok='',out=[];
  for(let p=0;p<4;p++){const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${start}&limit=10000&sort=asc&feed=iex&adjustment=raw${tok?'&page_token='+encodeURIComponent(tok):''}`);out=out.concat((j.bars||[]).map(x=>({t:x.t,o:x.o,h:x.h,l:x.l,c:x.c,v:x.v})));tok=j.next_page_token||'';if(!tok)break}
  return out.slice(-lim)}
-async function volRun(){if(volBusy)return;const st=$('#vstatus'),btn=$('#vrun');
+async function volRun(force){if(volBusy)return;
+ const st=$('#vstatus'),btn=$('#vrun'),cb=$('#vcancel'),key=vkey();
  const ppy={'1Min':390*252,'5Min':78*252,'15Min':26*252}[S.tf]||390*252,strict=!!$('#vstrict').checked;
- volBusy=true;btn.disabled=true;st.textContent='Fetching history...';const t0=performance.now();
+ // Re-opening the tab must not retrain the network; force only on Refresh.
+ if(!force&&S.vol&&S.volKey===key){st.textContent=(S.vol.cached?'cached model':'fitted')+' on '+(S.vol.bars||0).toLocaleString()+' bars';return}
+ volBusy=true;btn.disabled=true;volCancel=false;cb.style.display='';cb.disabled=false;
+ st.textContent='Fetching history...';vprog(0,null,'Fetching history...');const t0=performance.now();
  try{
   const bars=await volHistory();
   if(bars.length<120)throw Error('Only '+bars.length+' bars available for '+S.sym+' '+S.tf+'.');
   let j;
   if(DESK_API===null){
-   // Static host: the Python two-stage model cannot run, so use the browser
-   // stage-1 engine (Garman-Klass -> HAR walk-forward -> GARCH cross-check).
-   st.textContent='Fitting stage 1 on '+bars.length.toLocaleString()+' bars...';
-   j=window.DeskVol.run(bars,{symbol:S.sym,periodsPerYear:ppy});
+   // Static host: no Python, so train the stage-2 LSTM here in the browser.
+   // If TensorFlow.js cannot load, fall back to the stage-1 engine rather
+   // than losing the forecast entirely.
+   try{
+    if(!window.DeskVol2)throw Error('the stage-2 engine did not load');
+    st.textContent='Loading the model runtime...';vprog(0,null,'Loading the model runtime...');
+    j=await window.DeskVol2.run(bars,{symbol:S.sym,periodsPerYear:ppy,strict,isCancelled:()=>volCancel},info=>{
+     st.textContent=info.message||'Training...';
+     vprog(info.pct,info.etaMs,info.epoch?('epoch '+info.epoch+' / up to '+info.epochs+(info.folds>1?(' · fold '+info.fold+' / '+info.folds):'')+' · stops early when it stops improving'):info.message)});
+   }catch(e){
+    if(volCancel)throw e;
+    vprog(null,null,'');
+    st.textContent='Stage 2 unavailable ('+((e&&e.message)||e)+'); using the stage-1 engine...';
+    j=window.DeskVol.run(bars,{symbol:S.sym,periodsPerYear:ppy});
+   }
   }else{
    st.textContent='Fitting on '+bars.length.toLocaleString()+' bars (first run trains the LSTM)...';
    const r=await fetch(DESK_API+'/vol',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({symbol:S.sym,timeframe:S.tf,periods_per_year:ppy,strict,bars})});j=await r.json();if(j.error)throw Error(j.error);
   }
-  S.vol=j;volRender(j);
-  st.textContent=(j.cached?'cached model':'fitted')+' on '+j.bars.toLocaleString()+' bars · '+Math.round((performance.now()-t0)/1000)+' s'}catch(e){st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Forecast unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
- finally{volBusy=false;btn.disabled=false}}
-$('#vrun').onclick=()=>volRun();
+  if(volCancel){st.textContent='Cancelled.';return}
+  S.vol=j;S.volKey=key;volRender(j);
+  st.textContent=(j.cached?'cached model':'fitted')+' on '+j.bars.toLocaleString()+' bars · '+Math.round((performance.now()-t0)/1000)+' s'
+ }catch(e){
+  if(volCancel){st.textContent='Cancelled.';return}
+  st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Forecast unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
+ finally{volBusy=false;btn.disabled=false;cb.style.display='none';cb.disabled=false;vprog(null,null,'')}}
+$('#vrun').onclick=()=>volRun(true);
+$('#vcancel').onclick=()=>{volCancel=true;$('#vcancel').disabled=true};
 /* ---------- news ---------- */
 const relTime=iso=>{const t=new Date(iso).getTime();if(!isFinite(t))return '--';const s=Math.max(0,Math.round((Date.now()-t)/1000));
  if(s<45)return 'just now';if(s<3600)return Math.round(s/60)+'m ago';if(s<86400)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago'};
@@ -576,14 +603,8 @@ $('#cbtn').onclick=cai;
 /* ---------- Gemini ---------- */
 const pday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Los_Angeles'});let lastG=0;
 const used=()=>+(LS['g'+pday()]||0);
-const showUse=()=>{const c=cfg();$('#use').textContent=c.provider=='local'?`(local model: ${c.lm||'not set'})`:`(${used()}/${c.cap||400} requests today, model: ${c.gm||'none'})`};
-async function lmChat(messages){const c=cfg();if(!c.lm)throw Error('Choose a local model in Settings (Load local models).');const base=(c.lbase||'http://127.0.0.1:11434').replace(/\/$/,'');
- const r=await fetch(DESK_API+'/lm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({base,model:c.lm,messages})});const txt=await r.text();let j=null;try{j=JSON.parse(txt)}catch(_){}
- if(!r.ok||!j)throw Error('Local model error: '+((j&&j.error&&(j.error.message||j.error))||txt.slice(0,150)||r.status));
- const t=j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content;if(!t)throw Error('Local model returned no text.');return t}
+const showUse=()=>{const c=cfg();$('#use').textContent=`(${used()}/${c.cap||400} requests today, model: ${c.gm||'none'})`};
 async function gem(text,sys,hist=[]){const c=cfg();
- if(c.provider=='local'&&DESK_API===null)throw Error('Local models need the desk server. On the hosted build choose Gemini in Settings.');
- if(c.provider=='local'){const conv=h=>({role:h.role,content:h.content!=null?h.content:(h.parts||[]).map(p=>p.text).join('')});return lmChat([{role:'system',content:sys},...hist.map(conv),{role:'user',content:text}])}
  if(!c.gk||!c.gm)throw Error('Add your Gemini key and choose a model in Settings.');if(used()>=(c.cap||400))throw Error('Daily safety cap reached. Raise it in Settings or wait until midnight Pacific.');
  await new Promise(r=>setTimeout(r,Math.max(0,lastG+5000-Date.now())));lastG=Date.now();LS['g'+pday()]=used()+1;showUse();
  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${c.gm}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':c.gk},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[...hist,{role:'user',parts:[{text}]}]})});
@@ -612,13 +633,10 @@ function legalOpen(){$('#gate-body').innerHTML=legalBody(false);$('#gate').class
 $('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
-function fill(){const c=cfg();['ak','as','gk','cap','lbase'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]));if(!$('#lbase').value)$('#lbase').value='http://127.0.0.1:11434';if(c.prov)$('#prov').value=c.prov;if(c.gm)$('#gm').innerHTML=`<option>${c.gm}</option>`;if(c.lm)$('#lm').innerHTML=`<option>${esc(c.lm)}</option>`;
- if(DESK_API===null){const lo=document.querySelector('#prov option[value=local]');if(lo){lo.disabled=true;lo.textContent='Local model (needs the desk server)';}$('#prov').value='gemini';const vl=$('#vstrict');if(vl&&vl.closest('label'))vl.closest('label').style.display='none'}
- showUse()}
+function fill(){const c=cfg();['ak','as','gk','cap'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]));if(c.gm)$('#gm').innerHTML=`<option>${esc(c.gm)}</option>`;showUse()}
 $('#gl').onclick=async()=>{try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':$('#gk').value}});const j=await r.json();if(!r.ok)throw Error(j.error?.message);
  const m=j.models.filter(x=>x.supportedGenerationMethods?.includes('generateContent')&&/flash/.test(x.name)).map(x=>x.name.replace('models/','')).sort((a,b)=>(/lite/.test(b)-/lite/.test(a))||b.localeCompare(a));$('#gm').innerHTML=m.map(x=>`<option>${x}</option>`).join('')}catch(e){alert('Could not load models: '+e.message)}};
-$('#lml').onclick=async()=>{const base=($('#lbase').value||'http://127.0.0.1:11434').trim().replace(/\/$/,'');try{const r=await fetch(P(base+'/v1/models'));if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,120));const j=await r.json();const ids=(j.data||j.models||[]).map(m=>m.id||m.name).filter(Boolean);if(!ids.length)throw Error('No models reported.');$('#lm').innerHTML=ids.map(x=>`<option>${esc(x)}</option>`).join('')}catch(e){alert('Could not load local models: '+e.message+'\n\nIs your local model server running at '+base+'?')}};
-$('#sv').onclick=()=>{LS.cfg=JSON.stringify({ak:$('#ak').value.trim(),as:$('#as').value.trim(),gk:$('#gk').value.trim(),gm:$('#gm').value,cap:+$('#cap').value||400,prov:$('#prov').value,lbase:$('#lbase').value.trim(),lm:$('#lm').value});showUse();go('live');load()};
+$('#sv').onclick=()=>{LS.cfg=JSON.stringify({ak:$('#ak').value.trim(),as:$('#as').value.trim(),gk:$('#gk').value.trim(),gm:$('#gm').value,cap:+$('#cap').value||400});showUse();go('live');load()};
 $('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
 $('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#jadd').onclick=journalAdd;$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};

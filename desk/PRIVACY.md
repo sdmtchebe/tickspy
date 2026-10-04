@@ -44,8 +44,6 @@ relevant feature**:
 - **Google Gemini** (`generativelanguage.googleapis.com`) — only for the optional
   factual news and calendar summaries, authenticated with the key you supply and
   sent only the public headline or event text being summarised.
-- **A local model server** (e.g. `127.0.0.1:11434`) — only if you select the local
-  provider. It runs on your own machine.
 - **FairEconomy calendar feed** — the public economic calendar, no credentials.
 
 Each of those providers has its own privacy policy, and your use of them is
@@ -54,10 +52,13 @@ responsibility for, how they handle data.
 
 ## The bundled local server
 
-If you run `server.py`, it listens only on `127.0.0.1` (your own machine), holds
-no database, writes no log files of your activity, and forgets everything when
-you stop it. It exists solely to forward requests from your browser to the
-providers, because browsers cannot call those APIs directly.
+`server.py` is **optional**. The dashboard works fully without it: the browser
+calls Alpaca and Gemini directly and runs its own volatility model, so nothing
+has to be running on your machine. If you do run `server.py`, it listens only on
+`127.0.0.1` (your own machine), holds no database, writes no log files of your
+activity, and forgets everything when you stop it. It exists only to proxy the
+one feed that cannot be called from a browser (the economic calendar, which
+sends no CORS headers) on your own machine.
 
 **Do not expose it to the internet.** It is not designed, hardened or licensed
 for public use, and doing so would redistribute third-party market data.

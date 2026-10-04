@@ -11,12 +11,11 @@
  *   - the same chronological hold-out backtest, regimes, uncertainty band,
  *     reliability gating and chart series
  *
- * What is NOT ported: the stage-2 LSTM (2x64 PyTorch network). Training it in
- * the browser is not viable and its weights are not shipped. With no stage 2
- * the residual correction is exactly zero, the forecast is stage 1, and the
- * directional read is reported as unavailable rather than invented. When the
- * local Python server is running, the desk uses that instead and gets the full
- * two-stage model.
+ * Stage 2 (the 2x64 LSTM) is not built here: it is trained in the browser by
+ * volmodel2.js, which calls buildStage1() below for the features and then hands
+ * its out-of-sample output to finish(). With no stage 2 the residual correction
+ * is exactly zero and the directional read is reported as unavailable rather
+ * than invented.
  *
  * Output keys match the server payload so the existing renderer works unchanged.
  *
@@ -34,6 +33,7 @@
   var TEST_FRAC = 0.2;
   var VOL_WIN = 20;
   var MODEL = "HAR(1,5,22) + GARCH(1,1) (browser stage 1)";
+  var MODEL2 = "HAR(1,5,22) + GARCH(1,1) -> LSTM(64x2) (browser)";
 
   // ---------------------------------------------------------------- helpers --
   function isFiniteNum(x) {
@@ -439,7 +439,10 @@
   }
 
   // ------------------------------------------------------------------ engine --
-  function run(bars, opts) {
+  // Stage 1: everything up to, but not including, the forecast and the
+  // backtest. Exposed so volmodel2.js can train an LSTM on the same features
+  // and then hand its out-of-sample output back to `finish`.
+  function buildStage1(bars, opts) {
     opts = opts || {};
     var symbol = String(opts.symbol || "SPY").toUpperCase();
     var ppy = opts.periodsPerYear || null;
@@ -518,6 +521,13 @@
       dirThr = Math.max(DIR_THRESHOLD, quantile(head, DIR_NEUTRAL_Q));
     }
 
+    // 0 = bearish, 1 = neutral, 2 = bullish, the same labelling the Python
+    // model uses. Stage 2 trains its direction head on these.
+    var dirs = new Array(n);
+    for (i = 0; i < n; i++) {
+      dirs[i] = isFiniteNum(r[i]) ? (r[i] > dirThr ? 2 : r[i] < -dirThr ? 0 : 1) : NaN;
+    }
+
     var feats = new Array(n);
     for (i = 0; i < n; i++) feats[i] = [resid[i], atrPct[i], r[i], relVol[i], volZ[i]];
 
@@ -547,7 +557,83 @@
     var garch = garchNext(r);
     if (!isFiniteNum(garch)) warnings.push("GARCH(1,1) did not converge; using HAR only.");
 
-    // ---- backtest: stage-1 only, so the residual correction is exactly 0 ----
+    // Everything stage 2 needs (features, residuals, labels, positions) plus
+    // everything `finish` needs. Splitting here is what lets volmodel2.js train
+    // an LSTM on these exact features and then be scored through this module's
+    // backtest, so a browser stage-2 cannot quietly disagree with stage 1.
+    return {
+      symbol: symbol,
+      ppy: ppy,
+      warnings: warnings,
+      n: n,
+      ts: ts,
+      haveTs: haveTs,
+      boundary: boundary,
+      rv: rv,
+      lin: lin,
+      resid: resid,
+      dirs: dirs,
+      dirThr: dirThr,
+      feats: feats,
+      positions: positions,
+      splitPos: splitPos,
+      testPos: testPos,
+      linNext: linNext,
+      garch: garch,
+    };
+  }
+
+  // ---------------------------------------------------------- stage-2 bridge --
+  // `s2` is null for a stage-1-only fit, or the object volmodel2.js produces:
+  //   { resByPos, dirByPos, residual, rawResidual, stage2Weight, direction,
+  //     confidence, folds, strict }
+  // resByPos / dirByPos map a bar index -> the LSTM's out-of-sample residual and
+  // direction call, so the backtest and the chart can include stage 2.
+  function finish(st, s2) {
+    var warnings = st.warnings;
+    var n = st.n;
+    var ts = st.ts;
+    var haveTs = st.haveTs;
+    var boundary = st.boundary;
+    var rv = st.rv;
+    var lin = st.lin;
+    var dirs = st.dirs;
+    var testPos = st.testPos;
+    var linNext = st.linNext;
+    var garch = st.garch;
+    var dirThr = st.dirThr;
+    var ppy = st.ppy;
+    var symbol = st.symbol;
+    var i;
+
+    var resByPos = null;
+    var dirByPos = null;
+    var residual = 0;
+    var rawResidual = 0;
+    var stage2Weight = 0;
+    var direction = "neutral";
+    var confidence = null;
+    var folds = 1;
+    var strict = false;
+
+    if (s2) {
+      resByPos = s2.resByPos || null;
+      dirByPos = s2.dirByPos || null;
+      residual = s2.residual || 0;
+      rawResidual = s2.rawResidual || 0;
+      stage2Weight = s2.stage2Weight || 0;
+      direction = s2.direction || "neutral";
+      confidence = s2.confidence == null ? null : s2.confidence;
+      folds = s2.folds || 1;
+      strict = !!s2.strict;
+    } else {
+      warnings.push(
+        "Stage 2 (LSTM) did not run, so this is a stage-1 forecast and the " +
+          "directional read is unavailable."
+      );
+    }
+
+    // ---- backtest: stage 1, plus the LSTM residual when stage 2 ran ----
     var backtest = null;
     var series = { labels: [], realized: [], linear: [], combined: [] };
     if (testPos.length) {
@@ -560,7 +646,9 @@
       var persist = testPos.map(function (p) {
         return rv[p - 1];
       });
-      var predT = linT.slice();
+      var predT = testPos.map(function (p) {
+        return lin[p] + (resByPos ? resByPos[p] || 0 : 0);
+      });
 
       function rmse(a) {
         var s = 0,
@@ -591,6 +679,61 @@
       var vt = nanvar(rvT);
       var r2 = vt > 0 ? 1 - nanvar(predT.map(function (x, k) { return x - rvT[k]; })) / vt : NaN;
 
+      // Direction metrics exist only when stage 2 ran: stage 1 makes no
+      // directional call, so they stay null rather than being invented.
+      var dirAcc = null,
+        dirBase = null,
+        balAcc = null,
+        nnAcc = null,
+        predDist = null,
+        trueDist = null;
+      if (dirByPos) {
+        var trueDir = testPos.map(function (p) { return dirs[p]; });
+        var predDir = testPos.map(function (p) { return dirByPos[p]; });
+        var hit = 0,
+          cnt = 0,
+          neut = 0,
+          nnT = 0,
+          nnC = 0,
+          k2;
+        var pd = [0, 0, 0],
+          td = [0, 0, 0];
+        for (k2 = 0; k2 < trueDir.length; k2++) {
+          if (!isFiniteNum(trueDir[k2]) || !isFiniteNum(predDir[k2])) continue;
+          cnt++;
+          if (predDir[k2] === trueDir[k2]) hit++;
+          if (trueDir[k2] === 1) neut++;
+          if (trueDir[k2] !== 1) {
+            nnT++;
+            if (predDir[k2] === trueDir[k2]) nnC++;
+          }
+          pd[predDir[k2]]++;
+          td[trueDir[k2]]++;
+        }
+        dirAcc = cnt ? hit / cnt : NaN;
+        dirBase = cnt ? neut / cnt : NaN;
+        nnAcc = nnT ? nnC / nnT : NaN;
+        predDist = pd.map(function (v) { return cnt ? v / cnt : NaN; });
+        trueDist = td.map(function (v) { return cnt ? v / cnt : NaN; });
+        // Balanced (per-class) accuracy: the honest direction score.
+        var recalls = [];
+        for (var c0 = 0; c0 < 3; c0++) {
+          var tot = 0,
+            corr = 0;
+          for (k2 = 0; k2 < trueDir.length; k2++) {
+            if (!isFiniteNum(trueDir[k2]) || !isFiniteNum(predDir[k2])) continue;
+            if (trueDir[k2] === c0) {
+              tot++;
+              if (predDir[k2] === c0) corr++;
+            }
+          }
+          if (tot) recalls.push(corr / tot);
+        }
+        balAcc = recalls.length
+          ? recalls.reduce(function (a, b) { return a + b; }, 0) / recalls.length
+          : NaN;
+      }
+
       backtest = {
         samples: testPos.length,
         vol_mae_linear: mae(linT),
@@ -598,18 +741,19 @@
         vol_mae_combined: mae(predT),
         vol_rmse_combined: rmseComb,
         vol_rmse_persistence: rmsePersist,
-        direction_accuracy: null,
-        direction_baseline: null,
-        direction_balanced_accuracy: null,
-        direction_nonneutral_accuracy: null,
-        direction_pred_dist: null,
-        direction_true_dist: null,
+        direction_accuracy: dirAcc,
+        direction_baseline: dirBase,
+        direction_balanced_accuracy: balAcc,
+        direction_nonneutral_accuracy: nnAcc,
+        direction_pred_dist: predDist,
+        direction_true_dist: trueDist,
         direction_threshold_pct: dirThr,
-        combined_vs_linear_pct: 0,
+        combined_vs_linear_pct:
+          isFiniteNum(rmseLin) && rmseLin > 0 ? 100 * (1 - rmseComb / rmseLin) : NaN,
         combined_vs_persistence_pct:
           isFiniteNum(rmsePersist) && rmsePersist > 0 ? 100 * (1 - rmseComb / rmsePersist) : NaN,
         r2_combined: r2,
-        folds: 1,
+        folds: folds,
       };
 
       var tail = testPos.slice().sort(function (a, b) { return a - b; }).slice(-160);
@@ -619,22 +763,27 @@
         }),
         realized: tail.map(function (p) { return round(rv[p], 5); }),
         linear: tail.map(function (p) { return round(lin[p], 5); }),
-        combined: tail.map(function (p) { return round(lin[p], 5); }),
+        combined: tail.map(function (p) {
+          return round(lin[p] + (resByPos ? resByPos[p] || 0 : 0), 5);
+        }),
       };
     } else {
       warnings.push("Not enough clean out-of-sample bars for a backtest.");
     }
 
-    warnings.push(
-      "Stage 2 (LSTM) runs only with the local server, so the forecast is stage 1 only " +
-        "and the directional read is unavailable."
-    );
-
-    var pred = Math.max(0, linNext);
+    var pred = Math.max(0, linNext + residual);
     var cur = rv[n - 1];
     var pct = mean(rv.map(function (x) { return x <= pred ? 1 : 0; }));
     var band = backtest && isFiniteNum(backtest.vol_rmse_combined) ? backtest.vol_rmse_combined : 0;
     var reg = regime(pred, cur, rv);
+
+    // The direction edge is reported from what stage 2 actually earned out of
+    // sample, never assumed.
+    var directionEdge = "unknown";
+    var ba = backtest ? backtest.direction_balanced_accuracy : null;
+    if (ba != null && isFiniteNum(ba)) {
+      directionEdge = ba >= 0.45 ? "usable" : ba >= 0.38 ? "weak" : "none";
+    }
 
     var improve = backtest ? backtest.combined_vs_persistence_pct : NaN;
     var reliable = isFiniteNum(improve) && improve > 5 && backtest.samples >= 200;
@@ -669,19 +818,19 @@
     return {
       symbol: symbol,
       bars: n,
-      model: MODEL,
+      model: s2 ? MODEL2 : MODEL,
       cached: false,
-      engine: "browser-js",
+      engine: s2 ? "browser-js-tfjs" : "browser-js",
       predicted_volatility: round(pred, 5),
       linear_volatility: round(linNext, 5),
-      residual_correction: 0,
+      residual_correction: round(residual, 6),
       garch_volatility: isFiniteNum(garch) ? round(garch, 5) : null,
       current_volatility: round(cur, 5),
       vol_percentile: round(pct, 4),
-      direction_signal: "neutral",
-      direction_confidence: null,
-      stage2_weight: 0,
-      lstm_raw_residual: 0,
+      direction_signal: direction,
+      direction_confidence: confidence == null ? null : round(confidence, 4),
+      stage2_weight: round(stage2Weight, 4),
+      lstm_raw_residual: round(rawResidual, 6),
       vol_low: round(Math.max(0, pred - band), 5),
       vol_high: round(pred + band, 5),
       regime: reg[0],
@@ -692,10 +841,15 @@
       series: series,
       data_quality: { bars: n, sessions: sessions, duplicate_timestamps: 0, stale: stale, last_gap_seconds: lastGap },
       warnings: warnings,
-      direction_edge: "unknown",
+      direction_edge: directionEdge,
       reliable: reliable,
-      strict: false,
+      strict: strict,
     };
+  }
+
+  // Stage-1-only fit: the public entry point the page and the parity harness use.
+  function run(bars, opts) {
+    return finish(buildStage1(bars, opts), null);
   }
 
   function regime(pred, cur, rv) {
@@ -748,7 +902,19 @@
     return isFiniteNum(x) ? x.toFixed(0) : "--";
   }
 
-  var api = { run: run, _internal: { garmanKlass: garmanKlass, harWalkForward: harWalkForward, garchNext: garchNext } };
+  var api = {
+    run: run,
+    buildStage1: buildStage1,
+    finish: finish,
+    // Stage-2 constants, exported so volmodel2.js and the tests share one source.
+    config: {
+      lookback: LOOKBACK,
+      testFrac: TEST_FRAC,
+      dirNeutralQ: DIR_NEUTRAL_Q,
+      dirThreshold: DIR_THRESHOLD,
+    },
+    _internal: { garmanKlass: garmanKlass, harWalkForward: harWalkForward, garchNext: garchNext },
+  };
   root.DeskVol = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -33,6 +33,13 @@
         Learn how to configure a non-root public URL by running `npm run build`.
         -->
         <title>TickSPY | Free Day Trading Desk</title>
+        <!--
+        Contact and feedback forms post to this address through formsubmit.co, so
+        no server is needed. Set it here, or build with REACT_APP_SUPPORT_EMAIL
+        (the Pages workflow reads a repo variable named SUPPORT_EMAIL). Left
+        empty, the forms say messaging is not configured rather than failing.
+        -->
+        <script>window.DESK_SUPPORT_EMAIL = "";</script>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
     </head>

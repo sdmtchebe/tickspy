@@ -51,10 +51,11 @@ jobs:
       - name: Build landing page (bundles the desk at /desk/)
         working-directory: frontend
         env:
-          # Optional: set a repository variable of this name to enable the
-          # contact and feedback forms. Left unset, the forms say they are not
-          # configured instead of failing.
-          REACT_APP_BACKEND_URL: ${{ vars.REACT_APP_BACKEND_URL }}
+          # Optional: set a repository variable of this name (a support email
+          # address) to enable the contact and feedback forms. The forms post
+          # straight to that inbox through formsubmit.co, with no server. Left
+          # unset, they say they are not configured instead of failing.
+          REACT_APP_SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
         run: npm run build
 
       - name: Add the same-origin economic calendar
@@ -82,6 +83,7 @@ jobs:
           test -f frontend/build/index.html || { echo "::error::no landing page"; exit 1; }
           test -f frontend/build/desk/index.html || { echo "::error::desk missing"; exit 1; }
           test -f frontend/build/desk/volmodel.js || { echo "::error::desk engine missing"; exit 1; }
+          test -f frontend/build/desk/volmodel2.js || { echo "::error::desk stage-2 engine missing"; exit 1; }
           # Never publish secrets.
           if [ -e frontend/build/desk/local-config.js ]; then
             echo "::error::local-config.js must not be published"; exit 1

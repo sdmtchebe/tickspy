@@ -56,7 +56,7 @@ class H(http.server.SimpleHTTPRequestHandler):
     def _cors(s):
         # The desk page is also bundled into the marketing site, whose origin is
         # different from this server, so the local API endpoints must be callable
-        # cross-origin. Only the /p, /vol and /lm handlers apply this.
+        # cross-origin. Only the /p and /vol handlers apply this.
         s.send_header("Access-Control-Allow-Origin", "*")
         s.send_header("Access-Control-Allow-Headers", "*")
         s.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -131,28 +131,7 @@ class H(http.server.SimpleHTTPRequestHandler):
             s.send_response(200); s.send_header("Content-Type", "application/json")
             s.send_header("Cache-Control", "no-store"); s._cors(); s.end_headers(); s.wfile.write(out)
             return
-        # Chat with a local OpenAI-compatible model server (Ollama, LM Studio, llama.cpp).
-        if s.path.startswith("/lm"):
-            n = int(s.headers.get("Content-Length") or 0)
-            try:
-                payload = json.loads(s.rfile.read(n) or b"{}")
-            except Exception:
-                payload = {}
-            base = str(payload.get("base") or "http://127.0.0.1:11434").rstrip("/")
-            if urllib.parse.urlparse(base).hostname not in LOCAL:
-                s.send_error(403); return
-            body = json.dumps({"model": payload.get("model") or "", "messages": payload.get("messages") or [], "stream": False}).encode()
-            hd = {"Content-Type": "application/json", "Authorization": "Bearer local"}
-            try:
-                r = _open(base + "/v1/chat/completions", hd, data=body, timeout=300)
-                code, out = r.status, r.read()
-            except urllib.error.HTTPError as e:
-                code, out = e.code, e.read()
-            except Exception as e:
-                code, out = 502, json.dumps({"error": str(e)}).encode()
-            s.send_response(code); s.send_header("Content-Type", "application/json"); s._cors(); s.end_headers(); s.wfile.write(out)
-        else:
-            s.send_error(404)
+        s.send_error(404)
 
 NOTICE = (
     "\n"

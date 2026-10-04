@@ -10,10 +10,12 @@ Files:
 | File | Purpose |
 |---|---|
 | `index.html` | The whole UI (single page, no build step) |
-| `volmodel.js` | Browser stage-1 volatility engine, used when there is no server |
-| `server.py` | Optional local server: API proxy, `/vol` model, `/lm` local models |
-| `volatility_predictor.py` | The full two-stage model (HAR + GARCH -> LSTM) |
-| `tests/volmodel_parity.js` | Checks the browser engine against the Python model |
+| `volmodel.js` | Browser stage 1: Garman-Klass -> HAR walk-forward -> GARCH(1,1) |
+| `volmodel2.js` | Browser stage 2: the 2x64 LSTM, trained in the browser with TensorFlow.js |
+| `server.py` | Optional local server: API proxy and the `/vol` endpoint |
+| `volatility_predictor.py` | The reference two-stage model in Python (HAR + GARCH -> LSTM) |
+| `tests/volmodel_parity.js` | Checks browser stage 1 against the Python stage 1 |
+| `tests/volmodel_stage2.js` | Checks the stage-1/stage-2 bridge in `volmodel.js` (no TensorFlow.js needed) |
 
 ## Two ways to run
 
@@ -25,24 +27,28 @@ into the marketing site.
 
 - Alpaca REST, the live WebSocket, and Gemini are called straight from the
   browser; Alpaca's API answers CORS, so no proxy is needed.
-- The Volatility tab uses the **in-browser stage-1 engine**: Garman-Klass
-  realized volatility -> HAR(1,5,22) expanding walk-forward -> GARCH(1,1)
-  cross-check, with the same hold-out backtest and reliability gating.
-- The stage-2 LSTM and local-model provider are unavailable (both need Python),
-  and the page says so instead of faking a value.
-- The economic calendar comes from a host that sends no CORS headers, so it
-  reports itself as unavailable in this mode.
+- The Volatility tab runs the **full two-stage model entirely in the browser**.
+  Stage 1 is Garman-Klass realized volatility -> HAR(1,5,22) expanding
+  walk-forward -> GARCH(1,1) cross-check. Stage 2 is the 2x64 LSTM, trained from
+  scratch in the page with TensorFlow.js (loaded lazily) and shown with a
+  progress percentage and a time-left estimate. It can be cancelled. There are
+  no pre-trained weights to ship and nothing to install.
+- If TensorFlow.js cannot load, the tab falls back to the stage-1 engine and
+  says so rather than failing.
+- The economic calendar is baked into the site by the Pages workflow, because
+  its upstream host sends no CORS headers.
 
-**2. Local server** — full two-stage model.
+**2. Local server** — the same two stages, but computed in Python.
 
 ```bash
 python3 server.py            # http://localhost:8000
 ```
 
 Serving the page from `server.py` is what selects this mode (port 8000 by
-default). You then get the `/p` proxy, the PyTorch LSTM stage, and local model
-support. Set `window.DESK_API_BASE` in `local-config.js` to force it elsewhere:
-`''` for a same-origin server, or a full URL.
+default). You then get the `/p` proxy and the Python `/vol` model, which is
+faster on a long history and lets the result be cached. Set
+`window.DESK_API_BASE` in `local-config.js` to force it elsewhere: `''` for a
+same-origin server, or a full URL.
 
 ## Live news and the economic calendar
 
@@ -67,10 +73,12 @@ commit it.
 
 ## Volatility engine parity
 
-The browser port is checked against the Python model on identical bars:
+The browser stage 1 is checked against the Python stage 1 on identical bars, and
+the stage-1/stage-2 bridge is checked on its own:
 
 ```bash
 node tests/volmodel_parity.js          # needs python3 with pandas/sklearn/torch/arch
+node tests/volmodel_stage2.js          # no extra dependencies
 ```
 
 HAR, RMSE, the out-of-sample window and the neutral band reproduce the Python
@@ -78,6 +86,12 @@ model to machine precision. GARCH is an independently-converged MLE — arch's
 SLSQP and its variance backcast cannot be ported exactly — so that one field is
 compared with a documented tolerance. The Python-side numbers come from
 `tests/volmodel_parity.py`.
+
+Stage 2 is a fresh training run in the browser rather than a port of the Python
+weights, so it is not bit-comparable to PyTorch. What *is* pinned is the
+contract: `volmodel.js` splits into `buildStage1()` and `finish()`, stage 2
+supplies only its out-of-sample output, and the backtest, chart series and
+direction metrics are computed by the same code either way.
 
 ## Market data
 

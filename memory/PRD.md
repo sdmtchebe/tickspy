@@ -52,6 +52,13 @@ frontend/  src/App.js (Lenis + sections)
   - News is now **live**: the desk subscribes to Alpaca's news websocket (`v1beta1/news`) and prepends headlines as they are published, with a `NEW` tag, relative ages and a feed status line. REST is only used to backfill.
   - Economic calendar is served same-origin as `calendar.json`, fetched and refreshed by the Pages workflow on a six-hour schedule (the upstream sends no CORS headers). Display regrouped by day with day headers, a next-release countdown, impact badges, released/past dimming, and a "high impact only" filter.
 
+- 2026-10 (session 6):
+  - Stage 2 is now in the browser too. `desk/volmodel.js` was split into `buildStage1()` + `finish()`, and new `desk/volmodel2.js` trains the 2x64 LSTM with TensorFlow.js (loaded lazily from jsDelivr) on the stage-1 features, then hands its out-of-sample residual back to `finish()`. The Volatility tab shows a progress percentage and a time-left estimate, can be cancelled, and falls back to stage 1 if TensorFlow.js will not load. Measured in a real browser: ~50 s for 400 bars, model, gating and direction metrics all produced.
+  - The local-model provider was removed entirely (Settings markup, `lmChat()`, the `gem()` branch and the `/lm` handler in `desk/server.py`); summaries are Gemini-only.
+  - Contact and feedback forms no longer need a server. They POST to a configurable support inbox through `formsubmit.co` (`REACT_APP_SUPPORT_EMAIL`, repo variable `SUPPORT_EMAIL`, or `window.DESK_SUPPORT_EMAIL`). CORS preflight verified against the live endpoint. `axios` and the stale `REACT_APP_BACKEND_URL` were dropped from the bundle.
+  - `desk/tests/volmodel_stage2.js` guards the stage-1/stage-2 bridge (29 checks, no extra dependencies).
+  - Bug found by a real-browser test: `<select id="tf">` makes `window.tf` the dropdown, so the TensorFlow.js loader would never load the library. `loadTf()` now checks for the actual API (`tensor` + `sequential`).
+
 ## Backlog
-- P1: Optional screenshot upload on feedback form (object storage).
+- P0: Set the support email (`SUPPORT_EMAIL` repo variable) to enable the contact and feedback forms, then confirm the address with FormSubmit.
 - P2: OG image asset; favicon refresh to TickSPY mark.

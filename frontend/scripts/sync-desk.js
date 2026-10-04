@@ -14,7 +14,7 @@ const SRC_DIR = path.join(__dirname, "..", "..", "desk");
 const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // Only the static assets the page actually loads. Secrets (local-config.js) are
 // deliberately never copied.
-const FILES = ["index.html", "volmodel.js"];
+const FILES = ["index.html", "volmodel.js", "volmodel2.js"];
 
 function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
