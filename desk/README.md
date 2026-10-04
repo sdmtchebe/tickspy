@@ -83,9 +83,16 @@ stored in the browser's local storage only and sent only to the providers you
 choose. `local-config.js` can hold local defaults and is git-ignored — never
 commit it.
 
-New here? The Settings tab has a collapsible **"How to get your free Alpaca
-keys"** guide (five steps, plus why each one is needed), and the published site
-has an illustrated version at `/#setup` with a mock of every screen.
+New here? There are three ways into the same guide, so it is hard to miss:
+
+- a **first-run wizard** inside the desk. When no keys are saved (and the legal
+  notice has been accepted) a five-step, plain-English walkthrough opens by
+  itself, with a "Why" under every step and the two key boxes right in the last
+  step. Skipping or saving is remembered, and **Show me how, step by step** in
+  Settings reopens it whenever you like;
+- a collapsible
+  **"How to get your free Alpaca keys"** summary in the Settings tab; and
+- the illustrated site version at `/#setup`, with a mock of every screen.
 
 ## Volatility engine parity
 

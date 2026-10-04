@@ -176,6 +176,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 </div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
+<div class="row"><button class="btn" id="wizbtn" type="button">Show me how, step by step</button><span class="muted" style="font-size:12px">Get your free Alpaca keys in about two minutes.</span></div>
 <p class="x">Keys stay in this browser only. Alpaca market-data access is enough. A Gemini key is optional and is used only for the factual news and calendar summaries. <span id="use" class="num"></span></p>
 <details id="setuphelp" style="margin:4px 0 10px;border:1px solid var(--gb);border-radius:10px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px">New here? How to get your free Alpaca keys</summary>
 <div style="padding:0 12px 10px"><ol style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.6">
@@ -204,6 +205,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 </div>
 <div id="legal-bar" role="contentinfo"></div>
 <div id="gate" class="gate" role="dialog" aria-modal="true" aria-labelledby="gate-t"><div class="gate-card" id="gate-body"></div></div>
+<div id="wiz" class="gate" role="dialog" aria-modal="true" aria-labelledby="wiz-t"><div class="gate-card" id="wiz-body"></div></div>
 
 <script src="local-config.js"></script>
 <script src="edge-config.js"></script>
@@ -727,8 +729,44 @@ const LEGAL={title:'Important - please read before using this dashboard',
  ]};
 function legalBody(withAccept){return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+LEGAL.points.map(p=>`<p class="x"><b>${esc(p[0])}.</b> ${esc(p[1])}</p>`).join('')+`<div class="legal-actions">${withAccept?'<button class="btn" id="gate-ok" type="button">I understand and accept</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline':'Close'}</button></div>`}
 function closeGate(){$('#gate').classList.remove('on')}
-function gateShow(){$('#gate-body').innerHTML=legalBody(true);$('#gate').classList.add('on');$('#gate-ok').onclick=()=>{LS.legal=String(Date.now());closeGate()};$('#gate-close').onclick=closeGate}
+function gateShow(){$('#gate-body').innerHTML=legalBody(true);$('#gate').classList.add('on');$('#gate-ok').onclick=()=>{LS.legal=String(Date.now());closeGate();wizMaybe()};$('#gate-close').onclick=closeGate}
 function legalOpen(){$('#gate-body').innerHTML=legalBody(false);$('#gate').classList.add('on');$('#gate-close').onclick=closeGate}
+/* ---------- first-run setup wizard ----------
+   Five plain-English steps that walk a first-time visitor through getting free
+   Alpaca keys. It opens by itself when the desk has no keys yet, and the
+   Settings tab can reopen it at any time. Every step says why it is needed. */
+const WIZ=[
+ {t:'Make a free Alpaca account',
+  b:'Alpaca is the free service that supplies the live prices TickSPY shows. Open <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>, click <b>Sign up</b> in the top-right corner, then enter your email and choose a password.',
+  w:'This account is what lets Alpaca give you your own personal key. No account means no key, and no key means no prices.'},
+ {t:'Stay on the Paper account',
+  b:'Alpaca has two modes: <b>Paper</b> and <b>Live</b>. Near the top of the dashboard, make sure <b>Paper</b> is selected. Paper uses pretend money. If anything asks for your ID or bank details you are on the wrong mode, so switch back to Paper.',
+  w:'Paper mode gives you the same live market data TickSPY needs, with nothing that involves real money.'},
+ {t:'Open the API Keys page',
+  b:'In the menu on the left, click <b>API Keys</b>. If you cannot see it, click the search box and type the word <b>API</b>.',
+  w:'Alpaca keeps keys together on one page, which makes them easy to find and easy to switch off later.'},
+ {t:'Generate a key and copy both parts',
+  b:'Click <b>Generate New Key</b>. You will be shown a <b>Key ID</b> and a <b>Secret Key</b>. Copy each one, or press the copy button beside it, and keep this tab open.',
+  w:'The Key ID is like a username and the Secret Key is like a password. Alpaca shows the Secret only once, so copy it now.'},
+ {t:'Paste your keys here',
+  b:'Paste the Key ID and the Secret Key into the two boxes below, then press Save. Live prices start loading straight away.',
+  w:'Your keys are stored in this browser only, are sent only to Alpaca, and never reach us.'}
+];
+let wizI=0;
+function wizOpen(i){wizI=Math.max(0,Math.min(WIZ.length-1,i||0));wizRender();$('#wiz').classList.add('on')}
+function wizRender(){const s=WIZ[wizI],last=wizI===WIZ.length-1,c=cfg();
+ const dots=WIZ.map((_,i)=>`<span style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;background:${i<=wizI?'var(--accent)':'var(--gb)'}"></span>`).join('');
+ const fields=last?`<div class="row" style="margin-top:10px"><input id="wak" placeholder="Alpaca key ID" style="width:100%" value="${esc(c.ak||'')}" aria-label="Alpaca key ID"></div><div class="row"><input id="was" type="password" placeholder="Alpaca secret key" style="width:100%" value="${esc(c.as||'')}" aria-label="Alpaca secret key"></div>`:'';
+ $('#wiz-body').innerHTML=`<h2 id="wiz-t">${esc(s.t)}</h2><div style="font-size:13px;line-height:1.7">${s.b}</div><p class="x" style="margin-top:8px;border-left:2px solid var(--accent);padding-left:8px"><b>Why:</b> ${s.w}</p>${fields}<div class="row" style="margin-top:14px;align-items:center;justify-content:space-between"><span>${dots}</span><span><button class="btn" id="wiz-back" type="button">Back</button> <button class="btn" id="wiz-skip" type="button">${last?'Close':'Skip'}</button> <button class="btn" id="wiz-next" type="button">${last?'Save and connect':'Next'}</button></span></div>`;
+ if(wizI===0)$('#wiz-back').style.display='none';
+ $('#wiz-back').onclick=()=>wizOpen(wizI-1);
+ $('#wiz-next').onclick=()=>{if(!last)return wizOpen(wizI+1);
+  const ak=$('#wak').value.trim(),as=$('#was').value.trim();
+  if(!ak||!as){toast('Please paste both the Key ID and the Secret Key.');return}
+  LS.cfg=JSON.stringify(Object.assign(cfg(),{ak,as}));LS.wiz='done';$('#wiz').classList.remove('on');fill();go('live');load()};
+ $('#wiz-skip').onclick=()=>{LS.wiz='skipped';$('#wiz').classList.remove('on')}}
+function wizMaybe(){if(!cfg().ak&&LS.wiz!=='done'&&LS.wiz!=='skipped')setTimeout(()=>wizOpen(0),400)}
+$('#wizbtn').onclick=()=>wizOpen(0);
 $('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
@@ -741,5 +779,5 @@ $('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#jadd').onclick=journa
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
 addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});setInterval(news,12e4);setInterval(newsRender,3e4);setInterval(sessRender,1000);setInterval(calAlertTick,10000);sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
-$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();alertRender();journalRender();wlRender();fill();calARender();if(!LS.legal)gateShow();go('live');load();
+$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();alertRender();journalRender();wlRender();fill();calARender();if(!LS.legal)gateShow();else wizMaybe();go('live');load();
 </script></body></html>
