@@ -180,10 +180,10 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <p class="x">Keys stay in this browser only. Alpaca market-data access is enough. A Gemini key is optional and is used only for the factual news and calendar summaries. <span id="use" class="num"></span></p>
 <details id="setuphelp" style="margin:4px 0 10px;border:1px solid var(--gb);border-radius:10px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px">New here? How to get your free Alpaca keys</summary>
 <div style="padding:0 12px 10px"><ol style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.6">
-<li><b>Make a free account</b> at <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>. No card, no cost.</li>
-<li><b>Stay on the Paper account.</b> Paper uses pretend money but gives the same live market data.</li>
-<li><b>Open <i>API Keys</i></b> in the left-hand menu. Cannot find it? Search the word "API".</li>
-<li><b>Click <i>Generate New Key</i></b> and copy the <b>Key ID</b> and the <b>Secret Key</b>. The secret is shown once.</li>
+<li><b>Make a free account</b> at <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>, then click the link Alpaca emails you to confirm your address. No card, no cost.</li>
+<li><b>Stay on the Paper account.</b> The switcher is in the top-left corner of the dashboard; Paper uses pretend money but gives the same live market data.</li>
+<li><b>Open the <i>API Keys</i> panel</b> on the right-hand side of the dashboard. Cannot find it? Search the word "API".</li>
+<li><b>Click <i>Generate New Key</i></b> and copy the <b>Key ID</b> (it starts with <b>PK</b>) and the <b>Secret Key</b>. The secret is shown once.</li>
 <li><b>Paste them into the two boxes below</b> and press <b>Save and connect</b>.</li>
 </ol><p class="x">Why: TickSPY shows real prices, and Alpaca is the free service that supplies them. Your keys stay in this browser, are sent only to Alpaca, and never reach us. Prefer pictures? <a href="../index.html#setup" target="_blank" rel="noopener">See the illustrated guide</a>.</p></div></details>
 <div class="row"><input id="ak" placeholder="Alpaca key ID" style="width:100%" aria-label="Alpaca key ID"></div>
@@ -737,16 +737,16 @@ function legalOpen(){$('#gate-body').innerHTML=legalBody(false);$('#gate').class
    Settings tab can reopen it at any time. Every step says why it is needed. */
 const WIZ=[
  {t:'Make a free Alpaca account',
-  b:'Alpaca is the free service that supplies the live prices TickSPY shows. Open <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>, click <b>Sign up</b> in the top-right corner, then enter your email and choose a password.',
-  w:'This account is what lets Alpaca give you your own personal key. No account means no key, and no key means no prices.'},
+  b:'Alpaca is the free service that supplies the live prices TickSPY shows. Open <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>, click <b>Sign up</b> in the top-right corner, then enter your email and choose a password. Open the message Alpaca sends you and click <b>Confirm Email</b>.',
+  w:'This account is what lets Alpaca give you your own personal key. Confirming your email unlocks the dashboard — until you click it, Alpaca will not let you generate keys.'},
  {t:'Stay on the Paper account',
-  b:'Alpaca has two modes: <b>Paper</b> and <b>Live</b>. Near the top of the dashboard, make sure <b>Paper</b> is selected. Paper uses pretend money. If anything asks for your ID or bank details you are on the wrong mode, so switch back to Paper.',
+  b:'Alpaca has two modes: <b>Paper</b> and <b>Live</b>. Once you are signed in, the account switcher sits in the <b>top-left corner</b> of the dashboard — make sure <b>Paper</b> is the one selected. Paper uses pretend money. If anything asks for your ID or bank details you have slipped into Live, so switch back to Paper.',
   w:'Paper mode gives you the same live market data TickSPY needs, with nothing that involves real money.'},
- {t:'Open the API Keys page',
-  b:'In the menu on the left, click <b>API Keys</b>. If you cannot see it, click the search box and type the word <b>API</b>.',
-  w:'Alpaca keeps keys together on one page, which makes them easy to find and easy to switch off later.'},
+ {t:'Open the API Keys panel',
+  b:'On your dashboard, the <b>API Keys</b> panel sits on the <b>right-hand side</b> of the Home page. If you cannot spot it, click the search box and type the word <b>API</b>.',
+  w:'Alpaca keeps keys together in one panel, which makes them easy to find and easy to switch off later.'},
  {t:'Generate a key and copy both parts',
-  b:'Click <b>Generate New Key</b>. You will be shown a <b>Key ID</b> and a <b>Secret Key</b>. Copy each one, or press the copy button beside it, and keep this tab open.',
+  b:'Click <b>Generate New Key</b> (on some layouts it reads "Generate New Keys"). You will be shown a <b>Key ID</b>, which starts with <b>PK</b>, and a <b>Secret Key</b>. Copy each one, or press the copy button beside it, and keep this tab open.',
   w:'The Key ID is like a username and the Secret Key is like a password. Alpaca shows the Secret only once, so copy it now.'},
  {t:'Paste your keys here',
   b:'Paste the Key ID and the Secret Key into the two boxes below, then press Save. Live prices start loading straight away.',

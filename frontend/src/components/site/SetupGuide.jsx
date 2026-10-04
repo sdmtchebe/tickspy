@@ -15,6 +15,17 @@ import {
 import { Reveal, SplitWords, stagger, item } from "@/components/site/motion";
 import { openApp } from "@/lib/site";
 
+/* --------------------------------------------------------------- links ---- */
+
+const ALPACA = "https://alpaca.markets";
+const ALPACA_SIGNUP = "https://app.alpaca.markets/signup";
+const ALPACA_DASH = "https://app.alpaca.markets";
+
+// Paints the exact words a beginner has to look for, in the site's green.
+const Hi = ({ children }) => (
+  <span className="rounded-md bg-mint/15 px-1.5 py-px font-medium text-mint">{children}</span>
+);
+
 /* ------------------------------------------------------------------ why ---- */
 
 const WHY = [
@@ -115,24 +126,29 @@ const PaperMock = () => (
 
 const ApiKeysMock = () => (
   <Window title="app.alpaca.markets — dashboard">
-    <div className="grid grid-cols-[92px_1fr] gap-3">
-      <div className="space-y-1.5">
-        {["Home", "Accounts", "API Keys", "Orders"].map((m) => {
-          const hot = m === "API Keys";
-          return hot ? (
-            <Target key={m} label="find this"><span className="block rounded-lg bg-mint/10 px-2.5 py-1.5 text-[12px] font-semibold text-mint">{m}</span></Target>
-          ) : (
-            <span key={m} className="block rounded-lg px-2.5 py-1.5 text-[12px] text-steel">{m}</span>
-          );
-        })}
-        <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-steel">
-          <Search className="h-3 w-3" /> Search
-        </div>
-      </div>
+    <div className="grid grid-cols-[1fr_132px] gap-3">
+      {/* The dashboard itself: Home, with the account switcher top-left. */}
       <div className="space-y-2 rounded-xl border border-white/10 bg-white/[0.02] p-3">
-        <p className="text-[13px] font-medium text-ink">API Keys</p>
-        <p className="text-[12px] text-steel">Your keys are shown below.</p>
-        <Target label="click here"><span className="inline-block rounded-lg bg-mint px-3 py-1.5 text-[12px] font-semibold text-[#03130D]">Generate New Key</span></Target>
+        <div className="flex items-center justify-between">
+          <span className="rounded-full bg-mint/10 px-2 py-0.5 text-[11px] font-semibold text-mint">Paper</span>
+          <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2 py-0.5 text-[10px] text-steel">
+            <Search className="h-3 w-3" /> Search
+          </div>
+        </div>
+        <p className="text-[13px] font-medium text-ink">Home</p>
+        <div className="grid grid-cols-3 gap-2">
+          {["Equity", "Buying power", "Positions"].map((s) => (
+            <span key={s} className="num rounded-lg bg-white/[0.03] px-2 py-2 text-center text-[11px] text-steel">{s}</span>
+          ))}
+        </div>
+        <div className="h-6 rounded-lg bg-white/[0.03]" />
+        <div className="h-6 rounded-lg bg-white/[0.03]" />
+      </div>
+      {/* The API Keys panel sits on the right-hand side of the dashboard. */}
+      <div className="space-y-2.5 rounded-xl border border-mint/25 bg-mint/[0.06] p-2.5">
+        <p className="rounded-lg bg-mint/10 px-2 py-1.5 text-[12px] font-semibold text-mint">API Keys</p>
+        <p className="text-[11px] leading-snug text-steel">Your keys live here.</p>
+        <Target label="click here"><span className="inline-block rounded-lg bg-mint px-2.5 py-1.5 text-[11px] font-semibold text-[#03130D]">Generate New Key</span></Target>
       </div>
     </div>
   </Window>
@@ -199,40 +215,69 @@ const STEPS = [
     n: "01",
     title: "Make a free Alpaca account",
     short: "Go to alpaca.markets",
-    text: "Open alpaca.markets in a new tab and click Sign up in the top right corner. Type your email, choose a password, and follow the confirmation. That is the whole first step.",
-    why: "This account is what lets Alpaca give you your own personal key. Without an account there is nobody to issue one to.",
+    text: (
+      <>
+        Open{" "}
+        <a href={ALPACA_SIGNUP} target="_blank" rel="noopener noreferrer" className="font-medium text-mint underline decoration-mint/40 underline-offset-2 transition-colors hover:decoration-mint">
+          alpaca.markets
+        </a>{" "}
+        in a new tab and press <Hi>Sign up</Hi> in the top-right corner. Enter your email and a password, then open the message Alpaca emails you and click <Hi>Confirm Email</Hi>.
+      </>
+    ),
+    look: "Sign up",
+    why: "This account is what lets Alpaca issue you a personal key. Confirming your email is what unlocks the dashboard — until you click it, Alpaca will not let you generate keys at all.",
     Mock: SignupMock,
   },
   {
     n: "02",
     title: "Stay on the Paper account",
     short: "Paper, not Live",
-    text: "Alpaca has two modes: Paper and Live. Paper uses pretend money. Near the top of the dashboard, make sure Paper is selected. If a box ever asks for your ID or bank details, you are on the wrong one — switch back to Paper.",
-    why: "Paper mode gives you everything TickSPY needs and nothing that involves real money. It is the safest place to start.",
+    text: (
+      <>
+        Alpaca has two modes: <Hi>Paper</Hi>, which uses pretend money, and <Hi>Live</Hi>, which uses real money. Once you are signed in, the account switcher sits in the <Hi>top-left corner</Hi> of the dashboard — make sure <Hi>Paper</Hi> is the one selected. If a page ever asks for your ID card or bank details, you have slipped into Live; switch back to Paper.
+      </>
+    ),
+    look: "Paper (top-left)",
+    why: "Paper gives you everything TickSPY needs — exactly the same live market data — with none of the risk. It is the safest place to start, and you can switch later whenever you want.",
     Mock: PaperMock,
   },
   {
     n: "03",
-    title: "Open the API Keys page",
-    short: "In the left menu",
-    text: "In the menu on the left, click API Keys. If you cannot see it straight away, click the search box and type the word API. That page is where Alpaca hands out your keys.",
-    why: "Alpaca deliberately keeps keys together on one page so they are easy to manage and easy to switch off again.",
+    title: "Open the API Keys panel",
+    short: "On the dashboard",
+    text: (
+      <>
+        On your <a href={ALPACA_DASH} target="_blank" rel="noopener noreferrer" className="font-medium text-mint underline decoration-mint/40 underline-offset-2 transition-colors hover:decoration-mint">Alpaca dashboard</a>, the <Hi>API Keys</Hi> panel sits on the <Hi>right-hand side</Hi> of the Home page. If you cannot spot it straight away, use the search box at the top and type <Hi>API</Hi>. That panel is where Alpaca hands out your keys.
+      </>
+    ),
+    look: "API Keys",
+    why: "Alpaca deliberately keeps keys together in one panel, so they are easy to find and just as easy to switch off again if one ever gets loose.",
     Mock: ApiKeysMock,
   },
   {
     n: "04",
     title: "Generate a key and copy both parts",
     short: "Copy both",
-    text: "Click Generate New Key. You will be shown two things: a Key ID and a Secret Key. Copy each one, or press the copy button beside it. Keep this tab open for a moment.",
-    why: "The Key ID is like a username and the Secret Key is like a password. Copy the Secret now, because Alpaca shows it only once for your safety.",
+    text: (
+      <>
+        Press <Hi>Generate New Key</Hi> — on some layouts the button reads "Generate New Keys". Alpaca then shows two values: an <Hi>API Key ID</Hi> (it starts with the letters <Hi>PK</Hi>) and a <Hi>Secret Key</Hi>. Copy each one, or press the copy button beside it, and keep this tab open for a moment.
+      </>
+    ),
+    look: "Generate New Key",
+    why: "The Key ID is like a username and the Secret Key is like a password. The Secret Key is shown only once, so copy it now — otherwise you will have to delete the pair and make a fresh one.",
     Mock: KeysMock,
   },
   {
     n: "05",
     title: "Paste them into TickSPY",
     short: "Then press Save",
-    text: "Open the TickSPY desk below and go to the Settings tab. Paste the Key ID into the first box and the Secret Key into the second, then press Save. The desk loads live prices straight away.",
-    why: "Your keys are saved inside your own browser only. They are sent to Alpaca and to nobody else, and you can delete them at any time by clearing the boxes.",
+    text: (
+      <>
+        Open the TickSPY desk below and go to the <Hi>Settings</Hi> tab. Paste the Key ID into the first box and the Secret Key into the second, then press <Hi>Save</Hi>. The desk starts loading live prices straight away.
+      </>
+    ),
+    look: "Settings → Save",
+    why: "Your keys are saved inside your own browser only — never on a server of ours. They are sent to Alpaca and to nobody else, and you can remove them at any time by clearing the boxes.",
     Mock: PasteMock,
   },
 ];
@@ -245,7 +290,7 @@ const FAQ = [
   ["It says the prices are not loading. What now?", "Check that you copied each value completely, with no extra spaces at the start or end, and that you used the Key ID, not the Secret, in the first box. Then press Save again."],
 ];
 
-const Step = ({ n, title, short, text, why, Mock }, i) => (
+const Step = ({ n, title, short, text, look, why, Mock }, i) => (
   <motion.li
     variants={stagger(0.12)}
     initial="hidden"
@@ -259,6 +304,13 @@ const Step = ({ n, title, short, text, why, Mock }, i) => (
       <p className="num mb-2 text-[12px] uppercase tracking-[0.22em] text-mint">{short}</p>
       <h3 className="font-display text-[22px] font-semibold tracking-[-0.02em] text-ink">{title}</h3>
       <p className="mt-3 text-[15px] leading-relaxed text-steel">{text}</p>
+      {look ? (
+        <p className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-steel">
+          <Search className="h-3.5 w-3.5 text-mint" aria-hidden="true" />
+          Look for
+          <span className="rounded-full border border-mint/40 bg-mint/10 px-2.5 py-0.5 font-medium text-mint">{look}</span>
+        </p>
+      ) : null}
       <p className="mt-3 border-l-2 border-mint/40 pl-3 text-[14px] leading-relaxed text-steel">
         <span className="font-medium text-ink">Why: </span>{why}
       </p>
@@ -290,7 +342,9 @@ export const SetupGuide = () => (
         />
         <Reveal delay={0.3} className="lg:col-span-5 lg:justify-self-end">
           <p className="max-w-[460px] text-base text-steel md:text-lg">
-            TickSPY needs free keys from <span className="text-ink">Alpaca</span> to show you real live prices. You make the keys yourself in about two minutes. Here is exactly how, one click at a time.
+            TickSPY needs free keys from{" "}
+            <a href={ALPACA} target="_blank" rel="noopener noreferrer" className="font-medium text-mint underline decoration-mint/40 underline-offset-2 transition-colors hover:decoration-mint">Alpaca</a>{" "}
+            to show you real live prices. You make the keys yourself in about two minutes. Here is exactly how, one click at a time — with every button you need to press highlighted in <span className="font-medium text-mint">green</span>.
           </p>
         </Reveal>
       </div>
