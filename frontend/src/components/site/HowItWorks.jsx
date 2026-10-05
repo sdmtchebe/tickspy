@@ -46,14 +46,14 @@ const DecisionMock = () => (
       <span className="text-[13px] text-steel">AAPL score</span>
       <span className="badge-pulse rounded-full border border-mint/30 bg-mint/10 px-3 py-1 text-[12px] font-semibold text-mint">Bullish 72</span>
     </div>
-    <p className="mt-3 text-[14px] leading-relaxed text-ink">Price is above VWAP and the trend is up. Volatility is normal, so a typical day moves about $2.10. Nothing big on the calendar until 2pm.</p>
+    <p className="mt-3 text-[14px] leading-relaxed text-ink">Price is above VWAP and the trend is up. Volatility is normal, so a typical bar moves about $0.18. Nothing high impact on the calendar until 2pm.</p>
   </div>
 );
 
 const STEPS = [
-  { n: "01", title: "Pick any stock", text: "Type a ticker. Large caps, small caps and ETFs all work, not just the ones everyone talks about.", Mock: SearchMock },
-  { n: "02", title: "Get instant analysis", text: "Trend, momentum, volatility and news get checked in seconds. Each number comes with a short note on what it means.", Mock: AnalysisMock },
-  { n: "03", title: "Make informed decisions", text: "You get one score and a short summary. TickSPY does not tell you to buy or sell. It shows you what is happening so you can decide.", Mock: DecisionMock },
+  { n: "01", title: "Pick any US ticker", text: "Type a ticker. Large caps, small caps and ETFs all work, not just the ones everyone talks about.", Mock: SearchMock },
+  { n: "02", title: "Get the numbers, explained", text: "Trend, momentum, volatility and news get checked as the bars arrive. Each number comes with a short note on what it means.", Mock: AnalysisMock },
+  { n: "03", title: "Make your own decision", text: "You get one reading and a short summary. TickSPY never tells you to buy or sell, and its volatility model is built to estimate how big a move may be, not which way. It shows you what is happening so you can decide.", Mock: DecisionMock },
 ];
 
 export const HowItWorks = () => (
@@ -61,7 +61,7 @@ export const HowItWorks = () => (
     <div className="mx-auto grid max-w-desk gap-16 px-6 lg:grid-cols-12">
       <div className="lg:col-span-4">
         <div className="lg:sticky lg:top-32">
-          <SplitWords text={["Three steps.", "About ten seconds."]} accent={["ten", "seconds"]} className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl" />
+          <SplitWords text={["Three steps.", "No manual to read."]} accent={["manual"]} className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl" />
           <Reveal delay={0.3}><p className="mt-6 max-w-[360px] text-base text-steel md:text-lg">No setup, no indicators to configure, no manual to read first.</p></Reveal>
         </div>
       </div>

@@ -19,10 +19,15 @@ const Row = ({ hidden }) => (
 );
 
 export const Marquee = () => (
-  <div className="marquee relative z-10 overflow-hidden border-y hairline bg-[rgba(12,16,32,0.55)] py-5" data-testid="ticker-marquee">
-    <div className="marquee-track">
-      <Row />
-      <Row hidden />
+  <div className="relative z-10" data-testid="ticker-marquee">
+    <span className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/10 bg-void px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-steel sm:right-6">
+      Demo data
+    </span>
+    <div className="marquee overflow-hidden border-y hairline bg-[rgba(12,16,32,0.55)] py-5">
+      <div className="marquee-track">
+        <Row />
+        <Row hidden />
+      </div>
     </div>
   </div>
 );

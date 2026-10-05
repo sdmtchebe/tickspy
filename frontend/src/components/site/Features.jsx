@@ -3,11 +3,11 @@ import { PricesArt, PatternArt, ScoreArt, VolatilityArt, NewsArt, CalendarArt } 
 import { Reveal, SplitWords } from "@/components/site/motion";
 
 const FEATURES = [
-  { id: "prices", Art: PricesArt, title: "Live prices for any stock", text: "Type a ticker and watch the price move in real time. Big names or small caps, they all work the same way." },
+  { id: "prices", Art: PricesArt, title: "Live prices for any US ticker", text: "Type a ticker and watch the price move in real time. Big names or small caps, they all work the same way." },
   { id: "patterns", Art: PatternArt, title: "Candlestick and chart pattern detection", text: "TickSPY scans every candle for setups like hammers, engulfing bars and shooting stars. When one forms, it gets marked on the chart with a note on what it usually means." },
-  { id: "score", Art: ScoreArt, title: "One bullish or bearish score", text: "Trend, momentum and volume get rolled into a single number from 0 to 100. Above 60 leans bullish, below 40 leans bearish." },
-  { id: "volatility", Art: VolatilityArt, title: "Two-stage volatility estimation", text: "Garman-Klass realized vol feeds a walk-forward HAR(1,5,22) model with a GARCH(1,1) cross-check. A gated LSTM may correct the residual, weighted by the accuracy it actually earned out of sample, with an uncertainty band from out-of-sample error. Measured over five years of 5-minute SPY bars, the volatility estimate beat a naive baseline by 10-16% RMSE in every fold tested." },
-  { id: "news", Art: NewsArt, title: "Live news with AI summaries", text: "Headlines for the stocks you follow, each with a one line summary of why it matters. Skim the whole morning in under a minute." },
+  { id: "score", Art: ScoreArt, title: "One reading, from 0 to 100", text: "Trend, momentum and volume get rolled into a single number. It describes what the indicators say right now, not what happens next. Measured over five years of 5-minute SPY bars, bullish and bearish readings were followed by much the same returns, so we do not present it as a forecast." },
+  { id: "volatility", Art: VolatilityArt, title: "Volatility estimation, HAR-based", text: "Garman-Klass realized vol feeds a walk-forward HAR(1,5,22) model with a GARCH(1,1) cross-check. A gated LSTM stage is wired up to correct the residual, but it currently earns no weight in the shipped build, so in practice this is HAR-only. Measured over five years of 5-minute SPY bars it beat a naive baseline by 10-16% RMSE in every fold tested. The record also notes where it does badly, and that only one ticker and one timeframe were tested." },
+  { id: "news", Art: NewsArt, title: "Live news with AI summaries", text: "Headlines for the stocks you follow, each with a short factual summary of what it reports and which source it came from. It restates the news without adding an opinion." },
   { id: "calendar", Art: CalendarArt, title: "Economic calendar with alerts", text: "CPI, jobs reports and Fed decisions move everything. Get a heads up before they hit so you are not caught mid trade." },
 ];
 
@@ -22,8 +22,8 @@ export const Features = () => (
     <div className="mx-auto max-w-desk px-6">
       <div className="mb-16 grid gap-6 lg:grid-cols-12 lg:items-end">
         <SplitWords
-          text={["Everything you need.", "Nothing you don't."]}
-          accent={["need"]}
+          text={["The whole desk.", "Nothing gated."]}
+          accent={["gated"]}
           className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl lg:col-span-7"
         />
         <Reveal delay={0.3} className="lg:col-span-5 lg:justify-self-end">

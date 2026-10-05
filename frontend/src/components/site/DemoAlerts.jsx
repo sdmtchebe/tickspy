@@ -5,17 +5,19 @@ import { IndicatorBoard } from "@/components/site/IndicatorBoard";
 import { PRICE_ALERT_TICKERS } from "@/lib/indicators";
 import { TICKERS } from "@/lib/market";
 
+// An alert tells you a condition just became true. It does not tell you what
+// happens next, so the bodies below describe the condition and stop there.
 const POOL = [
-  { tone: "bull", t: "SPY", kind: "Price", title: "Crossed above 548.10", body: "Your price alert fired. Buyers took control of the session average." },
-  { tone: "bull", t: "NVDA", kind: "Trend", title: "EMA 9 crossed above EMA 21", body: "Short-term trend flipped up. Momentum usually follows within a few bars." },
-  { tone: "warn", t: "CPI", kind: "Calendar", title: "Inflation report in 15 minutes", body: "Big releases can move every ticker. Tighten stops or wait." },
-  { tone: "bear", t: "TSLA", kind: "RSI", title: "RSI 14 crossed above 70", body: "Overbought. Pullbacks are common from here, not guaranteed." },
-  { tone: "warn", t: "QQQ", kind: "Squeeze", title: "Keltner squeeze firing", body: "Bollinger bands pushed outside the Keltner channel. Expect a bigger move." },
-  { tone: "bear", t: "AAPL", kind: "MACD", title: "MACD histogram turned negative", body: "Momentum rolled over below zero." },
-  { tone: "bull", t: "SPY", kind: "Volume", title: "Relative volume 1.8x", body: "Almost double the usual tape for this hour. Moves carry more weight." },
-  { tone: "warn", t: "NVDA", kind: "ADX", title: "ADX dropped below 20", body: "Trend strength faded. Range tactics work better than breakouts." },
-  { tone: "bear", t: "QQQ", kind: "Price", title: "Fell below 474.00", body: "Your price alert fired. Prior support did not hold." },
-  { tone: "bull", t: "AAPL", kind: "Stoch", title: "Stochastic crossed up from 18", body: "Oversold cross. Early bounce signal." },
+  { tone: "bull", t: "SPY", kind: "Price", title: "Crossed above 548.10", body: "The level you set was crossed. This is a notification, not a suggestion." },
+  { tone: "bull", t: "NVDA", kind: "Trend", title: "EMA 9 crossed above EMA 21", body: "The two averages swapped order on this bar." },
+  { tone: "warn", t: "CPI", kind: "Calendar", title: "Inflation report in 15 minutes", body: "Scheduled release, high impact. When it lands is not something the desk can time." },
+  { tone: "bear", t: "TSLA", kind: "RSI", title: "RSI 14 crossed above 70", body: "The reading moved above 70. It says where price sits in its recent range, nothing more." },
+  { tone: "warn", t: "QQQ", kind: "Squeeze", title: "Keltner squeeze firing", body: "Bollinger bands have moved outside the Keltner channel." },
+  { tone: "bear", t: "AAPL", kind: "MACD", title: "MACD histogram turned negative", body: "The histogram crossed below zero." },
+  { tone: "bull", t: "SPY", kind: "Volume", title: "Relative volume 1.8x", body: "Volume is running at about 1.8 times its usual level for this hour." },
+  { tone: "warn", t: "NVDA", kind: "ADX", title: "ADX dropped below 20", body: "ADX 14 is under 20, which measures how strongly a trend has been trending." },
+  { tone: "bear", t: "QQQ", kind: "Price", title: "Fell below 474.00", body: "The level you set was crossed to the downside." },
+  { tone: "bull", t: "AAPL", kind: "Stoch", title: "Stochastic crossed up from 18", body: "The oscillator moved up out of its lower band." },
 ];
 
 const Mark = ({ tone }) => (

@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { TONE } from "@/components/site/bits";
 
+// These summaries deliberately restate the source and stop there. The worker's
+// system prompt forbids predicting direction or saying whether something is good
+// or bad, and the demo must not advertise a judgement the product refuses to make.
 const POOL = [
-  { t: "NVDA", src: "Market wire", h: "Data center revenue guidance raised for next quarter", ai: "Bigger chip orders ahead. Bullish for NVDA and suppliers.", tone: "bull" },
-  { t: "SPY", src: "Rates desk", h: "10 year Treasury yield falls to 3.9% after soft auction", ai: "Cheaper borrowing tends to lift the whole market.", tone: "bull" },
-  { t: "TSLA", src: "Autos", h: "Quarterly deliveries come in 6% under estimates", ai: "Fewer cars sold than expected. Watch for a gap down.", tone: "bear" },
-  { t: "AAPL", src: "Tech", h: "Services revenue hits a record, hardware flat", ai: "Steady quarter. No big surprise either way.", tone: "warn" },
-  { t: "QQQ", src: "Macro", h: "Core inflation cools for a third straight month", ai: "Supports rate cuts. Growth stocks usually like this.", tone: "bull" },
-  { t: "AMZN", src: "Retail", h: "Cloud unit margins slip on heavy AI spending", ai: "Spending more to grow. Short term pressure on profit.", tone: "bear" },
+  { t: "NVDA", src: "Market wire", h: "Data center revenue guidance raised for next quarter", ai: "Guidance raised for next quarter. The size of the raise is not stated." },
+  { t: "SPY", src: "Rates desk", h: "10 year Treasury yield falls to 3.9% after soft auction", ai: "The 10 year yield closed at 3.9% after a soft auction." },
+  { t: "TSLA", src: "Autos", h: "Quarterly deliveries come in 6% under estimates", ai: "Deliveries came in 6% below estimates. No cause given." },
+  { t: "AAPL", src: "Tech", h: "Services revenue hits a record, hardware flat", ai: "Services at a record, hardware flat quarter on quarter." },
+  { t: "QQQ", src: "Macro", h: "Core inflation cools for a third straight month", ai: "Core inflation fell for a third month. The figure is not given." },
+  { t: "AMZN", src: "Retail", h: "Cloud unit margins slip on heavy AI spending", ai: "Cloud margins fell as AI spending rose. Sizes not given." },
 ];
 
 const stamp = () => new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
@@ -30,12 +32,10 @@ export const DemoNews = ({ active }) => {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <div className="lg:col-span-4">
         <h3 className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink">Read the morning in one pass.</h3>
-        <p className="mt-4 text-[15px] leading-relaxed text-steel">Every headline gets a one line summary and a lean: good, bad or neutral for the stock. New stories slide in as they break.</p>
-        <div className="mt-6 flex gap-4 text-[12px]">
-          {["bull", "warn", "bear"].map((k) => (
-            <span key={k} className={`flex items-center gap-2 ${TONE[k].text}`}><span className="h-2 w-2 rounded-full" style={{ background: TONE[k].hex }} />{TONE[k].label}</span>
-          ))}
-        </div>
+        <p className="mt-4 text-[15px] leading-relaxed text-steel">Every headline gets a short summary of what it actually reports, and the summary names its source. New stories slide in as they break.</p>
+        <p className="mt-6 text-[12px] leading-relaxed text-steel">
+          No bull or bear label, on purpose. The summary restates what the source says and stops there. Deciding whether a headline is good or bad is your call, not the machine&apos;s.
+        </p>
       </div>
       <div className="flex min-h-[460px] min-w-0 flex-col gap-3 lg:col-span-8" data-testid="demo-news-feed">
         <AnimatePresence initial={false} mode="popLayout">
@@ -56,8 +56,8 @@ export const DemoNews = ({ active }) => {
                 <span className="num ml-auto">{n.time}</span>
               </div>
               <p className="mt-2 text-[15px] font-medium text-ink">{n.h}</p>
-              <div className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[12px] ${TONE[n.tone].border} ${TONE[n.tone].bg} ${TONE[n.tone].text}`}>
-                <span className="font-semibold">AI</span>
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[12px]">
+                <span className="font-semibold text-mint">AI</span>
                 <span className="text-ink/90">{n.ai}</span>
               </div>
             </motion.article>

@@ -33,20 +33,20 @@ export const DemoVolatility = ({ active }) => {
           not computed from live data. Saying so is the whole point: the real
           engine, and its measured backtest, live in the desk. */}
       <p className="text-[12px] leading-relaxed text-steel">
-        <span className="font-medium text-mint">Illustrative simulation.</span> These figures are generated in the browser to show the shape of the pipeline. They are not a live model run on real bars — open the desk for the real engine, which is backtested against years of market history.
+        <span className="font-medium text-mint">Illustrative simulation.</span> These figures are generated in the browser to show the shape of the pipeline. They are not a live model run on real bars, and the direction head below has never been scored against outcomes. Open the desk for the real engine, which is backtested against years of market history.
       </p>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <div className="glass-inner flex min-w-0 flex-col rounded-2xl p-5 lg:col-span-8" data-testid="vol-chart-card">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-[12px] text-steel">Realized volatility, next-bar estimate</div>
-              <div className="font-display text-[18px] font-semibold text-ink">Two-stage model, out-of-sample</div>
+              <div className="font-display text-[18px] font-semibold text-ink">HAR walk-forward, simulated input</div>
             </div>
             <div className="flex flex-wrap items-center gap-4 text-[12px] text-steel">
               <span className="flex items-center gap-2"><span className="h-px w-4 bg-ink/80" />Garman-Klass RV</span>
               <span className="flex items-center gap-2"><span className="h-px w-4 border-t border-dashed border-amber" />HAR linear</span>
               <span className="flex items-center gap-2"><span className="h-0.5 w-4 bg-mint" />LSTM corrected</span>
-              <span className="flex items-center gap-2"><span className="h-3 w-4 rounded-sm bg-mint/20" />±OOS RMSE</span>
+              <span className="flex items-center gap-2"><span className="h-3 w-4 rounded-sm bg-mint/20" />±error band</span>
             </div>
           </div>
           <VolForecastChart m={m} />
@@ -76,7 +76,7 @@ export const DemoVolatility = ({ active }) => {
             </div>
           </div>
           <div className="mt-5">
-            <div className="mb-2 text-[12px] text-steel">Direction head (softmax)</div>
+            <div className="mb-2 text-[12px] text-steel">Direction head (simulated, not scored)</div>
             <div className="grid grid-cols-3 gap-2" data-testid="vol-direction">
               {DIR.map(([label, tone], i) => (
                 <div key={label} className={`rounded-xl border p-2.5 transition-colors duration-500 ${i === dirIdx ? TONE[tone].border : "border-white/[0.06]"}`}>
@@ -92,7 +92,7 @@ export const DemoVolatility = ({ active }) => {
           <ul className="mt-5 space-y-1.5 text-[12px] text-steel" data-testid="vol-checks">
             <li className="flex items-center gap-2"><span className={`h-1.5 w-1.5 rounded-full ${m.masked ? "bg-amber" : "bg-mint"}`} />Session boundary {m.masked ? "masked this bar" : "clear"}</li>
             <li className="flex items-center gap-2"><span className={`h-1.5 w-1.5 rounded-full ${m.quality ? "bg-mint" : "bg-bear"}`} />Data quality {m.quality ? "passed" : "flagged"}</li>
-            <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-mint" />Hold-out: chronological, 3-fold expanding walk-forward</li>
+            <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-mint" />Simulation path, not a model run on real bars</li>
           </ul>
         </div>
       </div>

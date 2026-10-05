@@ -8,7 +8,7 @@ const LINES = [
   [{ t: "Every setup." }],
 ];
 
-const STATS = [["$0", "per month"], ["14", "live indicators"], ["2-stage", "volatility model"], ["Any", "US ticker"]];
+const STATS = [["$0", "per month"], ["14", "live indicators"], ["Backtested", "volatility model"], ["Any", "US ticker"]];
 
 export const Hero = () => {
   const ref = useRef(null);
@@ -36,7 +36,7 @@ export const Hero = () => {
             ))}
           </h1>
           <p className="rise mt-8 max-w-[520px] text-[17px] leading-relaxed text-steel sm:text-lg" style={{ animationDelay: "560ms" }} data-testid="hero-subheadline">
-            TickSPY reads live charts, a two-stage volatility model and news for any stock, then tells you what it means in <span className="text-ink">plain English</span>. Free, with no account wall.
+            TickSPY reads live charts, a backtested volatility model and news for any US ticker, then tells you what it means in <span className="text-ink">plain English</span>. Free, with no account wall.
           </p>
           <div className="rise mt-10 flex flex-wrap items-center gap-4" style={{ animationDelay: "680ms" }}>
             <button className="btn btn-solid" onClick={openApp} data-testid="hero-cta-open-app">

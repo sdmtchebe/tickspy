@@ -5,8 +5,8 @@ import { SplitWords, stagger, item } from "@/components/site/motion";
 const POINTS = [
   ["Free.", "No paywall, no trial, no upsell. The whole desk, for everyone."],
   ["Plain English next to every number.", "If you have to look it up, we wrote it badly."],
-  ["Works with any stock.", "Not just the ten tickers everyone already watches."],
-  ["Built by traders who got tired of paying $50 a month for a chart.", "So we built the one we wanted and left the price tag off."],
+  ["Works with any US ticker.", "Not just the ten names everyone already watches."],
+  ["We publish the unflattering parts too.", "Five years of 5-minute bars, measured against a naive baseline. The parts where the model barely beats the baseline are written down alongside the parts where it does well."],
 ];
 
 export const Why = () => (
