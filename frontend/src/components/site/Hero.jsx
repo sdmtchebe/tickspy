@@ -4,8 +4,8 @@ import { HeroCard } from "@/components/site/HeroCard";
 import { scrollToId, openApp } from "@/lib/site";
 
 const LINES = [
-  [{ t: "Pay " }, { t: "$0.", mint: true }],
-  [{ t: "Trade more." }],
+  [{ t: "Zero dollars.", mint: true }],
+  [{ t: "Every setup." }],
 ];
 
 const STATS = [["$0", "per month"], ["14", "live indicators"], ["2-stage", "volatility model"], ["Any", "US ticker"]];
