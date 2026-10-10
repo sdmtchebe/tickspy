@@ -1,4 +1,4 @@
-import logoImage from "@/assets/tickspy-logo-full.png";
+import logoImage from "@/assets/tickspy-logo-transparent.png";
 
 export const Logo = ({ className = "", testId = "brand-logo", alt = "TickSPY" }) => (
   <span
