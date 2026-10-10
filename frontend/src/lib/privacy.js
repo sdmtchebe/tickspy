@@ -21,13 +21,15 @@ export const subscribeAdsConsent = (listener) => {
 
 const notify = () => listeners.forEach((listener) => listener());
 
+// AdSense is always loaded with the non-personalized ad request flag.
+// Google's EU/UK policy requires a disclosure before serving any ads;
+// this banner provides that disclosure and records the visitor's choice.
 export const loadAdsense = () => {
   if (typeof document === "undefined" || document.querySelector("script[data-tickspy-adsense]")) return;
 
-  // Keep this deployment on Google's non-personalized advertising path. This is
-  // set before the runtime loads and avoids treating consent as consent to
-  // behavioral advertising.
   window.adsbygoogle = window.adsbygoogle || [];
+  // Serve non-personalized ads. Google may still use cookies for frequency
+  // capping, fraud prevention, and measurement, but not for behavioral targeting.
   window.adsbygoogle.requestNonPersonalizedAds = 1;
 
   const script = document.createElement("script");
@@ -45,7 +47,8 @@ export const setAdsConsent = (consent) => {
   } catch {
     // The current page still honours the choice if storage is unavailable.
   }
-  if (consent === "accepted") loadAdsense();
+  // Always load ads (non-personalized), regardless of the choice.
+  loadAdsense();
   notify();
 };
 
