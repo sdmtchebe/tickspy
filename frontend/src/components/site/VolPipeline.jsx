@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 
 const STAGES = [
   { stage: 1, items: ["Garman-Klass RV", "HAR(1,5,22) walk-forward", "GARCH(1,1) cross-check", "Residuals e_t"] },
   { stage: 2, items: ["RobustScaler · lookback 30", "LSTM 2×64 · dropout 0.2", "Residual Δ + 3 direction logits", "Auto-gate · OOS RMSE"] },
 ];
 
-/** Animated pipeline diagram. A pulse walks through stage 1 then stage 2. */
+/**
+ * Animated pipeline diagram. A pulse walks through stage 1 then stage 2.
+ *
+ * The travelling highlight is expressed as a border and a fill change only.
+ * It used to also drag a mint dot with it and paint a translucent wash under
+ * the active box, which made a diagram about a model look like a light show.
+ */
 export const VolPipeline = ({ active }) => {
   const [step, setStep] = useState(0);
   useEffect(() => {
@@ -14,33 +19,35 @@ export const VolPipeline = ({ active }) => {
     const id = setInterval(() => setStep((s) => (s + 1) % 8), 800);
     return () => clearInterval(id);
   }, [active]);
+
   return (
     <div className="grid gap-3 lg:grid-cols-2" data-testid="vol-pipeline">
-      {STAGES.map(({ stage, items }, si) => (
-        <div key={stage} className={`glass-inner rounded-2xl p-4 transition-colors duration-500 ${Math.floor(step / 4) === si ? "border-mint/30" : ""}`}>
-          <div className="mb-3 flex items-center gap-3">
-            <span className={`num text-[11px] uppercase tracking-[0.25em] ${Math.floor(step / 4) === si ? "text-mint" : "text-steel"}`}>Stage {stage}</span>
-            <span className="text-[12px] text-steel">{stage === 1 ? "Statistical filter" : "LSTM correction"}</span>
-          </div>
-          <ol className="relative grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {items.map((it, i) => {
-              const on = step === si * 4 + i;
-              return (
-                <li key={it} className="relative">
-                  <motion.div
-                    animate={{ borderColor: on ? "rgba(0,229,160,0.6)" : "rgba(255,255,255,0.08)", backgroundColor: on ? "rgba(0,229,160,0.08)" : "rgba(255,255,255,0.02)" }}
-                    transition={{ duration: 0.35 }}
-                    className="h-full rounded-xl border px-3 py-2.5 text-[12px] leading-snug text-ink"
+      {STAGES.map(({ stage, items }, si) => {
+        const stageOn = Math.floor(step / 4) === si;
+        return (
+          <div key={stage} className={`well p-4 transition-colors duration-300 ${stageOn ? "border-mint/30" : ""}`}>
+            <div className="mb-3 flex items-center gap-3">
+              <span className={`num text-[11px] tracking-[0.08em] ${stageOn ? "text-mint" : "text-steel"}`}>Stage {stage}</span>
+              <span className="text-[12px] text-steel">{stage === 1 ? "Statistical filter" : "LSTM correction"}</span>
+            </div>
+            <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {items.map((it, i) => {
+                const on = step === si * 4 + i;
+                return (
+                  <li
+                    key={it}
+                    className={`flex h-full items-center rounded-lg border px-3 py-2.5 text-[12px] leading-snug transition-colors duration-300 ${
+                      on ? "border-mint/50 bg-surface2 text-ink" : "border-line bg-surface text-steel"
+                    }`}
                   >
-                    {on && <motion.span layoutId="vol-pulse" className="absolute -left-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-mint shadow-[0_0_12px_2px_rgba(0,229,160,0.6)]" />}
                     {it}
-                  </motion.div>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      ))}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -87,11 +94,11 @@ export const VolForecastChart = ({ m }) => {
       <path d={path([...har, linear], x, y, off)} fill="none" stroke="#FFB347" strokeWidth="1.3" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />
       <path d={path(band, x, y, off)} fill="none" stroke="#00E5A0" strokeWidth="2" vectorEffect="non-scaling-stroke" />
       <line x1={x(n - 1)} x2={x(n - 1)} y1={PAD.t} y2={H - PAD.b} stroke="rgba(0,229,160,0.3)" strokeDasharray="2 4" />
-      <circle cx={x(n)} cy={y(forecast)} r="4" fill="#00E5A0" className="pulse-dot" />
+      <circle cx={x(n)} cy={y(forecast)} r="4" fill="#00E5A0" />
       <text x={x(n) + 8} y={y(forecast) + 4} fill="#00E5A0" fontSize="11" fontFamily="JetBrains Mono">{`${forecast.toFixed(2)}%`}</text>
       <text x={x(n) + 8} y={y(linear) + 4 + (Math.abs(y(linear) - y(forecast)) < 12 ? 14 : 0)} fill="#FFB347" fontSize="10" fontFamily="JetBrains Mono">{`${linear.toFixed(2)}%`}</text>
-      <text x={PAD.l} y={H - 6} fill="#8A93A6" fontSize="10" fontFamily="JetBrains Mono">{`t-${n - 1}`}</text>
-      <text x={x(n - 1) - 4} y={H - 6} fill="#8A93A6" fontSize="10" fontFamily="JetBrains Mono" textAnchor="end">now</text>
+      <text x={PAD.l} y={H - 6} fill="#9AA3B2" fontSize="10" fontFamily="JetBrains Mono">{`t-${n - 1}`}</text>
+      <text x={x(n - 1) - 4} y={H - 6} fill="#9AA3B2" fontSize="10" fontFamily="JetBrains Mono" textAnchor="end">now</text>
       <text x={x(n)} y={H - 6} fill="#00E5A0" fontSize="10" fontFamily="JetBrains Mono" textAnchor="middle">t+1</text>
     </svg>
     </div>

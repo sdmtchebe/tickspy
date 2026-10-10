@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Reveal, SplitWords, stagger, item } from "@/components/site/motion";
+import { Reveal, group, groupItem } from "@/components/site/motion";
+
+/*
+ * The overview of the loop. Deliberately a three-up row of columns with hairline
+ * tops rather than the vertical timeline it used to share with the setup
+ * walkthrough — two sections built from the same component read as one section
+ * repeated, and the setup guide is the one that actually needs a numbered rail.
+ *
+ * The mocks stay non-numeric. Inventing a plausible price for a real symbol
+ * would be a lie wearing a "demo" label, and there is nothing to gain from it:
+ * what the step needs to show is which readings exist and what they mean.
+ */
 
 const WORD = "AAPL";
 
@@ -11,88 +22,132 @@ const SearchMock = () => {
     return () => clearInterval(id);
   }, []);
   const typed = WORD.slice(0, Math.min(n, WORD.length));
+  const matched = n >= WORD.length;
   return (
-    <div className="rounded-2xl border hairline bg-[#070A14]/70 p-4">
-      <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-        <svg viewBox="0 0 16 16" className="h-4 w-4 text-steel" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" /><path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-        <span className="num text-[15px] text-ink">{typed}<span className="caret" /></span>
+    <div className="well p-3.5">
+      <div className="flex items-center gap-3 rounded-lg border border-line bg-surface2 px-3.5 py-2.5">
+        <svg viewBox="0 0 16 16" className="h-4 w-4 shrink-0 text-faint" aria-hidden="true">
+          <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        <span className="num text-[15px] text-ink">
+          {typed}
+          <span className="caret" />
+        </span>
       </div>
-      <div className={`mt-2 flex items-center justify-between rounded-xl px-4 py-2.5 transition-opacity duration-300 ${n >= WORD.length ? "bg-mint/[0.07] opacity-100" : "opacity-0"}`}>
-        <span className="text-[13px] text-ink"><span className="num font-semibold">AAPL</span> <span className="text-steel">Apple Inc.</span></span>
-        <span className="num text-[13px] text-mint">226.14</span>
+      <div
+        className={`mt-2 flex items-center justify-between gap-3 rounded-lg px-3.5 py-2.5 transition-opacity duration-200 ${
+          matched ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <span className="text-[13px] text-ink">
+          <span className="num font-medium">AAPL</span> <span className="text-steel">Apple Inc.</span>
+        </span>
+        <span className="text-[11.5px] text-faint">US equity</span>
       </div>
     </div>
   );
 };
 
-const BARS = [["Trend", 0.78, "#00E5A0"], ["Momentum", 0.62, "#00E5A0"], ["Volatility", 0.44, "#FFB347"], ["News lean", 0.7, "#00E5A0"]];
+const CHECKS = [
+  ["Trend", "EMA 9 measured against EMA 21"],
+  ["Momentum", "RSI, MACD and the stochastic"],
+  ["Volatility", "ATR and the Bollinger bands"],
+  ["Volume", "volume against its usual level"],
+];
 
-const AnalysisMock = () => (
-  <div className="space-y-3 rounded-2xl border hairline bg-[#070A14]/70 p-4">
-    {BARS.map(([k, v, c], i) => (
-      <div key={k} className="grid grid-cols-[96px_1fr] items-center gap-4">
-        <span className="text-[13px] text-steel">{k}</span>
-        <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
-          <div className="fill-bar h-full rounded-full" style={{ width: `${v * 100}%`, background: c, animationDelay: `${i * 0.18}s` }} />
-        </div>
-      </div>
-    ))}
+const ChecksMock = () => (
+  <div className="well p-3.5">
+    <ul className="space-y-2.5">
+      {CHECKS.map(([k, v]) => (
+        <li key={k} className="flex items-start gap-3">
+          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-faint" aria-hidden="true" />
+          <span className="text-[13px] leading-snug text-ink">
+            {k}
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-steel">{v}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+    <p className="mt-3 border-t border-line pt-3 text-[12.5px] leading-snug text-faint">
+      Every reading arrives with one sentence saying what it measures.
+    </p>
   </div>
 );
 
-const DecisionMock = () => (
-  <div className="rounded-2xl border hairline bg-[#070A14]/70 p-4">
-    <div className="flex items-center justify-between">
-      <span className="text-[13px] text-steel">AAPL score</span>
-      <span className="badge-pulse rounded-full border border-mint/30 bg-mint/10 px-3 py-1 text-[12px] font-semibold text-mint">Bullish 72</span>
+const SummaryMock = () => (
+  <div className="well p-3.5">
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[12.5px] text-steel">Reading · demo data</span>
+      <span className="inline-flex h-7 items-center rounded-lg border border-amber/30 bg-amber/10 px-2.5 text-[12.5px] font-medium text-amber">
+        Neutral 52
+      </span>
     </div>
-    <p className="mt-3 text-[14px] leading-relaxed text-ink">Price is above VWAP and the trend is up. Volatility is normal, so a typical bar moves about $0.18. Nothing high impact on the calendar until 2pm.</p>
+    <p className="mt-3 text-[13px] leading-relaxed text-ink">
+      Price is above VWAP, the trend is up, and volatility is normal for this time of day. Nothing high impact on the calendar
+      before the afternoon.
+    </p>
+    <p className="mt-3 border-t border-line pt-3 text-[12.5px] leading-snug text-faint">
+      The desk never says buy or sell. The reading describes what the indicators show right now.
+    </p>
   </div>
 );
 
 const STEPS = [
-  { n: "01", title: "Pick any US ticker", text: "Type a ticker. Large caps, small caps and ETFs all work, not just the ones everyone talks about.", Mock: SearchMock },
-  { n: "02", title: "Get the numbers, explained", text: "Trend, momentum, volatility and news get checked as the bars arrive. Each number comes with a short note on what it means.", Mock: AnalysisMock },
-  { n: "03", title: "Make your own decision", text: "You get one reading and a short summary. TickSPY never tells you to buy or sell, and its volatility model is built to estimate how big a move may be, not which way. It shows you what is happening so you can decide.", Mock: DecisionMock },
+  {
+    n: "01",
+    title: "Type a ticker",
+    text: "Any US listed symbol works — large caps, small caps and ETFs alike. You are not limited to the handful of names everyone already watches.",
+    Mock: SearchMock,
+  },
+  {
+    n: "02",
+    title: "The numbers get checked",
+    text: "Trend, momentum, volatility and volume are recomputed as each bar closes, and each reading is paired with a sentence explaining what it measures.",
+    Mock: ChecksMock,
+  },
+  {
+    n: "03",
+    title: "You decide",
+    text: "TickSPY hands over the readings and stops there. It never tells you to buy or sell, and the volatility model estimates how large a move may be rather than which way it will go.",
+    Mock: SummaryMock,
+  },
 ];
 
 export const HowItWorks = () => (
   <section id="how-it-works" className="section-pad relative z-10" data-testid="how-it-works-section">
-    <div className="mx-auto grid max-w-desk gap-16 px-6 lg:grid-cols-12">
-      <div className="lg:col-span-4">
-        <div className="lg:sticky lg:top-32">
-          <SplitWords text={["Three steps.", "No manual to read."]} accent={["manual"]} className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl" />
-          <Reveal delay={0.3}><p className="mt-6 max-w-[360px] text-base text-steel md:text-lg">No setup, no indicators to configure, no manual to read first.</p></Reveal>
+    <div className="shell">
+      <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
+        <div className="lg:col-span-7">
+          <p className="t-label">How it works</p>
+          <h2 className="t-title mt-4 text-ink">What happens after you type a ticker</h2>
         </div>
+        <Reveal delay={0.12} className="lg:col-span-5">
+          <p className="t-body max-w-[430px] lg:ml-auto">
+            There is nothing to configure and no manual to read first. The whole loop is three steps long and it starts the moment
+            the desk opens.
+          </p>
+        </Reveal>
       </div>
-      <ol className="relative lg:col-span-8">
-        <motion.span
-          className="absolute bottom-6 left-[19px] top-6 w-px origin-top bg-gradient-to-b from-mint/70 via-mint/20 to-transparent"
-          initial={{ scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
-          aria-hidden="true"
-        />
+
+      <motion.ol
+        variants={group(0.08)}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.15 }}
+        className="mt-14 grid gap-10 md:grid-cols-3 md:gap-8"
+      >
         {STEPS.map(({ n, title, text, Mock }, i) => (
-          <motion.li
-            key={n}
-            variants={stagger(0.12)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.3 }}
-            className={`relative grid gap-6 pl-16 ${i < STEPS.length - 1 ? "pb-16" : ""} md:grid-cols-2 md:gap-10`}
-            data-testid={`how-step-${i + 1}`}
-          >
-            <motion.span variants={item} className="num absolute left-0 top-0 grid h-10 w-10 place-items-center rounded-full border border-mint/40 bg-void text-[13px] text-mint shadow-[0_0_24px_-6px_rgba(0,229,160,0.6)]">{n}</motion.span>
-            <motion.div variants={item}>
-              <h3 className="font-display text-[22px] font-semibold tracking-[-0.02em] text-ink">{title}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-steel">{text}</p>
-            </motion.div>
-            <motion.div variants={item} className="glass rounded-2xl p-1"><Mock /></motion.div>
+          <motion.li key={n} variants={groupItem} className="border-t border-line pt-6" data-testid={`how-step-${i + 1}`}>
+            <span className="num text-[12.5px] text-faint">{n}</span>
+            <h3 className="t-subtitle mt-3 text-ink">{title}</h3>
+            <p className="t-body mt-2.5">{text}</p>
+            <div className="mt-5">
+              <Mock />
+            </div>
           </motion.li>
         ))}
-      </ol>
+      </motion.ol>
     </div>
   </section>
 );

@@ -1,20 +1,25 @@
 import { useEffect } from "react";
 import { Toaster } from "sonner";
-import "@/App.css";
 import "lenis/dist/lenis.css";
 import { startLenis } from "@/lib/site";
 import { Sky } from "@/components/site/Sky";
 import { Nav } from "@/components/site/Nav";
 import { Hero } from "@/components/site/Hero";
-import { Marquee } from "@/components/site/Marquee";
-import { Features } from "@/components/site/Features";
+import { SpecStrip } from "@/components/site/SpecStrip";
 import { Demo } from "@/components/site/Demo";
+import { Features } from "@/components/site/Features";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { SetupGuide } from "@/components/site/SetupGuide";
 import { Why } from "@/components/site/Why";
 import { Contact } from "@/components/site/Contact";
 import { Footer } from "@/components/site/Footer";
 
+/*
+ * Page order is the argument the page makes: show the desk, then explain what
+ * is in it, then how to get it running. The tour sits above the feature list
+ * on purpose — the product is the pitch, and a grid of cards claiming things
+ * is worth less than one panel the visitor can click through first.
+ */
 function App() {
   useEffect(() => {
     const stop = startLenis();
@@ -27,9 +32,9 @@ function App() {
       <Nav />
       <main className="relative z-10">
         <Hero />
-        <Marquee />
-        <Features />
+        <SpecStrip />
         <Demo />
+        <Features />
         <HowItWorks />
         <SetupGuide />
         <Why />
@@ -40,7 +45,7 @@ function App() {
         position="bottom-right"
         theme="dark"
         toastOptions={{
-          style: { background: "#0E1324", border: "1px solid rgba(255,255,255,0.12)", color: "#E8ECF4", fontFamily: "DM Sans, sans-serif" },
+          style: { background: "#141924", border: "1px solid rgba(255,255,255,0.14)", color: "#EDEFF3", fontFamily: "DM Sans, sans-serif" },
         }}
       />
     </div>

@@ -27,7 +27,11 @@ export const TONE = {
   warn: { text: "text-amber", bg: "bg-amber/10", border: "border-amber/30", hex: "#FFB347", label: "Neutral" },
 };
 
-/** Small "?" button with a tooltip explaining a metric in plain English. */
+/**
+ * Small "?" button with a tooltip explaining a metric in plain English. The
+ * trigger stays quiet — a hairline square that brightens on hover — because an
+ * outlined circle next to every row turns a table into a field of buttons.
+ */
 export const Info = ({ id, text, align = "right" }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -36,7 +40,7 @@ export const Info = ({ id, text, align = "right" }) => {
         type="button"
         onClick={() => setOpen((v) => !v)}
         onBlur={() => setOpen(false)}
-        className="grid h-6 w-6 place-items-center rounded-full border border-white/15 text-steel transition-colors hover:border-mint/60 hover:text-mint"
+        className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border border-line text-faint transition-colors duration-150 hover:border-white/25 hover:text-ink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-mint"
         aria-label="What does this mean"
         data-testid={`demo-tooltip-${id}`}
       >

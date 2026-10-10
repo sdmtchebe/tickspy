@@ -1,21 +1,57 @@
 import { Logo } from "@/components/site/Logo";
 import { NAV_LINKS } from "@/components/site/Nav";
-import { scrollToId } from "@/lib/site";
+import { scrollToId, openApp } from "@/lib/site";
 
 export const Footer = () => (
-  <footer className="relative z-10 px-4 pb-6 sm:px-6" data-testid="site-footer">
-    <div className="glass mx-auto flex max-w-desk flex-col gap-8 rounded-[24px] px-6 py-8 md:flex-row md:items-center md:justify-between md:px-10">
-      <div>
-        <Logo className="text-[30px]" testId="footer-logo" />
-        <p className="mt-3 text-[13px] text-steel">© 2026 TickSPY. Demo data on this page. Not financial advice. Charts rendered by our own engine.</p>
+  <footer className="relative z-10 mt-8 border-t border-line" data-testid="site-footer">
+    <div className="shell grid gap-10 py-14 md:grid-cols-12">
+      <div className="md:col-span-5">
+        <Logo className="text-[28px]" testId="footer-logo" />
+        <p className="mt-4 max-w-[380px] text-[13.5px] leading-relaxed text-steel">
+          A free trading desk for people who want the number and the sentence that explains it. The charts on this page are drawn
+          from a simulated series; the desk runs on real market data.
+        </p>
       </div>
-      <ul className="flex flex-wrap gap-x-6 gap-y-2">
-        {NAV_LINKS.map((l) => (
-          <li key={l.id}>
-            <button onClick={() => scrollToId(l.id)} className="text-[14px] text-steel transition-colors hover:text-ink" data-testid={`footer-link-${l.id}`}>{l.label}</button>
+
+      <nav className="md:col-span-3" aria-label="Sections">
+        <p className="t-label">Sections</p>
+        <ul className="mt-4 space-y-2.5">
+          {NAV_LINKS.map((l) => (
+            <li key={l.id}>
+              <button onClick={() => scrollToId(l.id)} className="link-quiet text-[14px]" data-testid={`footer-link-${l.id}`}>
+                {l.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="md:col-span-4">
+        <p className="t-label">The desk</p>
+        <ul className="mt-4 space-y-2.5">
+          <li>
+            <button onClick={openApp} className="link-quiet text-[14px]">
+              Open the desk
+            </button>
           </li>
-        ))}
-      </ul>
+          <li>
+            <a href="https://alpaca.markets" target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
+              Alpaca (free market data keys)
+            </a>
+          </li>
+        </ul>
+        <p className="mt-6 text-[12.5px] leading-relaxed text-faint">
+          TickSPY is not a broker and places no trades. It publishes analysis, not advice, and its volatility model estimates how
+          large a move may be rather than which way it will go. Full disclosures sit inside the desk.
+        </p>
+      </div>
+    </div>
+
+    <div className="border-t border-line">
+      <div className="shell flex flex-col gap-2 py-6 text-[12.5px] text-faint sm:flex-row sm:items-center sm:justify-between">
+        <p>© 2026 TickSPY</p>
+        <p>No accounts, no tracking, no server of ours holding your keys.</p>
+      </div>
     </div>
   </footer>
 );

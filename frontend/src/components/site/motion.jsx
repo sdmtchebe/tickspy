@@ -1,73 +1,75 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 
+/*
+ * Motion vocabulary for the landing page.
+ *
+ * Two rules shape everything here:
+ *
+ *   1. Nothing animates its own sharpness. Blur-in reveals are the single most
+ *      recognisable generated-page tell, and they also make text unreadable
+ *      for the first third of a second, which is exactly when a visitor is
+ *      deciding whether to keep reading.
+ *   2. Distance is small. A reveal travels 10px, once, in half a second. There
+ *      is no rotation, no scale, and no stagger longer than a quarter second.
+ */
+
 const EASE = [0.22, 1, 0.36, 1];
 
-/** Fade + rise + un-blur when scrolled into view. */
-export const Reveal = ({ children, delay = 0, y = 28, className = "", once = true, amount = 0.2, ...rest }) => (
+/** Fade and lift 10px as the element enters. The page's only entrance. */
+export const Reveal = ({ children, delay = 0, className = "", amount = 0.25, ...rest }) => (
   <motion.div
     className={className}
-    initial={{ opacity: 0, y, filter: "blur(10px)" }}
-    whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-    viewport={{ once, amount }}
-    transition={{ duration: 0.9, delay, ease: EASE }}
+    initial={{ opacity: 0, y: 10 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, amount }}
+    transition={{ duration: 0.55, delay, ease: EASE }}
     {...rest}
   >
     {children}
   </motion.div>
 );
 
-/** Word-by-word masked heading reveal. Accepts a string or array of lines. */
-const wordVariants = {
-  hidden: { y: "110%", rotate: 4 },
-  show: (d) => ({ y: 0, rotate: 0, transition: { duration: 0.9, delay: d, ease: EASE } }),
+/** Group reveal for a list or a row of cards. Same 10px, staggered 60ms. */
+export const group = (step = 0.06) => ({
+  hidden: {},
+  show: { transition: { staggerChildren: step, delayChildren: 0.04 } },
+});
+
+export const groupItem = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
 };
 
-export const SplitWords = ({ text, className = "", as: Tag = "h2", accent = [], delay = 0, ...rest }) => {
-  const lines = Array.isArray(text) ? text : [text];
-  const MTag = motion[Tag] ?? motion.h2;
-  let idx = 0;
-  return (
-    <MTag className={className} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }} {...rest}>
-      {lines.map((line, li) => (
-        <span key={li} className="block">
-          {line.split(" ").map((w) => {
-            const i = idx++;
-            const isAccent = accent.includes(w.replace(/[.,!?]/g, ""));
-            return (
-              <span key={`${li}-${i}`} className="inline-block overflow-hidden pb-[0.1em] -mb-[0.1em] align-bottom">
-                <motion.span className={`inline-block ${isAccent ? "text-mint" : ""}`} variants={wordVariants} custom={delay + i * 0.06}>
-                  {w}
-                </motion.span>
-                {"\u00A0"}
-              </span>
-            );
-          })}
-        </span>
-      ))}
-    </MTag>
-  );
-};
+/** Fade only, for panels whose position is already doing the work. */
+export const Soften = ({ children, delay = 0, className = "", amount = 0.2 }) => (
+  <motion.div
+    className={className}
+    initial={{ opacity: 0 }}
+    whileInView={{ opacity: 1 }}
+    viewport={{ once: true, amount }}
+    transition={{ duration: 0.6, delay, ease: EASE }}
+  >
+    {children}
+  </motion.div>
+);
 
-/** Scroll-linked parallax wrapper (moves `range` px across its viewport travel). */
-export const Parallax = ({ children, range = 60, className = "", scale = false }) => {
+/**
+ * Scroll-linked drift for the hero only. Kept to a few tens of pixels and
+ * passed through a stiff spring so it tracks the pointer-free gesture without
+ * lagging behind it.
+ */
+export const Parallax = ({ children, range = 40, className = "" }) => {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y = useSpring(useTransform(scrollYProgress, [0, 1], [range, -range]), { stiffness: 80, damping: 24, mass: 0.6 });
-  const s = useTransform(scrollYProgress, [0, 0.5, 1], [0.96, 1, 0.98]);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const y = useSpring(useTransform(scrollYProgress, [0, 1], [0, range]), {
+    stiffness: 140,
+    damping: 30,
+    restDelta: 0.5,
+  });
   return (
-    <motion.div ref={ref} style={{ y, scale: scale ? s : 1 }} className={className}>
+    <motion.div ref={ref} style={{ y }} className={className}>
       {children}
     </motion.div>
   );
-};
-
-/** Stagger container + item helpers. */
-export const stagger = (step = 0.09) => ({
-  hidden: {},
-  show: { transition: { staggerChildren: step, delayChildren: 0.05 } },
-});
-export const item = {
-  hidden: { opacity: 0, y: 24, filter: "blur(8px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.8, ease: EASE } },
 };

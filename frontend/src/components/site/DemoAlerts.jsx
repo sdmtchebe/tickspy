@@ -21,7 +21,7 @@ const POOL = [
 ];
 
 const Mark = ({ tone }) => (
-  <svg viewBox="0 0 20 20" className="h-5 w-5 shrink-0" aria-hidden="true" style={{ color: TONE[tone].hex }}>
+  <svg viewBox="0 0 20 20" className="h-[18px] w-[18px] shrink-0" aria-hidden="true" style={{ color: TONE[tone].hex }}>
     <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" strokeWidth="1.5" />
     {tone === "bull" && <path d="M6 12l4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}
     {tone === "bear" && <path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />}
@@ -43,19 +43,19 @@ const PriceAlertForm = ({ onArm }) => {
     onArm({ t, dir, price: p });
   };
   return (
-    <form onSubmit={submit} className="glass-inner rounded-2xl p-4" data-testid="price-alert-form">
-      <div className="mb-3 text-[12px] text-steel">Set a price alert</div>
+    <form onSubmit={submit} className="well p-4" data-testid="price-alert-form">
+      <div className="mb-3 text-[12.5px] text-steel">Set a price alert</div>
       <div className="flex flex-wrap gap-1.5">
         {PRICE_ALERT_TICKERS.map((s) => (
           <button type="button" key={s} onClick={() => pick(s)} data-testid={`price-alert-ticker-${s.toLowerCase()}`}
-            className={`num rounded-full border px-3 py-1 text-[12px] transition-colors ${t === s ? "border-mint/50 bg-mint/10 text-mint" : "border-white/10 text-steel hover:text-ink"}`}>{s}</button>
+            className={`num rounded-lg border px-3 py-1 text-[12px] transition-colors duration-150 ${t === s ? "border-mint/50 bg-mint/10 text-mint" : "border-line text-steel hover:border-white/20 hover:text-ink"}`}>{s}</button>
         ))}
       </div>
       <div className="mt-3 grid grid-cols-[auto_1fr] gap-2">
-        <div className="flex rounded-xl border border-white/10 p-0.5">
+        <div className="flex rounded-lg border border-line p-0.5">
           {["above", "below"].map((d) => (
             <button type="button" key={d} onClick={() => setDir(d)} data-testid={`price-alert-dir-${d}`}
-              className={`rounded-[10px] px-3 text-[12px] capitalize transition-colors ${dir === d ? (d === "above" ? "bg-mint/15 text-mint" : "bg-bear/15 text-bear") : "text-steel"}`}>{d}</button>
+              className={`rounded-[6px] px-3 text-[12px] capitalize transition-colors duration-150 ${dir === d ? (d === "above" ? "bg-mint/15 text-mint" : "bg-bear/15 text-bear") : "text-steel"}`}>{d}</button>
           ))}
         </div>
         <input value={price} onChange={(e) => setPrice(e.target.value)} inputMode="decimal" className="field num !py-2 !text-[14px]" aria-label="Alert price" data-testid="price-alert-price-input" />
@@ -91,43 +91,47 @@ export const DemoAlerts = ({ active }) => {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <div className="flex flex-col gap-4 lg:col-span-4">
         <div>
-          <h3 className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink">Alerts that say why.</h3>
-          <p className="mt-3 text-[15px] leading-relaxed text-steel">Price levels, any of the 14 indicators, pattern hits and calendar events. Each alert says what happened and what it usually means.</p>
+          <h3 className="t-subtitle text-ink">Alerts that say what happened.</h3>
+          <p className="mt-3 text-[14.5px] leading-relaxed text-steel">
+            Price levels, any of the 14 indicators, pattern hits and calendar events. Each alert states the condition that fired,
+            and stops there — the desk never tells you what to do about it.
+          </p>
         </div>
         <PriceAlertForm onArm={arm} />
         <AnimatePresence>
           {armed.map((a) => (
-            <motion.div key={a.key} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} className="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-2.5 text-[13px]" data-testid="armed-alert">
-              <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-amber text-amber" />
+            <motion.div key={a.key} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="flex items-center gap-3 rounded-lg border border-line px-4 py-2.5 text-[13px]" data-testid="armed-alert">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber" aria-hidden="true" />
               <span className="num text-ink">{a.t}</span>
               <span className="text-steel">{a.dir} {a.price.toFixed(2)}</span>
-              <span className="ml-auto text-[11px] uppercase tracking-wider text-amber">armed</span>
+              <span className="ml-auto text-[12px] text-amber">armed</span>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
+
       <div className="flex min-w-0 flex-col gap-4 lg:col-span-8">
-        <div className="flex min-h-[300px] flex-col gap-3" data-testid="demo-alerts-list">
+        <div className="flex min-h-[300px] flex-col gap-2" data-testid="demo-alerts-list">
           <AnimatePresence initial={false} mode="popLayout">
             {items.map((a) => (
               <motion.div
                 key={a.key}
                 layout
-                initial={{ opacity: 0, scale: 0.94, y: -8 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ type: "spring", stiffness: 380, damping: 28 }}
-                className={`glass-inner flex items-start gap-4 rounded-2xl p-4 ${TONE[a.tone].border}`}
+                transition={{ type: "spring", stiffness: 380, damping: 34 }}
+                className={`well flex items-start gap-4 p-4 ${TONE[a.tone].border}`}
                 data-testid="demo-alert-item"
               >
                 <Mark tone={a.tone} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="num text-[12px] font-semibold text-ink">{a.t}</span>
-                    <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${TONE[a.tone].border} ${TONE[a.tone].text}`}>{a.kind}</span>
+                    <span className="num text-[12px] font-medium text-ink">{a.t}</span>
+                    <span className={`rounded-md border px-1.5 py-0.5 text-[11px] ${TONE[a.tone].border} ${TONE[a.tone].text}`}>{a.kind}</span>
                     <span className="text-[14px] font-medium text-ink">{a.title}</span>
                   </div>
-                  <p className="mt-1 text-[13px] text-steel">{a.body}</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-steel">{a.body}</p>
                   <span className="num mt-2 block text-[12px] text-steel sm:hidden">{a.time}</span>
                 </div>
                 <span className="num hidden text-[12px] text-steel sm:block">{a.time}</span>

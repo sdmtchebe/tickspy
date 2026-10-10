@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Reveal, SplitWords } from "@/components/site/motion";
+import { Reveal } from "@/components/site/motion";
 
 // The contact/feedback forms post straight to a support inbox through FormSubmit
 // (formsubmit.co), a serverless relay that answers CORS and forwards the message
@@ -80,10 +80,10 @@ const ContactForm = () => {
     }
   };
   return (
-    <form onSubmit={submit} className="glass flex h-full flex-col gap-5 p-6 sm:p-8" data-testid="contact-form">
+    <form onSubmit={submit} className="panel flex h-full flex-col gap-5 p-6 sm:p-7" data-testid="contact-form">
       <div>
-        <h3 className="font-display text-[22px] font-semibold tracking-[-0.02em] text-ink">General contact</h3>
-        <p className="mt-2 text-[14px] text-steel">Questions, partnerships or just saying hi.</p>
+        <h3 className="text-[17px] font-medium text-ink">General contact</h3>
+        <p className="mt-1.5 text-[13.5px] text-steel">Questions, partnerships, or a note about something you liked.</p>
       </div>
       <Field id="c-name" label="Name"><input id="c-name" required maxLength={120} className="field" value={f.name} onChange={set("name")} placeholder="Your name" data-testid="contact-name-input" /></Field>
       <Field id="c-email" label="Email"><input id="c-email" type="email" required className="field" value={f.email} onChange={set("email")} placeholder="you@example.com" data-testid="contact-email-input" /></Field>
@@ -145,10 +145,10 @@ const FeedbackForm = () => {
   };
 
   return (
-    <form onSubmit={submit} className="glass flex h-full flex-col gap-5 p-6 sm:p-8" data-testid="feedback-form">
+    <form onSubmit={submit} className="panel flex h-full flex-col gap-5 p-6 sm:p-7" data-testid="feedback-form">
       <div>
-        <h3 className="font-display text-[22px] font-semibold tracking-[-0.02em] text-ink">Feedback and bug reports</h3>
-        <p className="mt-2 text-[14px] text-steel">Found something broken or want something built? Tell us.</p>
+        <h3 className="text-[17px] font-medium text-ink">Feedback and bug reports</h3>
+        <p className="mt-1.5 text-[13.5px] text-steel">Found something broken, or want something built? Tell us.</p>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id="f-name" label="Name"><input id="f-name" required maxLength={120} className="field" value={f.name} onChange={set("name")} placeholder="Your name" data-testid="feedback-name-input" /></Field>
@@ -167,13 +167,13 @@ const FeedbackForm = () => {
         <span className="label">Screenshot (optional)</span>
         <input ref={input} id="f-shot" type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={pick} data-testid="feedback-screenshot-input" />
         {preview ? (
-          <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-3" data-testid="feedback-screenshot-preview">
-            <img src={preview} alt="Screenshot preview" className="h-14 w-20 rounded-lg object-cover" />
-            <span className="flex-1 truncate text-[13px] text-ink">{file?.name}</span>
-            <button type="button" onClick={clear} className="rounded-full px-3 py-1 text-[13px] text-steel hover:text-bear" data-testid="feedback-screenshot-remove">Remove</button>
+          <div className="well flex items-center gap-4 p-3" data-testid="feedback-screenshot-preview">
+            <img src={preview} alt="Screenshot preview" className="h-14 w-20 rounded-[6px] object-cover" />
+            <span className="min-w-0 flex-1 truncate text-[13px] text-ink">{file?.name}</span>
+            <button type="button" onClick={clear} className="btn btn-quiet btn-sm" data-testid="feedback-screenshot-remove">Remove</button>
           </div>
         ) : (
-          <label htmlFor="f-shot" className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-white/15 px-4 py-4 text-[14px] text-steel transition-colors hover:border-mint/50 hover:text-ink" data-testid="feedback-screenshot-dropzone">
+          <label htmlFor="f-shot" className="flex cursor-pointer items-center gap-3 rounded-[10px] border border-dashed border-white/20 px-4 py-4 text-[14px] text-steel transition-colors duration-150 hover:border-mint/50 hover:text-ink" data-testid="feedback-screenshot-dropzone">
             <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true"><path d="M8 11V3M5 6l3-3 3 3M2 11v2h12v-2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
             Attach an image, up to 5 MB
           </label>
@@ -186,14 +186,19 @@ const FeedbackForm = () => {
 
 export const Contact = () => (
   <section id="contact" className="section-pad relative z-10" data-testid="contact-section">
-    <div className="mx-auto max-w-desk px-6">
-      <div className="mb-12 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <SplitWords text="Talk to us." accent={["us"]} className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-ink sm:text-5xl" />
-        <Reveal delay={0.2}><p className="flex items-center gap-3 text-base text-steel md:text-lg" data-testid="contact-note"><span className="pulse-dot h-1.5 w-1.5 rounded-full bg-mint text-mint" />We actually read these.</p></Reveal>
+    <div className="shell">
+      <div className="mb-11 grid gap-5 lg:grid-cols-12 lg:items-end">
+        <h2 className="t-title text-ink lg:col-span-7">Tell us what broke, or what to build next.</h2>
+        <Reveal delay={0.15} className="lg:col-span-5 lg:justify-self-end">
+          <p className="flex items-center gap-3 text-[14px] text-steel" data-testid="contact-note">
+            <span className="live-dot" aria-hidden="true" />
+            Every message reaches a real inbox.
+          </p>
+        </Reveal>
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <Reveal amount={0.15}><ContactForm /></Reveal>
-        <Reveal amount={0.15} delay={0.15}><FeedbackForm /></Reveal>
+        <Reveal amount={0.15} delay={0.08}><FeedbackForm /></Reveal>
       </div>
     </div>
   </section>
