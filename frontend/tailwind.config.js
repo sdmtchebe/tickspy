@@ -6,20 +6,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Planes. Depth is value, not translucency.
-        void: "#07090F",
-        surface: "#0E1219",
-        surface2: "#141924",
-        well: "#0A0D14",
-        // Text
-        ink: "#EDEFF3",
-        steel: "#9AA3B2",
-        faint: "#6E7686",
+        // Planes. Depth is value, not translucency. These mirror the :root
+        // tokens in index.css and must be changed together — a Tailwind
+        // text-surface utility and a var(--surface) are not the same colour
+        // source, so editing one alone leaves half the page behind.
+        void: "#10141C",
+        surface: "#171D28",
+        surface2: "#1F2632",
+        well: "#131822",
+        // Text — keeps 4.5:1 on the lighter ground, including on surface2.
+        ink: "#EEF1F6",
+        steel: "#AEB7C6",
+        faint: "#868FA0",
         // Data accents, carried over from the desk so the two surfaces match.
         mint: "#00E5A0",
         bear: "#FF4D6A",
         amber: "#FFB347",
-        line: "rgba(255,255,255,0.07)",
+        line: "rgba(255,255,255,0.09)",
       },
       fontFamily: {
         display: ["Sora", "sans-serif"],

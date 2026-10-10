@@ -27,20 +27,25 @@
    ========================================================================= */
 
 :root {
-  /* planes */
-  --void: #07090f;
-  --surface: #0e1219;
-  --surface-2: #141924;
-  --well: #0a0d14;
+  /* planes — a slate, not a black. The old set topped out at #07090f, which is
+     effectively the black point of the display, so a dark theme had nowhere to
+     sit except flat. Everything below moved up together so the page reads as
+     dim rather than switched off. */
+  --void: #10141c;
+  --surface: #171d28;
+  --surface-2: #1f2632;
+  --well: #131822;
 
   /* lines */
-  --line: rgba(255, 255, 255, 0.07);
-  --line-2: rgba(255, 255, 255, 0.14);
+  --line: rgba(255, 255, 255, 0.09);
+  --line-2: rgba(255, 255, 255, 0.17);
 
-  /* text — steel and faint both clear 4.5:1 on --void */
-  --ink: #edeff3;
-  --steel: #9aa3b2;
-  --faint: #6e7686;
+  /* text — steel and faint were re-derived so both still clear 4.5:1 on the
+     lighter ground, and on the lightest plane a caption can land on
+     (--surface-2), not just on --void: faint 4.7:1 there, 5.7:1 on --void. */
+  --ink: #eef1f6;
+  --steel: #aeb7c6;
+  --faint: #868fa0;
 
   /* data accents, used for meaning only */
   --mint: #00e5a0;
