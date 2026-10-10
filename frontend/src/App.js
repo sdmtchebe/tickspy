@@ -26,8 +26,10 @@ function App() {
     return () => stop();
   }, []);
 
+  // No opaque background on this wrapper either: painting bg-void here hid the
+  // body's scrolling gradient, so the whole page sat on one flat colour.
   return (
-    <div className="app-shell relative bg-void text-ink">
+    <div className="app-shell relative text-ink">
       <Sky />
       <Nav />
       <main className="relative z-10">

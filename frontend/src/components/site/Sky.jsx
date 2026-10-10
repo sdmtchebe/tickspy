@@ -31,24 +31,28 @@ export const Sky = () => {
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, -90]);
 
+  /* Deliberately no opaque background on the layer below. It used to paint
+     bg-void over the whole viewport, which hid the body's own scrolling gradient
+     completely — the page only ever showed the fixed washes. Letting the body
+     show through is what makes the tone move as you scroll. */
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-void" aria-hidden="true" data-testid="backdrop">
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true" data-testid="backdrop">
       {/* Two light sources, not one: the accent over the hero, and a cooler
           slate from the top right. Two off-centre lights are what stop the top
           of the page reading as a flat black rectangle. */}
       <div
         className="absolute left-1/2 top-0 h-[46vh] w-[130vw] -translate-x-1/2"
-        style={{ background: "radial-gradient(60% 100% at 50% 0%, rgba(0,229,160,0.055), transparent 70%)" }}
+        style={{ background: "radial-gradient(58% 100% at 50% 0%, rgba(0,229,160,0.11), transparent 72%)" }}
       />
       <div
         className="absolute right-0 top-0 h-[64vh] w-[72vw]"
-        style={{ background: "radial-gradient(70% 90% at 100% 0%, rgba(126,152,196,0.06), transparent 72%)" }}
+        style={{ background: "radial-gradient(70% 90% at 100% 0%, rgba(126,152,196,0.12), transparent 74%)" }}
       />
       {/* A horizon along the bottom of the viewport, so the field has a near and
           a far instead of fading to the same black in every direction. */}
       <div
         className="absolute inset-x-0 bottom-0 h-[34vh]"
-        style={{ background: "linear-gradient(0deg, rgba(120,142,180,0.05), transparent)" }}
+        style={{ background: "linear-gradient(0deg, rgba(120,142,180,0.09), transparent)" }}
       />
       <motion.div className="absolute inset-0" style={{ y }}>
         {STARS.map((s) => (

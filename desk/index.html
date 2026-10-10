@@ -6,7 +6,7 @@
 :root{color-scheme:dark;--bg:#0E1116;--surface:#151A22;--raised:#1B222C;--border:#2A323E;--text:#E6EAF0;--muted:#8A94A3;--up:#3DBE8B;--dn:#E5605F;--accent:#D9A441;--r:10px;--glass:rgba(26,30,37,.40);--glass-2:rgba(34,39,47,.34);--glass-3:rgba(44,50,59,.30);--gb:rgba(255,255,255,.11);--ghi:rgba(255,255,255,.16);--blur:blur(34px) saturate(135%);--blur-2:blur(20px) saturate(125%);--rim:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(255,255,255,.045),inset 1px 0 0 rgba(255,255,255,.05),inset -1px 0 0 rgba(255,255,255,.05);--shadow:0 18px 48px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.32)}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background-color:#0A0C10;background-image:radial-gradient(54vw 42vw at 4% -12%,rgba(226,232,240,.10),transparent 62%),radial-gradient(46vw 38vw at 100% -4%,rgba(198,206,218,.075),transparent 64%),radial-gradient(74vw 60vw at 52% 118%,rgba(148,158,172,.11),transparent 68%),linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.22));background-attachment:fixed;background-repeat:no-repeat;color:var(--text);font:13px/1.45 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background-color:#0A0C10;background-image:radial-gradient(54vw 42vw at 4% -12%,rgba(226,232,240,.10),transparent 62%),radial-gradient(46vw 38vw at 100% -4%,rgba(198,206,218,.075),transparent 64%),radial-gradient(74vw 60vw at 52% 118%,rgba(148,158,172,.11),transparent 68%),linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.22));background-attachment:fixed;background-repeat:no-repeat;color:var(--text);font:13px/1.45 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%;zoom:var(--desk-scale,1)}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .num{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
 a{color:var(--text);text-decoration:none}a:hover{text-decoration:underline}
@@ -55,7 +55,12 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
    1000px, where it genuinely runs out of room. */
 @media(max-width:1200px){.layout{grid-template-columns:148px minmax(0,1fr) 264px}}
 @media(max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}.rail{position:static}nav.tabs{flex-direction:row;flex-wrap:wrap;position:static;margin-bottom:2px}nav.tabs button{border-left:0;border-bottom:2px solid transparent;text-align:center}nav.tabs button.on{border-left-color:transparent;border-bottom-color:var(--accent)}}
-#cv{width:100%;height:min(70vh,640px);min-height:440px;display:block;background:transparent}
+/* The chart used to be a fixed 440-630px block, which on a short screen filled
+   the window on its own and pushed every tab's content below the fold. It now
+   takes a share of the viewport height instead, so the panel under it is on
+   screen. dvh where supported, so a phone's collapsing toolbar is accounted for. */
+#cv{width:100%;height:clamp(240px,46vh,620px);display:block;background:transparent}
+@supports(height:1dvh){#cv{height:clamp(240px,46dvh,620px)}}
 .legend{color:var(--muted);font-size:11px;padding:8px 12px;border-top:1px solid var(--gb);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .tab{display:none;padding-top:12px}.tab.on{display:block}
 .cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
@@ -261,7 +266,15 @@ const safeUrl=u=>{const s=String(u==null?'':u).trim();return /^https?:\/\//i.tes
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Bullish':s<0?'Bearish':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
-function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
+/* Switching tabs used to leave the scroll exactly where it was, so on a short
+   screen the panel just chosen was still below the fold and it looked like the
+   click had done nothing. Bring it into view when it is not already there. */
+function bringTab(k){const t=document.getElementById('t-'+k);if(!t)return;
+ const r=t.getBoundingClientRect();
+ if(r.top>=0&&r.top<window.innerHeight*0.55)return;
+ const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+ window.scrollTo({top:Math.max(0,r.top+window.scrollY-10),behavior:smooth?'smooth':'auto'})}
+function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP();if(bring!==false)bringTab(k)}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -1022,7 +1035,14 @@ $('#sfree').onclick=()=>{LS.cfg=JSON.stringify({ak:'',as:''});$('#ak').value='';
 $('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
 $('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#atest').onclick=()=>beep();$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
-addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});
+/* Rescale the desk to the machine it is running on. A short screen gets the
+   whole panel scaled down so more of it fits at once; a tall one is left at
+   1.0. The floor stops the type getting too small to read on a netbook. */
+function fitScale(){const h=window.innerHeight||document.documentElement.clientHeight;
+ const s=Math.max(0.88,Math.min(1,h/980));
+ document.documentElement.style.setProperty('--desk-scale',s.toFixed(3))}
+fitScale();
+addEventListener('resize',()=>{fitScale();draw();if(S.vol)drawVolChart(S.vol.series)});
 setInterval(news,12e4);setInterval(newsRender,3e4);
 // The clock still ticks once a second, but sessRender() now rewrites only the
 // seconds text unless the phase or the next event actually changed.
@@ -1038,5 +1058,5 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)return;prim
 sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
 $('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();
-alertRender();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go('live');load();
+alertRender();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go('live',false);load();
 </script></body></html>
