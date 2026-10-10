@@ -471,13 +471,20 @@
       ts.push(bars2[i].t);
     }
 
-    // Session boundaries: the overnight gap is one huge bar-to-bar return per
-    // session, so those returns are masked and boundary true range uses the
-    // intra-bar range only.
+    // Session boundaries: on intraday bars the overnight gap is one huge
+    // bar-to-bar return per session, so those returns are masked and boundary
+    // true range uses the intra-bar range only. On a daily (or coarser) series
+    // every bar IS its own session, so the overnight gap is the return itself -
+    // masking it deletes every observation the model has to learn from. The
+    // distinction is read from the data rather than assumed: if most consecutive
+    // bars sit on different US/Eastern dates, the series is not intraday.
     var boundary = new Array(n).fill(false);
     var haveTs = ts.every(isFiniteNum);
-    if (haveTs) {
-      for (i = 1; i < n; i++) boundary[i] = etDate(ts[i]) !== etDate(ts[i - 1]);
+    if (haveTs && n > 1) {
+      var crosses = 0;
+      for (i = 1; i < n; i++) if (etDate(ts[i]) !== etDate(ts[i - 1])) crosses++;
+      var intraday = crosses / (n - 1) < 0.5;
+      if (intraday) for (i = 1; i < n; i++) boundary[i] = etDate(ts[i]) !== etDate(ts[i - 1]);
     }
 
     var r = new Array(n).fill(NaN);

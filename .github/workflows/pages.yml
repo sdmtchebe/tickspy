@@ -48,7 +48,19 @@ jobs:
         # installed with the legacy resolver; match that here.
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
-      - name: Build landing page (bundles the desk at /desk/)
+      # The desk's no-key mode is the default experience on the published site,
+      # so it is worth failing the build rather than shipping it broken. Both
+      # suites are dependency-free and use no network: fixtures and a stubbed
+      # upstream only. The other desk suites are excluded here because they need
+      # python (parity) or a long training run (the backtests).
+      - name: Test the desk
+        run: |
+          node desk/tests/freesrc.js
+          node desk/tests/edge_integration.js
+          node desk/tests/volmodel_stage2.js
+          node desk/tests/volworker.js
+
+      - name: Build landing page (bundles the desk)
         working-directory: frontend
         env:
           # Optional: set a repository variable of this name (a support email
@@ -88,6 +100,14 @@ jobs:
           test -f frontend/build/desk/index.html || { echo "::error::desk missing"; exit 1; }
           test -f frontend/build/desk/volmodel.js || { echo "::error::desk engine missing"; exit 1; }
           test -f frontend/build/desk/volmodel2.js || { echo "::error::desk stage-2 engine missing"; exit 1; }
+          # The no-key data path: without it the desk sends every visitor to
+          # Settings again, which is the behaviour this file exists to prevent.
+          test -f frontend/build/desk/freesrc.js || { echo "::error::desk free-mode engine missing"; exit 1; }
+          grep -q "freesrc.js" frontend/build/desk/index.html || { echo "::error::desk does not load the free-mode engine"; exit 1; }
+          # The volatility worker trains the LSTM off the main thread; without it
+          # the desk falls back to training in the page, which freezes it.
+          test -f frontend/build/desk/volworker.js || { echo "::error::desk volatility worker missing"; exit 1; }
+          grep -q "volworker.js" frontend/build/desk/index.html || { echo "::error::desk does not start the volatility worker"; exit 1; }
           test -f frontend/build/desk/edge-config.js || { echo "::error::desk edge config missing"; exit 1; }
           # The desk is served from /desk/ and reaches the calendar one level up,
           # so the file must exist at the site root and be a non-empty JSON list.

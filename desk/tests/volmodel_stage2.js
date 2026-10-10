@@ -58,6 +58,41 @@ function syntheticBars(n, seed) {
   return bars;
 }
 
+/* Daily bars: one bar per US/Eastern date, which is what free mode feeds the
+ * model (see volHistory() in index.html). */
+function syntheticDaily(n, seed) {
+  const rnd = mulberry32(seed);
+  const start = Date.UTC(2023, 0, 2, 21, 0, 0);
+  const bars = [];
+  let close = 100;
+  for (let i = 0; i < n; i++) {
+    const vol = i < n / 2 ? 0.006 : 0.014;
+    const open = close;
+    close = open * Math.exp(gaussian(rnd) * vol);
+    const high = Math.max(open, close) * (1 + Math.abs(gaussian(rnd)) * 0.003);
+    const low = Math.min(open, close) * (1 - Math.abs(gaussian(rnd)) * 0.003);
+    bars.push({
+      t: new Date(start + i * 86400000).toISOString(),
+      o: open,
+      h: high,
+      l: low,
+      c: close,
+      v: 1000000 + Math.floor(rnd() * 500000),
+    });
+  }
+  return bars;
+}
+
+/* The engine's own session-date rule, reproduced so the mask can be checked. */
+function etDateOf(ms) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(ms));
+}
+
 const failures = { count: 0 };
 function ok(label, cond, extra) {
   if (!cond) failures.count++;
@@ -104,6 +139,26 @@ function main() {
   ok("buildStage1 returns direction labels", st.dirs.length === st.n);
   ok("buildStage1 returns usable positions", st.positions.length > 80, `(${st.positions.length})`);
   ok("split matches TEST_FRAC", st.splitPos === Math.floor(st.positions.length * 0.8), `(${st.splitPos}/${st.positions.length})`);
+
+  // --- bar cadence ----------------------------------------------------------
+  // Regression: every bar of a daily series sits on its own US/Eastern date, so
+  // an intraday-only "mask the overnight gap" rule erased every return and left
+  // zero usable sequences. That is exactly the input free mode gives the model,
+  // so the Volatility tab silently lost its LSTM and its backtest.
+  const dailyBars = syntheticDaily(900, 5);
+  const dailySt = DeskVol.buildStage1(dailyBars, { symbol: "SPY", periodsPerYear: 252 });
+  ok("a daily series masks nothing", dailySt.boundary.every((b) => !b));
+  ok("a daily series yields usable sequences", dailySt.positions.length > 80, `(${dailySt.positions.length})`);
+  ok("a daily series keeps its direction labels", dailySt.dirs.some((d) => d === 0) && dailySt.dirs.some((d) => d === 2));
+  const dailyRun = DeskVol.run(dailyBars, { symbol: "SPY", periodsPerYear: 252 });
+  ok("a daily series produces a backtest", dailyRun.backtest.samples > 40, `(${dailyRun.backtest.samples} bars)`);
+  // ...and the intraday rule itself is untouched: only real date changes mask.
+  const wantMask = st.ts.map((t, i) => (i ? etDateOf(t) !== etDateOf(st.ts[i - 1]) : false));
+  ok(
+    "intraday masking still matches the session dates",
+    JSON.stringify(st.boundary) === JSON.stringify(wantMask),
+    `(${st.boundary.filter(Boolean).length} masked of ${st.n})`
+  );
 
   // --- a synthetic stage-2 result --------------------------------------------
   const resByPos = {};

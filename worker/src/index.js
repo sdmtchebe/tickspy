@@ -4,6 +4,7 @@
  *   GET /api/overview   cached Gemini market overview (the expensive one)
  *   GET /api/news       aggregated market headlines from six free feeds
  *   GET /api/calendar   the economic calendar, relayed past its CORS block
+ *   GET /api/bars       keyless price data: the last completed session
  *   GET /api/health     cache ages and per-source status, for debugging
  *
  * Everything an API key touches lives here. The browser only ever sees our own
@@ -16,6 +17,7 @@
 
 import { cached, createMemory, warm } from "./cache.js";
 import { collectNews } from "./news.js";
+import { fetchSeries, knownInterval } from "./bars.js";
 import { generateOverview, DEFAULT_MODEL } from "./gemini.js";
 
 // Per-isolate, survives between requests handled by the same instance.
@@ -33,6 +35,20 @@ const KEYS = {
   calendar: "calendar:v1",
 };
 
+// Price bars are cached per symbol and timeframe. The version prefix means a
+// payload-shape change can be shipped without serving a half-migrated entry, and
+// v2 is exactly that: the intraday payload went from one session to the last
+// three, and a stale entry would have quietly kept the desk on the old shape
+// until its 20-hour TTL ran out.
+//
+// The `l` variant is the light range the symbol-list path asks for. It gets its
+// own key on purpose: one key cannot hold two different histories, and when the
+// watchlist and the detail view shared it, whichever wrote first decided how much
+// history the other saw - which quietly turned a relative-strength comparison
+// into five years for one symbol and three months for the other.
+export const BARS_KEY_PREFIX = "bars:v2";
+const barsKey = (tf, symbol, light = false) => `${BARS_KEY_PREFIX}${light ? "l" : ""}:${tf}:${String(symbol).toUpperCase()}`;
+
 // 25-minute TTL with a 20-minute cron: the schedule refreshes each entry before
 // it expires, so a visitor almost never pays for a rebuild.
 const OVERVIEW_TTL = 1500;
@@ -41,6 +57,21 @@ const NEWS_TTL = 180;
 const NEWS_GRACE = 900;
 const CALENDAR_TTL = 3600;
 const CALENDAR_GRACE = 21600;
+
+/* Price bars change once a day, when the previous session is final. A long TTL
+ * plus the daily cron is the whole "updates daily" story: the refresh follows
+ * the clock, not the audience, and a visitor is always reading an entry the cron
+ * wrote. The TTL is just under a day so the cron always wins the race, and the
+ * generous grace means a failed run serves the last good session rather than an
+ * error. */
+const BARS_TTL = 20 * 3600;
+const BARS_GRACE = 4 * 86400;
+
+/** The daily cron. Anything else on the schedule leaves price bars alone. */
+export const BARS_CRON = "17 5 * * *";
+
+/** How many symbols one request may ask for. */
+const MAX_SYMBOLS = 12;
 
 function allowedOrigins(env) {
   const raw = (env && env.ALLOWED_ORIGINS) || "https://sdmtchebe.github.io,http://localhost:3000,http://localhost:8000,http://localhost:8767";
@@ -136,6 +167,184 @@ async function getCalendar(request, env, ctx) {
 }
 
 /* -------------------------------------------------------------------- news -- */
+/* -------------------------------------------------------------------- bars --
+ * The no-key data path. A visitor with no Alpaca account still sees a real,
+ * complete previous session, because the fetch happens here instead of in their
+ * browser: Stooq sends no CORS headers and could not be read from a static page.
+ *
+ * Abuse is bounded rather than trusted. The ticker is validated before it can
+ * reach a URL, the symbol list is capped, and only the symbols in DESK_SYMBOLS
+ * are written to the durable cache - an arbitrary ticker is served from the
+ * per-isolate memory cache only, so a script cannot fill the KV namespace or
+ * burn its write quota. Every response is cached for a day either way.
+ */
+
+function warmSymbols(env) {
+  const raw = (env && env.DESK_SYMBOLS) || "SPY,QQQ,AAPL,NVDA,TSLA,MSFT,AMZN,META,GOOGL,IWM,DIA";
+  return raw
+    .split(",")
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+/* Stooq's free feed publishes a low daily request quota, and /api/bars is the
+ * one endpoint that takes a caller-supplied symbol. Without a limit, a script
+ * could walk through ticker after ticker and spend that quota on symbols no
+ * visitor asked for, leaving the desk's own list unserved. A per-isolate token
+ * bucket bounds it: at most BARS_FETCH_BUDGET missing entries may start an
+ * upstream fetch per window. Past that the endpoint answers with a sentence
+ * instead of calling upstream again. It is a speed bump rather than a wall -
+ * Cloudflare runs many isolates - but together with the durable cache holding
+ * only DESK_SYMBOLS it keeps the quota pointed at symbols people actually look
+ * at. Cached and stale entries are untouched, so ordinary traffic never sees it. */
+const BARS_FETCH_WINDOW_MS = 60_000;
+const BARS_FETCH_BUDGET = 60;
+const FETCH_HITS = [];
+let FETCH_BLOCKED = 0;
+
+/** Exported so the tests can drive the clock and read the block count. */
+export const _fetchBudget = {
+  windowMs: BARS_FETCH_WINDOW_MS,
+  max: BARS_FETCH_BUDGET,
+  get hits() {
+    return FETCH_HITS;
+  },
+  get blocked() {
+    return FETCH_BLOCKED;
+  },
+};
+
+export function budgetAllows(now = Date.now()) {
+  // Drop the timestamps that have aged out of the window, then admit one more
+  // only if the window still has room.
+  while (FETCH_HITS.length && now - FETCH_HITS[0] >= BARS_FETCH_WINDOW_MS) FETCH_HITS.shift();
+  if (FETCH_HITS.length >= BARS_FETCH_BUDGET) {
+    FETCH_BLOCKED++;
+    return false;
+  }
+  FETCH_HITS.push(now);
+  return true;
+}
+
+async function getBars(request, env, ctx, symbol, tf, light = false) {
+  const upper = String(symbol).toUpperCase();
+  const durable = warmSymbols(env).includes(upper) ? env.CACHE || null : null;
+  return cached({
+    kv: durable,
+    mem: MEM,
+    key: barsKey(tf, upper, light),
+    ttlSeconds: BARS_TTL,
+    graceSeconds: BARS_GRACE,
+    ctx,
+    produce: () => {
+      if (!budgetAllows()) {
+        throw new Error("Too many price requests right now. Please try again in a minute.");
+      }
+      return fetchSeries({ symbol: upper, tf, zone: (env && env.STOOQ_ZONE) || null, light });
+    },
+  });
+}
+
+async function handleBars(request, env, ctx, url) {
+  const tf = url.searchParams.get("tf") || "1Day";
+  if (!knownInterval(tf)) {
+    return json(
+      { error: "bad_tf", message: `Unsupported timeframe: ${tf}`, allowed: ["1Day", "5Min", "15Min"] },
+      { status: 400, request, env }
+    );
+  }
+
+  const multi = url.searchParams.get("symbols");
+  if (multi !== null) {
+    const list = multi
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean)
+      .slice(0, MAX_SYMBOLS);
+    if (!list.length) return json({ error: "bad_symbol", message: "No symbols given." }, { status: 400, request, env });
+
+    // `light` on this path: a symbol list is a watchlist or a relative-strength
+    // pair, which needs a quote and a short window per symbol, not a deep history.
+    // Parsing a full daily range for each entry is what pushed the request over
+    // the free plan's 10 ms CPU budget (Cloudflare error 1102).
+    const settled = await Promise.all(
+      list.map(async (s) => {
+        try {
+          const r = await getBars(request, env, ctx, s, tf, true);
+          return [s, r];
+        } catch (e) {
+          return [s, { error: String((e && e.message) || e) }];
+        }
+      })
+    );
+
+    const bars = {};
+    const errors = {};
+    let age = 0;
+    let hit = true;
+    let asOf = null;
+    // Which upstream actually answered, per symbol. Reporting a single source
+    // for the batch was a lie the moment there were two of them, and the desk
+    // surfaces this string.
+    const sources = new Set();
+    for (const [s, r] of settled) {
+      if (r.error) {
+        errors[s] = r.error;
+        continue;
+      }
+      // Daily series carry the closes the watchlist needs; the intraday series
+      // carry the session itself.
+      bars[s] = r.value.bars;
+      if (r.value.source) sources.add(r.value.source);
+      asOf = asOf || r.value.asOf;
+      age = Math.max(age, r.ageSeconds || 0);
+      if (!r.cached) hit = false;
+    }
+    if (!Object.keys(bars).length) {
+      return json(
+        { error: "unavailable", message: "No price data was available for those symbols.", errors },
+        { status: 502, request, env }
+      );
+    }
+    const sourceList = [...sources];
+    return json(
+      {
+        tf,
+        source: sourceList.length === 1 ? sourceList[0] : sourceList.length ? "mixed" : null,
+        delayed: true,
+        asOf,
+        bars,
+        errors,
+        cache: { hit, ageSeconds: age },
+      },
+      { request, env, cache: "public, max-age=600, s-maxage=3600" }
+    );
+  }
+
+  const symbol = url.searchParams.get("symbol") || "SPY";
+  let r;
+  try {
+    r = await getBars(request, env, ctx, symbol, tf);
+  } catch (e) {
+    const message = String((e && e.message) || e);
+    const notFound = /no data for that symbol|recognisable ticker/i.test(message);
+    return json({ error: notFound ? "unknown_symbol" : "unavailable", message }, { status: notFound ? 404 : 502, request, env });
+  }
+  return json(
+    {
+      ...r.value,
+      cache: { hit: r.cached, stale: r.stale, ageSeconds: r.ageSeconds },
+    },
+    {
+      request,
+      env,
+      cache: "public, max-age=600, s-maxage=3600",
+      extra: { "X-Cache": r.cached ? (r.stale ? "STALE" : "HIT") : "MISS" },
+    }
+  );
+}
+
 async function getNews(request, env, ctx, q) {
   return cached({
     kv: env.CACHE || null,
@@ -204,6 +413,7 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders(request, env) });
     }
+    // Read-only API: everything here is a GET, so anything else is a 405.
     if (request.method !== "GET") {
       return json({ error: "Method not allowed" }, { status: 405, request, env });
     }
@@ -220,7 +430,8 @@ export default {
               // Booleans only - never the values.
               configured: { geminiKey: Boolean(env.GEMINI_API_KEY), kv: Boolean(env.CACHE) },
               cacheAgeSeconds: mem,
-              ttl: { overview: OVERVIEW_TTL, news: NEWS_TTL, calendar: CALENDAR_TTL },
+              ttl: { overview: OVERVIEW_TTL, news: NEWS_TTL, calendar: CALENDAR_TTL, bars: BARS_TTL },
+              deskSymbols: warmSymbols(env),
             },
             { request, env }
           );
@@ -247,6 +458,9 @@ export default {
             }
           );
         }
+
+        case "/api/bars":
+          return await handleBars(request, env, ctx, url);
 
         case "/api/calendar": {
           const r = await getCalendar(request, env, ctx);
@@ -291,7 +505,7 @@ export default {
         }
 
         default:
-          return json({ error: "Not found", endpoints: ["/api/overview", "/api/news", "/api/calendar", "/api/health"] }, { status: 404, request, env });
+          return json({ error: "Not found", endpoints: ["/api/overview", "/api/news", "/api/calendar", "/api/bars", "/api/health"] }, { status: 404, request, env });
       }
     } catch (e) {
       // Last resort: the cached layer already serves stale values where it can,
@@ -312,6 +526,30 @@ export default {
    * summarising the same run's data. */
   async scheduled(event, env = {}, ctx = {}) {
     const kv = env.CACHE || null;
+
+    // Price bars belong to the daily run only. On the 20-minute schedule they
+    // would be identical every time, and each extra rebuild spends one of
+    // Stooq's daily requests for no new information.
+    if (event && event.cron === BARS_CRON) {
+      const results = await Promise.allSettled(
+        warmSymbols(env).flatMap((s) =>
+          ["1Day", "5Min"].map(async (tf) => {
+            const r = await warm({
+              kv,
+              mem: MEM,
+              key: barsKey(tf, s),
+              produce: () => fetchSeries({ symbol: s, tf, zone: env.STOOQ_ZONE || null }),
+            });
+            console.log(`cron: bars ${s} ${tf} refreshed (${r.value.bars.length} bars, session ${r.value.sessionDate})`);
+          })
+        )
+      );
+      for (const r of results) {
+        if (r.status === "rejected") console.error(`cron: bars fetch failed: ${(r.reason && r.reason.message) || r.reason}`);
+      }
+      return;
+    }
+
     const results = await Promise.allSettled([
       (async () => {
         const e = await warm({ kv, mem: MEM, key: KEYS.calendar, produce: produceCalendar });

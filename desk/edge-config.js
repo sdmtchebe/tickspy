@@ -10,9 +10,11 @@
  *
  *     window.DESK_EDGE_API = "https://tickspy-api.<your-subdomain>.workers.dev";
  *
- * Leave it as the empty string and the desk still works: it falls back to the
- * per-symbol news + summary that you unlock with your own keys in Settings, and
- * to the calendar baked into the site at build time. Nothing here is secret —
- * this is just a public URL — so this file is committed and published.
+ * This URL is load-bearing, not optional. It is where the desk's no-key price
+ * data comes from (`GET /api/bars`), along with the aggregated market headlines,
+ * the economic calendar and the one shared AI overview. Leave it empty and a
+ * visitor with no keys has no price source at all: the desk says so and offers
+ * the optional Alpaca upgrade. Nothing here is secret — it is just a public
+ * URL — so this file is committed and published.
  */
 window.DESK_EDGE_API = "https://tickspy-api.sdmtchebe.workers.dev";

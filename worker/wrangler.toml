@@ -11,8 +11,14 @@ compatibility_date = "2025-01-01"
 # clock rather than the audience: 72 Gemini calls a day no matter how many
 # people visit. The 20-minute interval is shorter than the 25-minute TTL, so
 # visitors almost always read an entry that is already fresh.
+#
+# The second entry is the price-data run. US price bars only change once a day,
+# after the previous session has settled, so the desk's no-key data is fetched
+# once a day and every visitor in between reads the same cached session. 05:17
+# UTC is after the US close (20:00/21:00 UTC) and after Stooq publishes the
+# session, and the odd minute keeps it off the top of the hour.
 [triggers]
-crons = ["*/20 * * * *"]
+crons = ["*/20 * * * *", "17 5 * * *"]
 
 # Global, durable cache shared by every isolate and every region.
 # Create it once with:  npx wrangler kv namespace create CACHE
@@ -25,6 +31,22 @@ id = "573639379943402dacd732d04e27ee93"
 # A stable alias, so a model rename upstream does not take the endpoint down.
 # Any model from the account's ListModels response works here.
 GEMINI_MODEL = "gemini-flash-lite-latest"
+
+# The symbols the daily price cron warms, and the only ones whose bars are
+# written to the durable KV cache (an arbitrary ticker is served from the
+# per-isolate memory cache instead, so a script cannot fill the namespace).
+#
+# Deliberately just the desk's default watchlist. The free source publishes a low
+# daily request quota, and each symbol costs three requests a day (one daily
+# series, plus the 5-minute series and its daily companion), so this list is the
+# whole of the scheduled load: 15 requests a day. Add symbols only if you know
+# the quota can take it.
+DESK_SYMBOLS = "SPY,QQQ,AAPL,NVDA,TSLA"
+
+# Optional: force the clock Stooq stamps its CSV with. The Worker normally works
+# this out from the data itself (see bars.js `detectZone`), so leave this unset
+# unless the session looks shifted - then set it to e.g. "Europe/Warsaw".
+# STOOQ_ZONE = "Europe/Warsaw"
 
 # Browser origins allowed to call this API. Add your own domain if you move the
 # site off GitHub Pages. "*" would work but is needlessly permissive.

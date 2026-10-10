@@ -1,6 +1,6 @@
 # Disclaimers, Terms of Use and Risk Disclosure
 
-**Last updated:** 2026-10-03
+**Last updated:** 2026-10-09
 
 > **This file is a good-faith template, not legal advice, and no disclaimer can
 > make an unlawful activity lawful.** Before you publish, host or distribute this
@@ -13,7 +13,7 @@
 ## 1. Not investment advice
 
 This project ("the Software") is an **educational and research tool**. Nothing
-produced by it — indicators, scores, Buy/Hold/Sell labels, volatility forecasts,
+produced by it — indicators, scores, bullish and bearish readings, volatility forecasts,
 regime labels, backtests, AI-generated text or any other output — is investment,
 financial, legal, accounting or tax advice.
 
@@ -71,15 +71,22 @@ results.**
 
 ## 6. Market data and redistribution — read this before publishing
 
-Market data displayed by the Software is obtained from third-party providers,
-typically **Alpaca** and, through it, exchange feeds such as **IEX**. That data is
-licensed, not owned by you, and is subject to the provider's terms.
+Market data displayed by the Software is obtained from third-party providers.
+With your own credentials that is **Alpaca** and, through it, exchange feeds such
+as **IEX**. With no credentials the Software falls back to a public free price
+source fetched server-side — **Yahoo Finance**, with **Stooq** as a fallback —
+serving one shared, cached copy of the most recent completed session per symbol.
+Either way the data is licensed, not owned by you, and is subject to the
+provider's terms.
 
 - Alpaca's published position is that **you may not redistribute its API data**.
 - Exchange market data generally requires a **display or distribution agreement**
   for any customer-facing or public use.
 - Free or personal tiers are typically licensed for **personal, non-commercial
   use only**.
+- **The no-credentials view is one completed session old, end-of-day, and
+  replayed** rather than streamed. It is not a live quote, it must never be
+  presented or relied on as one, and it is labelled as such on screen.
 
 Consequently: **do not publish, host, sublicense, resell or otherwise expose this
 Software — or a service built on it — in a way that serves or redistributes
@@ -96,11 +103,24 @@ affiliation is implied.
 
 ## 7. Third-party and AI services
 
-The Software can connect to third-party services you configure, including
-**Alpaca** (market data) and **Google Gemini** or a locally run model (text
-generation). Your use of those services is governed entirely by your own
-agreements with them, and you are responsible for complying with those terms,
-including any usage limits and costs.
+The Software uses third-party services. Some you connect yourself — **Alpaca**,
+if you choose to enter your own free keys for live market data — and some the
+project operates on your behalf: **Yahoo Finance**, with **Stooq** as a fallback
+(the keyless end-of-day price source, which the small edge function fetches
+server-side), the public news
+feeds and the FairEconomy economic calendar it aggregates, **Cloudflare**, which
+hosts that edge function, and **Google Gemini**, which writes the single shared
+market overview. The page also loads its web fonts from **Google Fonts**,
+fetches the TensorFlow.js runtime from the **jsDelivr** CDN when the volatility
+estimate runs, and posts the optional contact and feedback forms through
+**FormSubmit**. Your use of the services you connect is governed entirely by
+your own agreements with them, and you are responsible for complying with those
+terms, including any usage limits and costs.
+
+**No AI key is ever supplied by a visitor, and the Software asks for none.** The
+overview is written on a schedule with the project's own key, cached, and read by
+every visitor from that cache, so the number of AI calls follows the clock rather
+than the audience. There is no path by which a visitor can spend that key.
 
 Generative AI output is **machine-generated text**. It may be inaccurate,
 incomplete, out of date, biased or entirely fabricated ("hallucinated"). It has
@@ -148,7 +168,10 @@ licensing requirement.
 
 The Software has no accounts, no analytics, no telemetry, no advertising and no
 tracking cookies. Any API keys you enter are stored **only in your own browser
-(local storage)** and are transmitted only to the providers you choose. If you
+(local storage)** and are transmitted only to the providers you choose — the
+project never receives them. The small edge function keeps no accounts and no
+per-visitor records beyond its response caches; it sees only what any ordinary
+web request carries (an IP address and user agent, handled by Cloudflare). If you
 run the bundled local server, it runs on your machine and forwards requests on
 your behalf; it does not retain your keys. The `local-config.js` file, if
 present, contains keys in plain text and is excluded from version control — keep

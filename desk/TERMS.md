@@ -1,6 +1,6 @@
 # Terms of Use and Information-Only Policy
 
-**Last updated:** 2026-10-03
+**Last updated:** 2026-10-09
 
 Read this before using the software ("the Dashboard"). By using it, you agree to
 these terms. If you do not agree, do not use it.
@@ -54,9 +54,16 @@ is not indicative of future results.**
 
 ## 5. Market data — your responsibility, not ours
 
-Market data is **licensed, not owned**, and is supplied by third parties such as
-Alpaca and exchange feeds such as IEX. Their terms generally restrict use to
-**personal, non-commercial purposes** and **prohibit redistribution**.
+Market data is **licensed, not owned**, and is supplied by third parties: with
+your own credentials, Alpaca and exchange feeds such as IEX; with none, a public
+free price source fetched server-side (Yahoo Finance, with Stooq as a fallback).
+Their terms generally restrict use to **personal, non-commercial purposes** and
+**prohibit redistribution**.
+
+With no credentials the Dashboard serves **one shared, cached copy of the most
+recent completed session** per symbol, from that free source. It is delayed,
+end-of-day, one session old, and replayed rather than streamed; it is explicitly
+not a current quote, and the Dashboard labels it that way.
 
 You must not publish, host, sublicense, resell or otherwise expose the Dashboard
 in a way that distributes market data to anyone but you. Obtaining any required
@@ -68,16 +75,27 @@ are used for identification only. No endorsement or affiliation is implied.
 
 ## 6. Machine-generated summaries
 
-The only machine-generated text in the Dashboard is the factual news and calendar
-summary, which restates headlines and event data. It is **unverified and may be
-wrong, incomplete or fabricated**, and it makes no recommendation. Verify anything
-important at its source.
+The only machine-generated text in the Dashboard is a single market overview. It
+is written on the project's own server by an AI model, from public headlines and
+scheduled economic events, and is then served from a cache to every visitor. It
+is **unverified and may be wrong, incomplete or fabricated**, and it makes no
+recommendation. Visitors cannot supply their own AI key, and no prompt or other
+input from you reaches the model. Verify anything important at its source.
 
 ## 7. Third-party services
 
-You are responsible for complying with the terms of every service you connect,
-including their usage limits and fees. The authors are not a party to those
-agreements.
+The Dashboard depends on services the authors do not control: **Alpaca** and
+**IEX** for current market data when you connect your own keys, **Yahoo Finance**
+with **Stooq** as a fallback for the free keyless end-of-day prices behind the
+shared edge API, **Cloudflare** which
+hosts it, **Google Gemini** which writes the single shared market
+overview, the **FairEconomy** economic-calendar feed, and the public news feeds
+whose headlines are aggregated. The page also loads its web fonts from **Google
+Fonts**, downloads the TensorFlow.js runtime from the **jsDelivr** CDN when the
+volatility estimate runs, and relies on **FormSubmit** to relay the optional
+contact and feedback forms. You are responsible for complying with the terms
+of every service you connect, including their usage limits and fees. The authors
+are not a party to those agreements.
 
 ## 8. Eligibility
 

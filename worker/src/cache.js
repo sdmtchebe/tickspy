@@ -22,8 +22,29 @@ export function createMemory() {
   return new Map();
 }
 
+/* The per-isolate cache is a Map and nothing ever removed an entry, so a caller
+ * enumerating tickers could grow it until the isolate ran out of memory and took
+ * legitimate visitors down with it. Normal use holds a handful of keys (one per
+ * symbol and timeframe, plus the overview, news and calendar), so a cap this
+ * high only ever bites on abuse - and there, dropping the oldest entry is
+ * exactly the right trade. */
+const MEM_MAX = 64;
+
+function remember(mem, key, entry) {
+  mem.set(key, entry);
+  if (mem.size <= MEM_MAX) return;
+  // A Map iterates in insertion order, so the first key is the oldest.
+  for (const k of mem.keys()) {
+    if (mem.size <= MEM_MAX) break;
+    mem.delete(k);
+  }
+}
+
 /** Per-isolate map of in-flight producers, keyed by cache key. */
 export const GLOBAL_INFLIGHT = new Map();
+
+/** Exported for the tests: how many keys one isolate may remember. */
+export const MEMORY_LIMIT = MEM_MAX;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -143,11 +164,11 @@ export async function cached({
   if (stored) {
     const age = now() - stored.at;
     if (age < ttlMs) {
-      mem.set(key, stored);
+      remember(mem, key, stored);
       return { value: stored.value, cached: true, stale: false, ageSeconds: Math.round(age / 1000), ...meta };
     }
     if (age < graceMs) {
-      mem.set(key, stored);
+      remember(mem, key, stored);
       // Serve it now, replace it in the background.
       background(refresh({ kv, mem, inflight, key, produce, now }));
       return { value: stored.value, cached: true, stale: true, ageSeconds: Math.round(age / 1000), ...meta };
@@ -163,7 +184,7 @@ export async function cached({
       await sleep(150);
       const again = await readKv(kv, key);
       if (again) {
-        mem.set(key, again);
+        remember(mem, key, again);
         return { value: again.value, cached: true, stale: true, ageSeconds: Math.round((now() - again.at) / 1000), ...meta };
       }
       if (fresh(mem.get(key), now(), ttlMs)) {
@@ -180,7 +201,7 @@ export async function cached({
     // Collapses every concurrent caller for this key into one upstream call.
     const value = await singleFlight(inflight, key, produce);
     const entry = { at: now(), value };
-    mem.set(key, entry);
+    remember(mem, key, entry);
     await writeKv(kv, key, entry);
     return { value, cached: false, stale: false, ageSeconds: 0, ...meta };
   } finally {
@@ -192,7 +213,7 @@ async function refresh({ kv, mem, inflight, key, produce, now }) {
   try {
     const value = await singleFlight(inflight, key, produce);
     const entry = { at: now(), value };
-    mem.set(key, entry);
+    remember(mem, key, entry);
     await writeKv(kv, key, entry);
   } catch {
     /* keep serving the stale value; the cron will try again */
@@ -211,7 +232,7 @@ export async function warm(opts) {
   } = opts;
   const value = await singleFlight(inflight, key, produce);
   const entry = { at: now(), value };
-  mem.set(key, entry);
+  remember(mem, key, entry);
   await writeKv(kv, key, entry);
   return entry;
 }

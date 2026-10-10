@@ -71,7 +71,140 @@ frontend/  src/App.js (Lenis + sections)
   - Added an extremely clear, illustrated **Alpaca key setup tutorial** on the landing page (`SetupGuide.jsx`, `#setup`, linked from the nav), matching the site's glass/motion design: five steps with an animated mock of each screen and a plain-English "why" under every one, three "why" cards, five FAQs, and CTAs. The desk's Settings tab gains a matching five-step collapsible guide.
   - Added a **first-run setup wizard inside the desk** so the same tutorial cannot be missed when someone opens the app directly: with no saved keys (and after the legal notice) a five-step walkthrough opens by itself, shows progress dots and a "Why" per step, and carries the two key boxes in its final step so a visitor can paste and connect without leaving it. Saving or skipping is remembered, and **Show me how, step by step** in Settings reopens it. 28 browser checks pass.
 
+- 2026-10 (session 9):
+  - **New `postmortem/` — trading post-mortem analytics engine.** A self-contained
+    static module (no build step) that statistically analyses a trader's own past
+    trades: CSV/JSON import with broker column mapping and validation, P&L/R/
+    holding/expectancy/drawdown, adaptive-resolution MFE/MAE, benchmark-relative
+    attribution, entry volatility/RVOL and deterministic market regimes.
+  - **Reporting horizons** (day/week/month/quarter/year/rolling) auto-select the
+    coarsest readable view, mark thin buckets `insufficient`, and show deltas
+    against the previous bucket; **intratrade resolution** is derived per trade
+    (1-min / 5-min / daily) and overlapping windows are merged, so only the bars a
+    file needs are fetched.
+  - **Anti-false-discovery pipeline**: hypothesis registry + Benjamini-Hochberg
+    FDR, per-analysis sample gates, temporal stability across chronological
+    windows, confounding detection via stratified comparison, chronological 70/30
+    hold-out and walk-forward, robust statistics (Mann-Whitney, bootstrap,
+    permutation), outlier-aware reporting, and a confidence ladder. Findings are
+    typed (strength/weakness/opportunity/risk/neutral/insufficient) and each
+    carries a "why did the system say this?" evidence block.
+  - **Optional AI commentary** via the Worker's new `POST /api/postmortem`: Gemini
+    narrates only; the module's grounding check discards any output that invents a
+    number or gives advice, and a deterministic template is the fallback. A market
+    backdrop (index return, idiosyncratic decomposition) lets a loss in a
+    market-wide selloff be read as the world, not the trader.
+  - Four synthetic datasets (tiny / realistic / adversarial / confounded) plus a
+    synthetic market; 8 dependency-free node suites (135+ checks) including a
+    headless DOM run of the real controller. Published to Pages at `/postmortem/`
+    by `frontend/scripts/sync-postmortem.js`.
+  - Worker: `POST /api/postmortem` added with strictly bounded input (20 KB body
+    cap, 140-char strings, 30-item arrays, 4 levels deep, 6,000-char prompt),
+    POST-only, uncached, never echoing upstream bodies. Worker suite now 39 tests.
+
+- 2026-10 (session 10):
+  - **The desk no longer requires an Alpaca account.** With no saved keys it used
+    to bounce every visitor to Settings on load; that wall is gone. The default
+    experience is now the **previous completed session, replayed**, fetched
+    server-side from a free, keyless, publicly published end-of-day source and
+    served by the Worker. Alpaca keys become an optional upgrade to live data.
+  - New `GET /api/bars` in the Worker (`worker/src/bars.js`): ticker-validated,
+    multi-symbol aware, cached per symbol and timeframe, and refreshed by a
+    **daily Cron Trigger** (`17 5 * * *`, after the US close) so upstream requests
+    follow the clock rather than the audience. Only the configured
+    `DESK_SYMBOLS` are written to KV; an arbitrary ticker is served from the
+    per-isolate memory cache, so a script cannot fill the namespace or burn the
+    write quota. Hourly bars are refused (a session holds too few to be usable).
+  - **The upstream clock is detected, not assumed.** The free source stamps its
+    CSV in CET/CEST while the desk is written entirely against US/Eastern.
+    `detectZone()` scores candidate zones against the one thing certain about a
+    US session (09:30–16:00 ET) and picks the interpretation that puts the bars
+    inside it; `STOOQ_ZONE` overrides. The endpoint returns the **last three
+    complete sessions** — one is not enough, because the desk's indicators need
+    40+ bars, a 15-minute session is only 26, and prior-day levels need the day
+    before the one being replayed.
+  - **The replay is a clock, not a fabrication.** `desk/freesrc.js` maps the wall
+    clock onto the same time of day in the previous session, so at 11:00 ET you
+    are looking at yesterday's 11:00 and the chart, VWAP, opening range and
+    volume profile build the way they did that day; outside the session the whole
+    of it is on screen. Every surface that shows it carries one shared
+    disclosure sentence, and the timeframe selector offers only what the source
+    can honestly supply (5 min, 15 min, 1 day). Nothing in the revealed prefix is
+    ever from the future.
+  - Adapted to free mode: watchlist quotes, timeframe alignment, relative
+    strength, the volatility model (trained on the daily series), the news tab
+    (aggregated market headlines filtered by ticker and company name instead of
+    the per-symbol feed) and the scanner (watchlist movers). The setup wizard now
+    only auto-opens when there is genuinely no source at all.
+  - Tests: `worker/tests/run.js` **60 checks** (was 39), `desk/tests/freesrc.js`
+    **54 checks**, and a new `desk/tests/edge_integration.js` (**25 checks**) that
+    runs the real Worker handler against stubbed CSVs and feeds its JSON through
+    the real free-mode engine — asserting the revealed prefix is long enough for
+    the indicators, never contains a future bar, and spans more than one session.
+
+- 2026-10 (session 11) — the last touches before the first real deployment:
+  - **The trade journal is gone.** It logged fills to a browser-local list and
+    computed a win rate and expectancy; nothing else read it, it was the one
+    feature the desk carried that no visitor had asked for, and it had grown a
+    privacy-policy row of its own. Removed from the Tools tab, from the boot
+    path and from `PRIVACY.md`.
+  - **Alerts are honest about their limits, and reliable while the page is
+    open.** They were always in-page only, so the copy now says exactly that:
+    they fire while the desk is open (including with the tab in the background)
+    and they stop when the browser closes. The optional tone now plays through a
+    single shared `AudioContext` that is created and resumed on the first user
+    gesture, because a context created at alert time is suspended by autoplay
+    policy — which is why the sound had been intermittent. Alerts also got their
+    own 5-second check timer instead of depending on the chart's redraw cadence,
+    and a `visibilitychange` handler re-checks them (and the calendar) the moment
+    a backgrounded tab becomes visible again.
+  - **The economic calendar keeps itself current.** It used to load only when the
+    Calendar tab was opened, and its browser cache had no idea whether the date
+    had changed. It now loads on boot, is treated as stale when the US/Eastern
+    date rolls over, and reloads on tab focus — on top of the worker's hourly
+    refresh and the Pages workflow's six-hourly one. The Alerts tab therefore has
+    upcoming events to work with even if the Calendar tab was never opened.
+  - **One AI key, on the server, and none in the browser.** The desk's Gemini
+    key field, model picker, model loader, daily request cap, request counter and
+    the whole `gem()` call path were deleted, along with the two "Factual
+    summary" buttons (per-symbol news, calendar) that existed only to consume that
+    key and would otherwise have been dead. The desk's only machine-generated
+    text is now the single shared market overview the Worker writes on its cron
+    and every visitor reads from cache, so per-visitor traffic can no longer
+    multiply load on one key, and there is no way for a visitor to bring their
+    own key at all.
+  - **The Volatility tab no longer freezes the page.** Stage 2 trained the 2x64
+    LSTM on the main thread, so opening the tab blocked the UI for the whole run.
+    Training now happens in a Web Worker (`desk/volworker.js`) that pulls in
+    `volmodel.js`, `volmodel2.js` and TensorFlow.js, streams its progress back as
+    messages, and is terminated to cancel. If a worker cannot start, or
+    TensorFlow.js cannot be downloaded, the tab falls back to training in the
+    page and then to the stage-1 engine, exactly as before. The per-second clock
+    tick was also made to update only the clock text instead of rebuilding the
+    Session panel every second.
+  - **A daily series no longer looks like one session per bar.** Stage 1 masks
+    the bar-to-bar return at every US/Eastern session boundary, which is right
+    for intraday bars (it removes the overnight jump) and wrong for a daily
+    series, where every bar *is* a session — there the mask erased every return
+    and left **zero usable sequences**, so free mode's LSTM and its backtest
+    silently never ran. The rule is now read from the data: if most consecutive
+    bars sit on different session dates, the series is not intraday. The intraday
+    path is bit-identical (the Python parity harness still passes) and the daily
+    path now yields 828 usable sequences where it had none.
+
 ## Backlog
-- P0: Set the support email (`SUPPORT_EMAIL` repo variable) to enable the contact and feedback forms, then confirm the address with FormSubmit.
-- P1: Deploy the Worker (create the KV namespace, set `GEMINI_API_KEY`, set `window.DESK_EDGE_API`) so the shared Gemini overview and aggregated market news light up.
-- P2: OG image asset; favicon refresh to TickSPY mark.
+- P0: Deploy the Worker (`cd worker && npx wrangler deploy`). It is
+  load-bearing: the desk's no-key price data comes from `/api/bars` and its
+  shared AI overview from `/api/overview`, so without it a visitor with no keys
+  has no data source at all. The KV namespace id is already in `wrangler.toml`
+  and `GEMINI_API_KEY` is the only secret it needs.
+- P1: Set the support email (`SUPPORT_EMAIL` repo variable) to enable the contact
+  and feedback forms, then confirm the address with FormSubmit.
+- P2: Confirm the free price source still answers keylessly (its endpoint has
+  been reported to gate behind a CAPTCHA and it has a low daily quota);
+  `STOOQ_ZONE` is the escape hatch if the session clock ever looks shifted.
+- P3: OG image asset; favicon refresh to the TickSPY mark.
+- P4: True background alerts (firing with the browser closed) need Web Push: a
+  service worker plus the Worker storing each subscription and evaluating it on
+  a timer. Deliberately not built — the desk's alerts are in-page only and say
+  so.

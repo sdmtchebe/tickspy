@@ -136,7 +136,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><canvas id="cv" aria-label="Price chart. Drag to pan, scroll to zoom."></canvas><p class="legend">EMA 9 (amber), EMA 21 (grey), VWAP (white), Fibonacci (dim amber), volume bands (green up, red down). Drag to pan, scroll to zoom, Shift+scroll to pan only. Hover a bar for price and time, or hover a volume band for that bar's exact volume, time and OHLC.<button class="btn" id="cvlatest" style="padding:2px 8px;margin-left:8px">Latest</button><button class="btn" id="cvclear" style="padding:2px 8px;margin-left:6px">Clear highlight</button></p></div>
 <main>
 <section class="tab on" id="t-live"><div class="cols">
-<div class="panel"><h2>Volume profile</h2><div class="pbody"><canvas id="vp" aria-label="Volume profile" style="width:100%;height:210px;display:block"></canvas><p class="x">IEX volume by price over the last 90 candles. The amber bar is the point of control (POC), where the most volume traded; the brighter bars are the 70% value area. The dashed line marks the last price.</p></div></div>
+<div class="panel"><h2>Volume profile</h2><div class="pbody"><canvas id="vp" aria-label="Volume profile" style="width:100%;height:210px;display:block"></canvas><p class="x">IEX volume by price over the last 90 candles. The amber bar is the point of control (POC), where the most volume traded; the brighter bars are the 70% value area. The dashed line marks the last price.</p><details class="exp"><summary aria-label="Explain the volume profile">?</summary><p class="iexp">A histogram of how much volume traded at each price over the last 90 candles, rather than over time. The point of control is the single busiest price; the value area is the band holding 70% of the volume. Price near a heavy band is said to have support or resistance there because that is where trades actually happened - a tendency, not a guarantee.</p></details></div></div>
 <div class="panel"><h2>Key levels</h2><div id="lv" class="stack"></div></div>
 <div class="panel"><h2>Timeframe alignment</h2><div id="mtf" class="pbody"></div></div>
 <div class="panel"><h2>Relative strength</h2><div id="rsx" class="pbody"></div></div>
@@ -151,7 +151,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="pbody"><div class="row"><button class="btn" id="vrun">Refresh estimate</button><label><input type="checkbox" id="vstrict"> Strict backtest (3-fold, much slower)</label><button class="btn" id="vcancel" style="display:none">Cancel</button><span class="tagline" id="vstatus"></span></div></div>
 <div class="track" id="vpt" style="display:none"><i class="nu" id="vpb" style="width:0%"></i></div>
 <div class="pbody" style="padding-top:0;padding-bottom:0"><span class="tagline" id="vptx"></span></div>
-<div id="vout"><p class="x" style="padding:12px">Open this tab to run the two-stage estimate: Garman-Klass realized volatility with a HAR / GARCH(1,1) filter, then an LSTM residual correction. The network is trained in your browser on the loaded history, so the first run takes a minute or two and shows its progress. Nothing needs to be installed or running.</p></div>
+<div id="vout"><p class="x" style="padding:12px">Open this tab to run the two-stage estimate: Garman-Klass realized volatility with a HAR / GARCH(1,1) filter, then an LSTM residual correction. The network is trained on the loaded history, so the first run takes a minute or two and shows its progress. That training runs in a background worker, so the rest of the desk stays responsive while it works. Nothing needs to be installed or running.</p></div>
 <div class="disc"><b>Estimates only, not advice.</b> These are statistical estimates from historical prices. They are not investment advice, not a recommendation to buy or sell, carry no guarantee, and can be wrong. The LSTM is only allowed to influence the estimate in proportion to the accuracy it actually demonstrated out of sample.</div></div>
 <div class="panel"><h2>Backtest <span class="tagline">chronological hold-out, no look-ahead</span></h2><div id="vbt" class="pbody"><p class="x">Metrics appear with the forecast.</p></div></div>
 <div class="panel"><h2>Realized vs predicted volatility</h2><div class="pbody"><canvas id="vch" style="width:100%;height:190px;display:block" aria-label="Realized versus predicted volatility"></canvas><p class="x">Out-of-sample test window. Grey is realized Garman-Klass volatility, amber is the stage-1 HAR estimate, green adds the LSTM residual correction. Values are percent per bar; lower means calmer.</p></div></div>
@@ -161,37 +161,35 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><h2>AI market overview <span class="tagline" id="ostat"></span></h2><div class="pbody"><div id="ovw" class="ai">Loading the shared overview...</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the headlines and scheduled events above. It is written once on the server and shared by every visitor, so it costs one request no matter how many people are reading. Unverified, not advice, no recommendation.</div></div></div>
 </div>
 <div class="panel"><h2>Symbol news <span class="tagline" id="nstat">connecting...</span></h2>
-<div class="pbody"><div class="row"><button class="btn" id="nbtn">Factual summary</button></div><div id="nai" class="ai">An automatic summary of the headlines appears here. It is generated text and may be wrong; always read the headlines themselves.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the headlines below. It is not verified, not advice, and not a recommendation.</div></div>
+<div class="pbody"><p class="x">Headlines for the symbol above. With no keys this filters the market headlines by ticker and company name; with your own Alpaca keys it is that symbol's own news feed.</p></div>
 <div id="nl" class="stack"></div></div></section>
 <section class="tab" id="t-cal"><div class="panel"><h2>Economic calendar <span class="tagline">USD · medium and high impact</span></h2>
-<div class="pbody"><div class="row"><button class="btn" id="cbtn">Factual summary</button><label><input type="checkbox" id="conly"> High impact only</label><span class="tagline" id="cstat"></span></div>
+<div class="pbody"><div class="row"><label><input type="checkbox" id="conly"> High impact only</label><span class="tagline" id="cstat"></span></div>
 <div class="row" style="border-top:1px solid var(--gb);padding-top:9px;margin-top:2px"><label><input type="checkbox" id="caon"> Alert me</label><span id="calfields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="caimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="calead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="carel"> and on release</label><label><input type="checkbox" id="casnd"> sound</label></span></div>
-<div id="csum" class="x" style="margin-bottom:6px"></div><div id="cai" class="ai">An automatic summary of the scheduled events appears here. It is generated text and may be wrong.</div><div class="disc"><b>Auto-generated summary.</b> Machine text that restates the event list below. It does not predict market reactions and is not advice.</div></div>
+<div id="csum" class="x" style="margin-bottom:6px"></div><p class="x" style="margin-bottom:6px">The list keeps itself current: our server re-reads the source every hour, and this page loads it on start, when the US trading day rolls over, and when you return to the tab.</p></div>
 <div id="cl" class="stack"></div></div></section>
 <section class="tab" id="t-alert"><div class="panel"><h2>Alerts</h2><div class="pbody">
-<p class="x">Fire while this page is open, on the current symbol. Each alert is removed once it triggers.</p>
-<div class="row"><select id="at" aria-label="Alert type"><option value="above">Price above</option><option value="below">Price below</option><option value="vwapup">Price above VWAP</option><option value="vwapdown">Price below VWAP</option><option value="pattern">Any pattern appears</option></select><input id="av" type="number" step="0.01" placeholder="price" aria-label="Price" style="width:110px"><button class="btn" id="aadd">Add alert</button></div>
+<p class="x">Price alerts on the current symbol. They fire while the desk is open &mdash; including when the tab is in the background &mdash; and play a short tone unless you turn sound off. They stop once the tab or the browser is closed, and each alert is removed once it triggers.</p>
+<div class="row"><select id="at" aria-label="Alert type"><option value="above">Price above</option><option value="below">Price below</option><option value="vwapup">Price above VWAP</option><option value="vwapdown">Price below VWAP</option><option value="pattern">Any pattern appears</option></select><input id="av" type="number" step="0.01" placeholder="price" aria-label="Price" style="width:110px"><button class="btn" id="aadd">Add alert</button><button class="btn" id="atest" type="button">Test sound</button></div>
 <div id="al" class="stack"></div>
 <div style="border-top:1px solid var(--gb);margin-top:14px;padding-top:12px"><h3 style="margin:0 0 6px;font-size:15px">Financial calendar alerts</h3>
-<p class="x" style="margin:0 0 8px">Fire while this page is open, on scheduled US economic releases shown in the Calendar tab. The same preference is shared by both tabs and stays in this browser.</p>
+<p class="x" style="margin:0 0 8px">Scheduled US economic releases from the Calendar tab. They fire the same way as price alerts &mdash; while the desk is open, with a tone &mdash; and they also stop when the browser is closed. The same preference is shared by both tabs and stays in this browser.</p>
 <div class="row"><label><input type="checkbox" id="faon"> Alert me</label><span id="fafields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="faimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="falead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="farel"> and on release</label><label><input type="checkbox" id="fasnd"> sound</label></span></div>
 <div id="falist" class="stack"></div></div></div></div></section>
 <section class="tab" id="t-tools"><div class="cols">
 <div class="panel"><h2>Risk calculator</h2><div class="pbody"><p class="x">Arithmetic only: divides a chosen dollar amount by the distance between the two prices you enter.</p>
-<div class="row"><label>Account $ <input id="ra" type="number" value="25000" style="width:110px"></label><label>Risk % <input id="rr" type="number" value="0.5" step="0.1" style="width:80px"></label></div>
-<div class="row"><label>Entry <input id="re" type="number" step="0.01" style="width:110px"></label><label>Stop <input id="stop" type="number" step="0.01" style="width:110px"></label></div>
+<div class="row"><label>Account $ <input id="ra" type="number" value="25000" style="width:110px"></label><details class="exp"><summary aria-label="Explain Account">?</summary><p class="iexp">The total size of the account the trade is being sized against, in dollars. It is used only to turn the risk percentage into a dollar amount; the calculator places no trade.</p></details><label>Risk % <input id="rr" type="number" value="0.5" step="0.1" style="width:80px"></label><details class="exp"><summary aria-label="Explain Risk percent">?</summary><p class="iexp">How much of the account you are willing to lose if the stop is hit, as a percent of the whole account. This is a number you choose; it is not a recommendation.</p></details></div>
+<div class="row"><label>Entry <input id="re" type="number" step="0.01" style="width:110px"></label><details class="exp"><summary aria-label="Explain Entry">?</summary><p class="iexp">The price you expect to enter the trade at. The distance from here to the stop is the per-share risk the position size is built from.</p></details><label>Stop <input id="stop" type="number" step="0.01" style="width:110px"></label><details class="exp"><summary aria-label="Explain Stop">?</summary><p class="iexp">The price at which you would exit to cap the loss. It must differ from the entry: a wider stop means fewer shares for the same dollar risk.</p></details></div>
 <div id="ro" class="ai">Enter entry and stop.</div><div class="disc">Illustrative arithmetic only. It is not tailored to your circumstances and is not investment advice.</div></div></div>
-<div class="panel"><h2>Backtester</h2><div class="pbody"><p class="x">Replays an EMA 9/21 crossover on the loaded bars, long above and short below. One short window and no costs: a sanity check, not proof.</p><div class="row"><button class="btn" id="btb">Run backtest</button></div><div id="bto" class="ai">Not run yet.</div><div class="disc"><b>Hypothetical results.</b> Backtests are simulated on past data, exclude commissions, fees, slippage, taxes and borrow costs, and cover a single short window. They are a sanity check on a rule, not evidence of future performance, and not investment advice.</div></div></div>
-<div class="panel"><h2>Trade journal</h2><div class="pbody"><p class="x">Log fills to see your real edge. Stored in this browser only.</p>
-<div class="row"><input id="js" placeholder="SPY" aria-label="Symbol" style="width:76px"><select id="jd" aria-label="Direction"><option value="long">Long</option><option value="short">Short</option></select><input id="je" type="number" step="0.01" placeholder="entry" aria-label="Entry" style="width:90px"><input id="jx" type="number" step="0.01" placeholder="exit" aria-label="Exit" style="width:90px"><input id="jz" type="number" placeholder="shares" aria-label="Shares" style="width:84px"><button class="btn" id="jadd">Add</button></div>
-<div id="jo" class="ai">No trades logged.</div></div></div>
-<div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
+<div class="panel"><h2>Backtester</h2><div class="pbody"><p class="x">Replays an EMA 9/21 crossover on the loaded bars, long above and short below. One short window and no costs: a sanity check, not proof.</p><details class="exp"><summary aria-label="Explain the backtest rule">?</summary><p class="iexp">The rule is fixed and simple: go long when the 9-period EMA crosses above the 21-period EMA, go short when it crosses below, and flip on the next opposite cross. It runs only on the bars currently loaded, with no costs, no slippage and no position sizing, so it says whether the rule was consistent in this window - not whether it makes money.</p></details><div class="row"><button class="btn" id="btb">Run backtest</button></div><div id="bto" class="ai">Not run yet.</div><div class="disc"><b>Hypothetical results.</b> Backtests are simulated on past data, exclude commissions, fees, slippage, taxes and borrow costs, and cover a single short window. They are a sanity check on a rule, not evidence of future performance, and not investment advice.</div></div></div>
+<div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><details class="exp"><summary aria-label="Explain the scanner">?</summary><p class="iexp">Shows which symbols are trading the most volume right now (most active) and which moved the most, up or down (top movers). Without Alpaca keys it instead ranks the largest moves among the symbols in your own watchlist, from the free daily feed, and says so on screen.</p></details><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
 </div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
-<div class="row"><button class="btn" id="wizbtn" type="button">Show me how, step by step</button><span class="muted" style="font-size:12px">Get your free Alpaca keys in about two minutes.</span></div>
-<p class="x">Keys stay in this browser only. Alpaca market-data access is enough. A Gemini key is optional and is used only for the factual news and calendar summaries. <span id="use" class="num"></span></p>
-<details id="setuphelp" style="margin:4px 0 10px;border:1px solid var(--gb);border-radius:10px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px">New here? How to get your free Alpaca keys</summary>
+<p class="x" style="margin-top:0"><b>These keys are optional.</b> The desk already works with no account at all: it shows the previous completed session, replayed as if live, from a free public end-of-day source. Adding your own free Alpaca keys upgrades it to current prices, 1-minute bars, the live trade stream and the symbol's own news feed.</p>
+<div class="row"><button class="btn" id="wizbtn" type="button">Connect Alpaca for live data</button><span class="muted" style="font-size:12px">Free keys, about two minutes.</span></div>
+<p class="x">Keys stay in this browser only, are sent only to Alpaca, and never reach us. Market-data access is enough. Nothing else is asked for: there is no AI key to enter anywhere, because the market overview is written on our own server and shared by every visitor.</p>
+<details id="setuphelp" style="margin:4px 0 10px;border:1px solid var(--gb);border-radius:10px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px">Optional: get free Alpaca keys for live data</summary>
 <div style="padding:0 12px 10px"><ol style="margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.6">
 <li><b>Make a free account</b> at <a href="https://alpaca.markets" target="_blank" rel="noopener">alpaca.markets</a>, then click the link Alpaca emails you to confirm your address. No card, no cost.</li>
 <li><b>Stay on the Paper account.</b> The switcher is in the top-left corner of the dashboard; Paper uses pretend money but gives the same live market data.</li>
@@ -201,12 +199,8 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 </ol><p class="x">Why: TickSPY shows real prices, and Alpaca is the free service that supplies them. Your keys stay in this browser, are sent only to Alpaca, and never reach us. Prefer pictures? <a href="../index.html#setup" target="_blank" rel="noopener">See the illustrated guide</a>.</p></div></details>
 <div class="row"><input id="ak" placeholder="Alpaca key ID" style="width:100%" aria-label="Alpaca key ID"></div>
 <div class="row"><input id="as" type="password" placeholder="Alpaca secret" style="width:100%" aria-label="Alpaca secret"></div>
-<div class="row"><input id="gk" type="password" placeholder="Gemini API key (aistudio.google.com)" style="width:100%" aria-label="Gemini API key"></div>
-<div class="row"><select id="gm" aria-label="Gemini model"></select><button class="btn" id="gl">Load models</button></div>
-<p class="x">Used only to summarise news headlines and economic-calendar events factually. It has no chat, sees no advice request, and never comments on the current symbol's outlook.</p>
-<div class="row"><label>Daily summary request cap <input id="cap" type="number" value="400" style="width:80px"></label></div>
-<button class="btn" id="sv">Save and connect</button>
-<p class="x">Tip: pick a Flash-Lite model. They have the highest free daily allowance.</p>
+<div class="row"><button class="btn" id="sv">Save and connect</button><button class="btn" id="sfree" type="button">Use free mode instead</button></div>
+<p class="x"><b>Use free mode instead</b> forgets any saved keys and returns the desk to the no-account feed below, where it started.</p>
 </div></div></section>
 </main>
 </div>
@@ -224,14 +218,16 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <script src="edge-config.js"></script>
 <script src="volmodel.js"></script>
 <script src="volmodel2.js"></script>
+<script src="freesrc.js"></script>
 <script>
 const $=s=>document.querySelector(s),LS=localStorage,cfg=()=>JSON.parse(LS.cfg||'{}');
 if(window.DESK_KEYS){try{LS.cfg=JSON.stringify({...window.DESK_KEYS,...JSON.parse(LS.cfg||'{}')})}catch(e){}}
 /* Two ways to run. With the desk's own Python server present we route through
-   its /p and /vol endpoints. The /vol path is the reference two-stage model;
+   its /p and /vol endpoints. The /vol path is the reference two-stage model.
    Without one (a static host such as GitHub Pages) the page talks straight to
-   Alpaca and Gemini - their APIs answer CORS -   and the volatility tab uses the
-   in-browser volatility engine. DESK_API is null in that direct case.
+   Alpaca - its API answers CORS - and the volatility tab runs its own two-stage
+   engine, with the LSTM training confined to a Web Worker (volworker.js) so the
+   page stays responsive. DESK_API is null in that direct case.
 
    Server mode is auto-detected when the page is served by the desk server
    (default port 8000), or forced by setting window.DESK_API_BASE in
@@ -239,15 +235,26 @@ if(window.DESK_KEYS){try{LS.cfg=JSON.stringify({...window.DESK_KEYS,...JSON.pars
 const DESK_API = (typeof window.DESK_API_BASE === 'string')
   ? (window.DESK_API_BASE || '')
   : (location.port === '8000' ? '' : null);
-const netErr=e=>{const m=String((e&&e.message)||e);return /failed to fetch|networkerror|load failed|err_|connection/i.test(m)?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':m};
+const netErr=e=>{const m=String((e&&e.message)||e);
+ if(!/failed to fetch|networkerror|load failed|err_|connection/i.test(m))return m;
+ // Only the local-server mode can be fixed by starting server.py; on the
+ // published desk a failed request is just a connection problem, and telling
+ // a visitor to run a Python script would be nonsense.
+ return DESK_API!==null?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':'Could not reach the data source. Check your connection and try again.'};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
-const S={sym:'SPY',tf:'1Min',bars:[],price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set()};
+const S={sym:'SPY',tf:'1Min',tfLive:'1Min',mode:null,bars:[],allBars:null,daily:[],sessionDate:null,free:null,rep:null,tz:null,tzCoverage:null,mtfRows:null,price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set(),mnews:null,mnewsAt:0};
 const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['set','Settings']];
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Which remote URL is safe to put in an href. esc() stops a value breaking out
+   of the attribute, but it would happily pass "javascript:..." through, and a
+   feed item carrying that URL would be a click-to-run script with access to the
+   keys this page keeps in localStorage. Only http(s) is ever linked; anything
+   else renders inert. */
+const safeUrl=u=>{const s=String(u==null?'':u).trim();return /^https?:\/\//i.test(s)?s:''};
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Bullish':s<0?'Bearish':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
-function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk();journalRender()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
+function go(k){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP()}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -263,20 +270,98 @@ async function edgeGet(path,ms){if(!EDGE_API)throw Error('The edge API is not co
  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||15000);
  try{const r=await fetch(EDGE_API+path,{signal:c.signal,headers:{Accept:'application/json'}});
   if(r.status===503){const j=await r.json().catch(()=>({}));throw Error(j.message||'The server is not configured yet.')}
-  if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,120));
+  // Our own API answers errors as {error,message}; prefer that over a raw body
+  // so a quota or an unknown ticker reads as a sentence in the UI.
+  if(!r.ok){const txt=await r.text();let msg='';try{msg=(JSON.parse(txt)||{}).message||''}catch(_){}throw Error(msg||(r.status+' '+txt.slice(0,120)))}
   return await r.json()}finally{clearTimeout(t)}}
 async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,140));return r.json()}
-async function load(){if(!cfg().ak){go('set');return}
- try{$('#st').textContent='Loading...';const st=new Date(Date.now()-6*864e5).toISOString();
+/* ---------- modes ----------
+   Three ways the desk can get data, and only the last one asks you for anything:
+
+     live - you saved Alpaca keys, so prices are current;
+     free - no keys, so the previous completed session is fetched from the edge
+            API and replayed (see freesrc.js). This is what a first-time visitor
+            gets, because nothing should have to be created before the desk is
+            useful;
+     none - no keys and no edge API, so there is genuinely nothing to show.
+
+   The old behaviour was to send everyone to Settings on load. That wall is
+   gone: Settings is now an optional upgrade to live data. */
+const FREE=window.DeskFree||null;
+const freeMode=()=>FREE?FREE.modeFor(cfg(),{edgeApi:EDGE_API}):'none';
+const freeTf=id=>FREE&&FREE.TIMEFRAMES.some(t=>t.id===id)?id:(/^1[Hh]our$/.test(id)?'15Min':'5Min');
+const dkOf=t=>new Date(t).toLocaleDateString('en-CA',{timeZone:'America/New_York'});
+let bannerEl=null;
+function banner(html){if(!bannerEl){bannerEl=document.createElement('div');bannerEl.className='banner';bannerEl.id='fbn';document.body.prepend(bannerEl)}
+ bannerEl.innerHTML=html||'';bannerEl.style.display=html?'':'none';
+ const go2=document.getElementById('fbn-go');if(go2)go2.onclick=e=>{e.preventDefault();go('set')}}
+function tfOptions(){const ids=S.mode==='free'?FREE.TIMEFRAMES.map(t=>t.id):['1Min','5Min','15Min'];
+ const label=id=>id==='1Day'?'1 day':id==='1Hour'?'1 hour':id.replace('Min',' min');
+ $('#tf').innerHTML=ids.map(id=>`<option value="${id}">${label(id)}</option>`).join('')}
+async function load(){
+ const mode=freeMode();
+ // Keep each mode's own timeframe, so flipping between them does not leave the
+ // selector pointing at something the current mode cannot serve.
+ if(mode==='free'&&S.mode!=='free'){S.tfLive=S.tf;S.tf=freeTf(S.tf)}
+ else if(mode!=='free'&&S.mode==='free')S.tf=S.tfLive||'1Min';
+ S.mode=mode;tfOptions();$('#tf').value=S.tf;
+ // Leaving live mode must not leave a socket open behind it.
+ if(mode!=='live'){try{S.ws&&S.ws.close()}catch(_){}try{S.newsWs&&S.newsWs.close()}catch(_){}}
+ if(mode==='live')return loadLive();
+ if(mode==='free')return loadFree();
+ return loadNone()}
+async function loadLive(){
+ try{$('#st').textContent='Loading...';banner('');
+ const st=new Date(Date.now()-6*864e5).toISOString();
  const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);
- S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.at(-1)?.c;S.lastPx=null;refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
+ S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
  }catch(e){$('#st').textContent='Error: '+netErr(e)}}
+function loadNone(){S.bars=[];S.allBars=null;S.price=null;S.an=null;S.rep=null;refresh();
+ $('#st').textContent='No data source';
+ banner('No price source is configured, so there is nothing to show. Either deploy the edge API (<b>worker/</b>, see its README) or paste your own free Alpaca keys in <a href="#" id="fbn-go">Settings</a>.');
+ // This is the only case where the desk pushes the setup wizard at someone:
+ // there is genuinely nothing on screen without it.
+ wizMaybe();go('set')}
+async function loadFree(){
+ const tf=freeTf(S.tf);S.tf=tf;$('#tf').value=tf;
+ // Drop the previous replay before fetching, so a failure cannot leave the
+ // header claiming to be mid-replay on data that never arrived.
+ S.rep=null;S.allBars=null;
+ try{$('#st').textContent='Loading the previous session...';
+ const j=await edgeGet(FREE.barsPath(S.sym,tf),25000);
+ S.free=j;S.sessionDate=j.sessionDate||j.asOf;S.tz=j.tz;
+ S.daily=(j.daily||[]).map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));
+ S.allBars=(j.bars||[]).map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));
+ S.lastPx=null;S.rep=null;freeRefresh();freeBanner();
+ freeWatch();freeNews();mtf();rsq();
+ }catch(e){$('#st').textContent='Previous session unavailable';
+ banner(`<b>Could not load the previous session.</b> ${esc(netErr(e))} You can still add your own free Alpaca keys in <a href="#" id="fbn-go">Settings</a> for live data.`)}}
+/* The revealed slice of the previous session. Everything downstream reads S.bars,
+   so the replay only has to move this one line. */
+function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayAt(Date.now(),S.sessionDate);S.rep=rep;
+ S.bars=S.tf==='1Day'?S.allBars.slice():FREE.reveal(S.allBars,rep.at);
+ S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
+function freeBanner(){if(S.mode!=='free'){banner('');return}
+ banner(`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`)}
+/* One tick a second, same as the clock: recompute where the replay should be and
+   redraw only when it has actually moved. */
+function freeTick(){if(S.mode!=='free'||!S.allBars||S.tf==='1Day')return;
+ const rep=FREE.replayAt(Date.now(),S.sessionDate);if(S.rep&&rep.minutes===S.rep.minutes&&rep.complete===S.rep.complete)return;
+ S.rep=rep;freeRefresh()}
 function refresh(){analyze();draw();head();render()}
+/* In free mode the change is measured against the previous session's close, not
+   today's open, because there is no today - the bars on screen ARE the previous
+   session, and the label has to say so. */
+function freeChange(){const d=S.daily;if(!d||d.length<2)return null;
+ if(S.tf==='1Day'){const a=d.at(-1),b=d.at(-2);return{pct:(a.c/b.c-1)*100,when:FREE.prettyDate(dkOf(a.t))}}
+ const i=d.findIndex(b=>dkOf(b.t)===S.sessionDate);if(i<1||S.price==null)return null;
+ return{pct:(S.price/d[i-1].c-1)*100,when:FREE.prettyDate(S.sessionDate)}}
 function head(){const B=S.bars;if(!B.length)return;const pxEl=$('#px'),prev=S.lastPx;S.lastPx=S.price;pxEl.textContent='$'+f2(S.price);
  if(prev!=null&&S.price!=null&&S.price!=prev){pxEl.classList.remove('tfu','tfd');void pxEl.offsetWidth;pxEl.classList.add(S.price>prev?'tfu':'tfd');setTimeout(()=>pxEl.classList.remove('tfu','tfd'),150)}
  const d=B.at(-1).t.toLocaleDateString('en-CA',{timeZone:'America/New_York'}),f=B.find(b=>b.t.toLocaleDateString('en-CA',{timeZone:'America/New_York'})==d),pc=S.price-f.o;
+ if(S.mode==='free'){const fc=freeChange();$('#chg').innerHTML=fc?`<span class="${cls(fc.pct)}">${fc.pct>=0?'+':''}${f2(fc.pct)}%</span> <span class="muted">vs prior close \u00b7 ${esc(fc.when)}</span>`:'<span class="muted">previous session</span>';return}
  $('#chg').innerHTML=`<span class="${cls(pc)}">${pc>=0?'+':''}${f2(pc)} (${f2(pc/f.o*100)}%)</span> <span class="muted">today</span>`}
-function stream(){S.ws?.close();const c=cfg(),w=S.ws=new WebSocket('wss://stream.data.alpaca.markets/v2/iex'),sym=S.sym;let lastRef=0;
+function stream(){if(S.mode!=='live')return;S.ws?.close();const c=cfg(),w=S.ws=new WebSocket('wss://stream.data.alpaca.markets/v2/iex'),sym=S.sym;let lastRef=0;
  w.onopen=()=>w.send(JSON.stringify({action:'auth',key:c.ak,secret:c.as}));
  w.onmessage=m=>{for(const d of JSON.parse(m.data)){
   if(d.T=='success'&&d.msg=='authenticated'){w.send(JSON.stringify({action:'subscribe',trades:[sym],bars:[sym]}));$('#st').textContent='Live (IEX real-time)'}
@@ -284,17 +369,36 @@ function stream(){S.ws?.close();const c=cfg(),w=S.ws=new WebSocket('wss://stream
   else if(d.T=='t'&&sym==S.sym){S.price=d.p;const b=S.bars.at(-1);if(b){b.c=d.p;b.h=Math.max(b.h,d.p);b.l=Math.min(b.l,d.p)}if(Date.now()-lastRef>1500){lastRef=Date.now();refresh()}}
   else if(d.T=='b'&&sym==S.sym)load2()}};
  w.onclose=()=>{if(S.ws==w)$('#st').textContent='Disconnected'}}
-let l2=0;function load2(){if(Date.now()-l2<20000)return;l2=Date.now();const k=S.sym,st=new Date(Date.now()-6*864e5).toISOString();alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`).then(j=>{if(k!=S.sym)return;S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));refresh()}).catch(()=>{})}
-async function mtf(){if(!cfg().ak)return;try{const out={};for(const tf of ['5Min','15Min']){const st=new Date(Date.now()-10*864e5).toISOString();const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${tf}&start=${st}&limit=200&sort=desc&feed=iex&adjustment=raw`);const c=(j.bars||[]).reverse().map(b=>b.c);if(c.length<22){out[tf]=0;continue}const e9=ema(c,9),e21=ema(c,21),p2=c.at(-1);out[tf]=e9.at(-1)>e21.at(-1)&&p2>e21.at(-1)?1:e9.at(-1)<e21.at(-1)&&p2<e21.at(-1)?-1:0}
- if(S.an){const p1=S.an.p;out['1Min']=S.an.e9.at(-1)>S.an.e21.at(-1)&&p1>S.an.e21.at(-1)?1:S.an.e9.at(-1)<S.an.e21.at(-1)&&p1<S.an.e21.at(-1)?-1:0}else out['1Min']=0;
- out.score=(out['1Min']||0)+(out['5Min']||0)+(out['15Min']||0);S.mtf=out;mtfRender()}catch(e){S.mtf={err:e.message};mtfRender()}}
+let l2=0;function load2(){if(S.mode!=='live'||Date.now()-l2<20000)return;l2=Date.now();const k=S.sym,st=new Date(Date.now()-6*864e5).toISOString();alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`).then(j=>{if(k!=S.sym)return;S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));refresh()}).catch(()=>{})}
+/* One alignment rule, whichever timeframes the current mode can supply: the 9
+   EMA above the 21 EMA with price above both is bullish, below both is bearish,
+   anything else is mixed. */
+const tfAlign=(closes,n=9,m=21)=>{const c=closes||[];if(c.length<Math.max(n,m)+2)return 0;const e9=ema(c,n),e21=ema(c,m),p2=c.at(-1);return e9.at(-1)>e21.at(-1)&&p2>e21.at(-1)?1:e9.at(-1)<e21.at(-1)&&p2<e21.at(-1)?-1:0};
+function mtfSet(rows,err){S.mtfRows=rows;S.mtf=err?{err}:{score:(rows||[]).reduce((a,x)=>a+x.v,0)};mtfRender()}
+async function mtf(){if(S.mode!=='live')return mtfFree();if(!cfg().ak)return;
+ try{const out=[];for(const tf of ['5Min','15Min']){const st=new Date(Date.now()-10*864e5).toISOString();const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${tf}&start=${st}&limit=200&sort=desc&feed=iex&adjustment=raw`);out.push({n:tf.replace('Min',' min'),v:tfAlign((j.bars||[]).reverse().map(b=>b.c))})}
+ out.unshift({n:'1 min',v:S.an?tfAlign(S.bars.map(b=>b.c)):0});mtfSet(out)}catch(e){mtfSet(null,e.message)}}
+/* Free mode replaces 1-minute alignment with the daily one the source can
+   actually supply, and reveals only the part of the session that has been
+   replayed so far - reading the whole session here would be look-ahead. */
+async function mtfFree(){try{
+ const [a,b]=await Promise.all([edgeGet(FREE.barsPath(S.sym,'5Min'),25000),edgeGet(FREE.barsPath(S.sym,'15Min'),25000)]);
+ const cut=S.rep?S.rep.at:new Date();
+ mtfSet([
+  {n:'5 min',v:tfAlign(FREE.reveal((a.bars||[]).map(x=>({t:x.t,c:x.c})),cut).map(x=>x.c))},
+  {n:'15 min',v:tfAlign(FREE.reveal((b.bars||[]).map(x=>({t:x.t,c:x.c})),cut).map(x=>x.c))},
+  {n:'1 day',v:tfAlign(S.daily.map(x=>x.c))},
+ ])}catch(e){mtfSet(null,e.message)}}
 /* ---------- watchlist ---------- */
 const watchlist=()=>{try{return JSON.parse(LS.wl||'["SPY","QQQ","AAPL","NVDA","TSLA"]')}catch(e){return ['SPY']}};
 function wlRender(){const wl=watchlist(),q=S.wq||{};
  $('#wl').innerHTML=wl.map(s=>{const d=q[s],ch=d?`<span class="num ${cls(d.ch)}">${d.ch>=0?'+':''}${f2(d.ch)}%</span>`:'';return `<span class="chip${s==S.sym?' on':''}"><button type="button" class="csym" data-s="${esc(s)}" aria-label="Switch to ${esc(s)}">${esc(s)}${ch}</button><button type="button" class="cdel" data-del="${esc(s)}" aria-label="Remove ${esc(s)} from watchlist">×</button></span>`}).join('')||'<span class="muted">Empty. Add a symbol.</span>'}
 function wlAdd(s){s=String(s||'').trim().toUpperCase();if(!s)return;const wl=watchlist();if(!wl.includes(s))wl.push(s);LS.wl=JSON.stringify(wl);wlRender();wlQuotes()}
 function wlDel(s){LS.wl=JSON.stringify(watchlist().filter(x=>x!=s));wlRender()}
-async function wlQuotes(){if(!cfg().ak)return;const wl=watchlist();if(!wl.length)return;try{const st=new Date(Date.now()-10*864e5).toISOString();const j=await alp(`/v2/stocks/bars?symbols=${wl.join(',')}&timeframe=1Day&start=${st}&limit=3&sort=desc&feed=iex&adjustment=raw`);const m=j.bars||{};const q={};for(const k in m){const b=m[k]||[];if(b.length>1)q[k]={p:b[0].c,ch:(b[0].c-b[1].c)/b[1].c*100};else if(b.length)q[k]={p:b[0].c,ch:0}}S.wq=q;wlRender()}catch(e){/* quotes are optional */}}
+async function wlQuotes(){if(S.mode==='free')return freeWatch();if(!cfg().ak)return;const wl=watchlist();if(!wl.length)return;try{const st=new Date(Date.now()-10*864e5).toISOString();const j=await alp(`/v2/stocks/bars?symbols=${wl.join(',')}&timeframe=1Day&start=${st}&limit=3&sort=desc&feed=iex&adjustment=raw`);const m=j.bars||{};const q={};for(const k in m){const b=m[k]||[];if(b.length>1)q[k]={p:b[0].c,ch:(b[0].c-b[1].c)/b[1].c*100};else if(b.length)q[k]={p:b[0].c,ch:0}}S.wq=q;wlRender()}catch(e){/* quotes are optional */}}
+/* Free watchlist quotes: one request for the whole list, from daily bars. */
+async function freeWatch(){const wl=watchlist();if(!wl.length)return;
+ try{const j=await edgeGet(FREE.symbolsPath(wl,'1Day'),25000);S.wq=FREE.quotesFromDaily(j.bars||{});wlRender()}catch(e){/* quotes are optional */}}
 $('#wl').onclick=e=>{const d=e.target.closest('[data-del]');if(d){wlDel(d.dataset.del);return}const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';load()}};
 $('#waddb').onclick=()=>{wlAdd($('#wadd').value);$('#wadd').value='';wlRender()};
 $('#wadd').onkeydown=e=>{if(e.key=='Enter'){$('#waddb').click()}};
@@ -350,7 +454,11 @@ function analyze(){const B=S.bars;if(B.length<40){S.an=null;return}
  const cp=candles(B),S150=B.slice(-150),[PH,PL]=pivots(S150),chp=charts(S150,PH,PL,B.length-S150.length);
  const sc=it.reduce((a,x)=>a+x.s,0),cs=Math.max(-2,Math.min(2,cp.reduce((a,x)=>a+x.s*(x.age<2?1:.4),0))),hs=Math.max(-3,Math.min(3,chp.reduce((a,x)=>a+x.s*1.5,0)));
  const up=Math.round(Math.max(3,Math.min(97,50+50*(sc+cs+hs)/(it.length+5)))),big=(sq<25?1:0)+(rv>1.5?1:0)+(atr/p*100>.12?1:0);
- S.an={e9,e21,vw,it,cp,chp,up,big,sq,rv,p,atr,vsd,vwap,lv:levels(B,p),fib:FIB}}
+ S.an={e9,e21,vw,it,cp,chp,up,big,sq,rv,p,atr,vsd,vwap,lv:levels(B,p),fib:FIB};
+ // The free feed carries the session being replayed plus the two before it, so
+ // `levels()` finds the prior day on its own. Only the wording needs adjusting:
+ // in free mode the last session on screen is the previous one, not today.
+ if(S.mode==='free'&&S.an.lv)S.an.lv.openLabel='Session open'}
 function candles(B){const o=[],L=B.length-1,ab=avg(B.slice(-20).map(b=>Math.abs(b.c-b.o)));
  for(let a=0;a<6;a++){const i=L-a,b=B[i],p=B[i-1],q=B[i-2],bd=Math.abs(b.c-b.o),rg=b.h-b.l||1e-9,up=b.h-Math.max(b.o,b.c),lo=Math.min(b.o,b.c)-b.l,dn=B[i-4].c>b.c,upT=B[i-4].c<b.c,g=x=>x.c>x.o,add=(n,s,t)=>o.push({n,s,t,age:a,time:ET(b.t),i0:i-2,i1:i});
   if(bd<=.1*rg)add('Doji',0,'Open and close almost equal: indecision. Matters most after a long run; often precedes a pause or reversal.');
@@ -386,17 +494,33 @@ function render(){const a=S.an;
  if(!a){$('#ov').innerHTML='<p class="x" style="padding:12px">Waiting for enough bars (need 40).</p>';$('#top').innerHTML='';lvRender(null);wlRender();return}
  const c=a.up>=60?'up':a.up<=40?'dn':'nu';
  const bias=a.up>=60?'Bullish readings':a.up<=40?'Bearish readings':'Mixed readings';
- $('#ov').innerHTML=`<div class="score"><span class="n num ${c}">${a.up}</span><span class="muted">/ 100</span><span class="call ${c}">${bias}</span></div><div class="track"><i class="${c}" style="width:${a.up}%"></i></div><div class="pbody"><span class="muted">Big-move conditions:</span> <span class="${a.big>=2?'nu':'muted'}">${['Quiet','Normal','Elevated','High'][a.big]}</span>${exp('Overall read','0 means every signal is bearish, 100 means every signal is bullish, and around 50 means they conflict. It is a weighted vote of the indicators and patterns, not a probability and not a recommendation. Measured over five years of 5-minute SPY bars it did NOT predict the next move - bullish and bearish readings were followed by much the same returns - so read it as a description of the readings right now, not a forecast.')}${exp('Big-move conditions','Counts three conditions: Bollinger width squeezed, volume well above normal, and ATR large. It says something may happen, not which way, and it is an ordered band rather than a calibrated probability. Measured over five years of 5-minute SPY bars the bands did separate: a big move followed 21% of the time at Quiet, 35% at Normal, 53% at Elevated and 62% at High, against a 33% base rate.')}<p class="x" style="margin-top:6px">Information only, not advice. A factual summary of indicator readings - no recommendation, no instruction, no view on what you should do.</p></div>`;
+ $('#ov').innerHTML=`<div class="score"><span class="n num ${c}">${a.up}</span><span class="muted">/ 100</span><span class="call ${c}">${bias}</span></div><div class="track"><i class="${c}" style="width:${a.up}%"></i></div><div class="pbody"><span class="muted">Big-move conditions:</span> <span class="${a.big>=2?'nu':'muted'}">${['Quiet','Normal','Elevated','High'][a.big]}</span>${exp('Overall read','The score runs 0 to 100 but is clamped to 3-97, so it never actually reaches either end: low means most signals are bearish, high means most are bullish, and around 50 means they conflict. It is a weighted vote of the indicator and pattern readings, not a probability and not a recommendation. Measured over five years of 5-minute SPY bars it did NOT predict the next move - bullish and bearish readings were followed by much the same returns, a spread of about +0.002% per 12 bars - so read it as a description of the readings right now, not a forecast.')}${exp('Big-move conditions','Counts three conditions: Bollinger width squeezed, volume well above normal, and ATR large. It says something may happen, not which way, and it is an ordered band rather than a calibrated probability. Measured over five years of 5-minute SPY bars the bands did separate: a big move followed 21% of the time at Quiet, 35% at Normal, 53% at Elevated and 62% at High, against a 33% base rate.')}<p class="x" style="margin-top:6px">Information only, not advice. A factual summary of indicator readings - no recommendation, no instruction, no view on what you should do.</p></div>`;
  const sig=a.it.filter(x=>x.s).sort((x,y)=>Math.abs(y.s)-Math.abs(x.s)).slice(0,4);
- $('#top').innerHTML=sig.map(x=>`<div class="mrow"><span>${esc(x.n)}</span><span class="num ${cls(x.s)}">${esc(x.val)}</span></div>`).join('')||'<p class="x" style="padding:12px">No directional signals.</p>';
+ $('#top').innerHTML=(sig.length?`<div class="iline" style="padding:4px 12px">${exp('Strongest readings','The indicator rows with a non-neutral direction, ranked by how strong the reading is. Every one of them is explained in full on the Indicators tab; this panel just points at which signals currently lean furthest away from neutral.')}</div>`:'')+(sig.map(x=>`<div class="mrow"><span>${esc(x.n)}</span><span class="num ${cls(x.s)}">${esc(x.val)}</span></div>`).join('')||'<p class="x" style="padding:12px">No directional signals.</p>');
  $('#ind').innerHTML=a.it.map(x=>`<div class="irow"><div class="iline"><span class="iname">${esc(x.n)}</span><span class="ival num">${esc(x.val)}</span><span class="dot ${/ATR|Keltner|volume/i.test(x.n)?(/volume/i.test(x.n)&&x.s?cls(x.s):'na'):cls(x.s)}" title="${lab(x.s)}"></span>${exp(x.n,x.t)}</div></div>`).join('');
  const seen=new Set;$('#cp').innerHTML=a.cp.filter(x=>!seen.has(x.n)&&seen.add(x.n)).map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<span class="muted num">${x.age?x.age+' bars ago':'latest bar'} (${x.time})</span><button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')||'<p class="x" style="padding:12px">No candlestick pattern in the last 6 bars.</p>';
  $('#chp').innerHTML=a.chp.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')||'<p class="x" style="padding:12px">No clear chart pattern right now.</p>';
  lvRender(a.lv);mtfRender();rsRender();alerCheck();wlRender()}
-function toast(t,quiet){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000);if(quiet)return;try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);g.gain.value=.04;o.frequency.value=880;o.start();o.stop(a.currentTime+.15)}catch(_){}}
-async function rsq(){if(!cfg().ak)return;try{const st=new Date(Date.now()-6*864e5).toISOString(),url=k=>alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);const[a,b]=await Promise.all([url(S.sym),url('QQQ')]);const ch=j=>{const x=(j.bars||[]).map(v=>v.c);return x.length>1?(x.at(-1)/x[0]-1)*100:0};const s=ch(a),q=ch(b);S.rs={s,q,d:s-q};rsRender()}catch(e){S.rs={err:e.message};rsRender()}}
+/* One AudioContext for the whole page, created (and resumed) on the first real
+   user gesture. Browsers refuse to start audio that no interaction preceded, so
+   building a fresh context inside toast() silently failed for anyone who had only
+   scrolled; priming it on pointerdown/keydown is what makes the alert tone
+   reliable. The Alerts tab exposes a "Test sound" button, which both verifies it
+   and primes the context. */
+let actx=null;
+function primeAudio(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;actx=actx||new C();if(actx.state==='suspended')actx.resume()}catch(_){}}
+addEventListener('pointerdown',primeAudio,{passive:true});addEventListener('keydown',primeAudio,{passive:true});
+function beep(){try{primeAudio();if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);g.gain.value=.04;o.frequency.value=880;o.start();o.stop(actx.currentTime+.15)}catch(_){}}
+function toast(t,quiet){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000);if(!quiet)beep()}
+async function rsq(){if(S.mode==='free')return rsqFree();if(!cfg().ak)return;try{const st=new Date(Date.now()-6*864e5).toISOString(),url=k=>alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);const[a,b]=await Promise.all([url(S.sym),url('QQQ')]);const ch=j=>{const x=(j.bars||[]).map(v=>v.c);return x.length>1?(x.at(-1)/x[0]-1)*100:0};const s=ch(a),q=ch(b);S.rs={s,q,d:s-q};rsRender()}catch(e){S.rs={err:e.message};rsRender()}}
+/* Relative strength is measured on daily closes in free mode: it is a
+   multi-session question, and the free feed has years of daily bars. */
+async function rsqFree(){try{
+ const j=await edgeGet(FREE.symbolsPath([S.sym,'QQQ'],'1Day'),25000),m=j.bars||{};
+ const ch=k=>{const x=(m[k]||[]).map(v=>v.c);return x.length>1?(x.at(-1)/x[0]-1)*100:0};
+ const s=ch(S.sym),q=ch('QQQ');S.rs={s,q,d:s-q};rsRender()}catch(e){S.rs={err:e.message};rsRender()}}
 function rsRender(){const R=S.rs;if(!R){$('#rsx').innerHTML='<p class="x">Loading relative strength against QQQ...</p>';return}if(R.err){$('#rsx').innerHTML='<p class="x">RS error: '+esc(R.err)+'</p>';return}
- $('#rsx').innerHTML=`<div class="hrow"><span class="num ${cls(R.d)}" style="font-size:18px">${R.d>=0?'+':''}${f2(R.d)}%</span> <span class="${cls(R.d)}">${R.d>=0?'outperforming':'underperforming'} QQQ</span></div><p class="x">${esc(S.sym)} ${R.s>=0?'+':''}${f2(R.s)}% against QQQ ${R.q>=0?'+':''}${f2(R.q)}% over the loaded window.</p>`}
+ $('#rsx').innerHTML=`<div class="hrow"><span class="num ${cls(R.d)}" style="font-size:18px">${R.d>=0?'+':''}${f2(R.d)}%</span> <span class="${cls(R.d)}">${R.d>=0?'outperforming':'underperforming'} QQQ</span>${exp('Relative strength','How the symbol\u2019s percentage change compares with QQQ (a broad Nasdaq-100 fund) over the same window. Above zero means it beat the index, below means it lagged. In live mode the window is the loaded bars; with no keys it is the loaded daily bars.')}</div><p class="x">${esc(S.sym)} ${R.s>=0?'+':''}${f2(R.s)}% against QQQ ${R.q>=0?'+':''}${f2(R.q)}% over the loaded window.</p>`}
 const alertNames={above:'price above ',below:'price below ',vwapup:'price above VWAP',vwapdown:'price below VWAP',pattern:'any pattern appears'};
 function alertAdd(){const t=$('#at').value,v=+$('#av').value,l=JSON.parse(LS.alerts||'[]');if((t=='above'||t=='below')&&!v)return;l.push({type:t,val:v,note:alertNames[t]+((t=='above'||t=='below')?v:'')});LS.alerts=JSON.stringify(l);$('#av').value='';alertRender()}
 function alertRender(){const l=JSON.parse(LS.alerts||'[]');$('#al').innerHTML=l.map((x,i)=>`<div class="item hrow"><span>${esc(x.note)}</span><button class="btn" data-adel="${i}" aria-label="Remove alert" style="margin-left:auto;padding:2px 7px">Remove</button></div>`).join('')||'<p class="x">No alerts set.</p>'}
@@ -404,29 +528,45 @@ $('#al').onclick=e=>{const b=e.target.closest('[data-adel]');if(!b)return;const 
 function alerCheck(){if(!S.an||!S.price)return;const a=S.an,p=S.price,l=JSON.parse(LS.alerts||'[]');if(!l.length)return;const keep=[];l.forEach(x=>{let hit=false;
  if(x.type=='above')hit=p>=x.val;else if(x.type=='below')hit=p<=x.val;else if(x.type=='vwapup')hit=p>a.vwap;else if(x.type=='vwapdown')hit=p<a.vwap;else if(x.type=='pattern')hit=!!(a.cp.length||a.chp.length);
  if(hit)toast('Alert: '+x.note+' - '+S.sym+' '+f2(p));else keep.push(x)});if(keep.length!=l.length){LS.alerts=JSON.stringify(keep);alertRender()}}
-function journalStore(){return JSON.parse(LS.journal||'[]')}
-function journalAdd(){const s=$('#js').value.trim().toUpperCase()||S.sym,d=$('#jd').value,e=+$('#je').value,x=+$('#jx').value,z=+$('#jz').value;if(!e||!x||!z)return;const pl=(d=='long'?x-e:e-x)*z;const l=journalStore();l.push({s,d,e,x,z,pl});LS.journal=JSON.stringify(l);['je','jx','jz'].forEach(i=>$('#'+i).value='');journalRender()}
-function journalRender(){const l=journalStore();if(!l.length){$('#jo').textContent='No trades logged.';return}const wins=l.filter(t=>t.pl>0),loss=l.filter(t=>t.pl<=0),tot=l.reduce((a,t)=>a+t.pl,0);$('#jo').innerHTML=`<div class="hrow"><b>${l.length} trades</b><span class="num ${cls(tot)}">${tot>=0?'+':''}$${f2(tot)}</span><span class="${wins.length/(l.length||1)>=.5?'up':'nu'}">win ${f2(wins.length/(l.length||1)*100)}%</span></div>
-<p class="x">Avg win $${f2(avg(wins.map(t=>t.pl)))} / avg loss $${f2(Math.abs(avg(loss.map(t=>t.pl))))} / expectancy $${f2(avg(l.map(t=>t.pl)))} per trade.</p>`}
 function backtest(){const B=S.bars;if(B.length<60)return null;const c=B.map(b=>b.c),e9=ema(c,9),e21=ema(c,21);let pos=0,entry=0;const tr=[];
  for(let i=1;i<B.length;i++){const up=e9[i]>e21[i],pv=e9[i-1]>e21[i-1];if(pos===0&&up&&!pv){pos=1;entry=c[i]}else if(pos===0&&!up&&pv){pos=-1;entry=c[i]}else if(pos!==0&&up!==(pos>0)){tr.push(pos*(c[i]-entry)/entry);pos=0}}
  if(pos!==0)tr.push(pos*(c.at(-1)-entry)/entry);const wins=tr.filter(x=>x>0),los=tr.filter(x=>x<=0);let cum=0,peak=0,dd=0;tr.forEach(x=>{cum+=x;peak=Math.max(peak,cum);dd=Math.min(dd,cum-peak)});return{n:tr.length,wr:wins.length/(tr.length||1)*100,aw:avg(wins)*100,al:avg(los)*100,exp:avg(tr)*100,ret:cum*100,dd:dd*100}}
-function btRender(){const r=backtest(),o=$('#bto');if(!r){o.textContent='Not enough bars (need 60).';return}if(!r.n){o.textContent='No crossovers in this window.';return}o.innerHTML=`<div class="hrow"><span class="num ${cls(r.ret)}" style="font-size:18px">${r.ret>=0?'+':''}${f2(r.ret)}%</span><span class="${r.wr>=50?'up':'nu'}">win ${f2(r.wr)}%</span><span class="${r.exp>=0?'up':'dn'}">expectancy ${f2(r.exp)}%</span></div><p class="x">${r.n} trades. Avg win ${f2(r.aw)}% / avg loss ${f2(r.al)}%. Max drawdown ${f2(r.dd)}%. Long on an EMA9 cross above EMA21, short on a cross below. One short window and no costs or slippage, so treat it as a rough sanity check.</p>`}
-async function scan(){if(!cfg().ak){$('#sc').innerHTML='<p class="x">Add your Alpaca keys first.</p>';return}try{$('#sc').innerHTML='<p class="x">Loading...</p>';const retry=async(p,n=2)=>{try{return await alp(p)}catch(e){if(n>0){await new Promise(r=>setTimeout(r,700));return retry(p,n-1)}throw e}},a=await retry('/v1beta1/screener/stocks/most-actives?top=10'),m=await retry('/v1beta1/screener/stocks/movers?top=10'),li=v=>`<div class="mrow"><button class="csym" data-s="${esc(v.symbol)}" style="padding:0;background:none;border:0;color:var(--text);cursor:pointer">${esc(v.symbol)}</button><span class="num ${cls(v.percent_change)}">${f2(v.percent_change)}%</span></div>`;$('#sc').innerHTML='<div class="hrow" style="margin:8px 0 0"><b>Most active</b></div>'+(a.most_actives||a.actives||[]).map(li).join('')+'<div class="hrow" style="margin:10px 0 0"><b>Top movers</b></div>'+(m.gainers||[]).concat(m.losers||[]).map(li).join('')}catch(e){const m=String(e.message||e);$('#sc').innerHTML='<p class="x">Scanner unavailable: '+esc(netErr(m))+(/^\d{3}\b/.test(m)?' If this persists, the screener endpoints may need a paid market-data plan.':'')+'</p>'}}
+function btRender(){const r=backtest(),o=$('#bto');if(!r){o.textContent='Not enough bars (need 60).';return}if(!r.n){o.textContent='No crossovers in this window.';return}
+ const row=(a,v,t)=>`<div class="irow"><div class="iline"><span class="iname">${a}</span><span class="ival num">${v}</span>${exp(a,t)}</div></div>`;
+ o.innerHTML=`<div class="hrow" style="padding:4px 0"><span class="num ${cls(r.ret)}" style="font-size:18px">${r.ret>=0?'+':''}${f2(r.ret)}%</span><span class="${r.wr>=50?'up':'nu'}">win ${f2(r.wr)}%</span><span class="${r.exp>=0?'up':'dn'}">expectancy ${f2(r.exp)}%</span></div>`
+  +`<div class="hrow">${exp('Total return','Every trade\u2019s percentage result added up. It ignores commissions, fees, slippage and taxes and covers only the bars currently loaded, so it is a rough figure, not a portfolio result.')}${exp('Win rate','The share of trades that ended profitable. High on its own means nothing - a few large losses can wipe out many small wins.')}${exp('Expectancy','The average percentage result per trade, wins and losses together. Positive means an average trade made a little in this window; it is not a forecast.')}</div>`
+  +row('Trades',r.n,'How many complete round trips the rule made on the loaded bars. A handful of trades is far too few to mean anything.')
+  +row('Average win',f2(r.aw)+'%','The mean percentage gain of the winning trades only.')
+  +row('Average loss',f2(r.al)+'%','The mean percentage loss of the losing trades only. Compare it with the average win beside the win rate to see whether the rule needs more winners than losers.')
+  +row('Max drawdown',f2(r.dd)+'%','The largest peak-to-trough fall of the running total over the test, in summed percentage results. It shows how rough the ride was, not how much money you would have had.')
+  +`<p class="x">Long on an EMA9 cross above EMA21, short on a cross below. One short window and no costs or slippage, so treat it as a rough sanity check.</p>`}
+async function scan(){
+ // Free mode has no market-wide screener. This asks the same question of the
+ // symbols you already track, using the daily bars the feed supplies, and says
+ // so rather than implying it looked at the whole market.
+ if(S.mode==='free'){if(!Object.keys(S.wq||{}).length){try{await freeWatch()}catch(e){}}
+  const mv=FREE.movers(S.wq||{},10);
+  $('#sc').innerHTML='<p class="x">Largest moves in your watchlist over the last session, from the free daily feed. A market-wide most-active and movers list needs Alpaca credentials.</p>'+exp('Main movers','Without Alpaca keys there is no market-wide screener, so this ranks the biggest one-session percentage moves among the symbols you already track, using the free daily feed. It is your watchlist, not the whole market.')
+   +(mv.length?mv.map(v=>`<div class="mrow"><button class="csym" data-s="${esc(v.s)}" style="padding:0;background:none;border:0;color:var(--text);cursor:pointer">${esc(v.s)}</button><span class="num ${cls(v.ch)}">${f2(v.ch)}%</span></div>`).join(''):'<p class="x">No quotes yet.</p>');
+  return}
+ if(!cfg().ak){$('#sc').innerHTML='<p class="x">Add your Alpaca keys first.</p>';return}try{$('#sc').innerHTML='<p class="x">Loading...</p>';const retry=async(p,n=2)=>{try{return await alp(p)}catch(e){if(n>0){await new Promise(r=>setTimeout(r,700));return retry(p,n-1)}throw e}},a=await retry('/v1beta1/screener/stocks/most-actives?top=10'),m=await retry('/v1beta1/screener/stocks/movers?top=10'),li=v=>`<div class="mrow"><button class="csym" data-s="${esc(v.symbol)}" style="padding:0;background:none;border:0;color:var(--text);cursor:pointer">${esc(v.symbol)}</button><span class="num ${cls(v.percent_change)}">${f2(v.percent_change)}%</span></div>`;$('#sc').innerHTML='<div class="hrow" style="margin:8px 0 0"><b>Most active</b>'+exp('Most active','The symbols with the highest trading volume right now, from Alpaca\u2019s screener. Heavy volume means more participation, not a direction: it is a place to look, not an instruction.')+'</div>'+(a.most_actives||a.actives||[]).map(li).join('')+'<div class="hrow" style="margin:10px 0 0"><b>Top movers</b>'+exp('Top movers','The symbols that moved the most today, up and down, from Alpaca\u2019s screener. A big move is not a signal to buy or sell - most of these are simply where the largest percentage changes happened.')+'</div>'+(m.gainers||[]).concat(m.losers||[]).map(li).join('')}catch(e){const m=String(e.message||e);$('#sc').innerHTML='<p class="x">Scanner unavailable: '+esc(netErr(m))+(/^\d{3}\b/.test(m)?' If this persists, the screener endpoints may need a paid market-data plan.':'')+'</p>'}}
 function lvRender(L_){if(!L_){$('#lv').innerHTML='<p class="x" style="padding:12px">Waiting for at least two sessions of bars.</p>';return}
- const p=S.price,a=S.an||{},row=(n,v,x='')=>`<div class="mrow"><span>${n}${x?' <span class="muted">'+x+'</span>':''}</span><span class="num">${f2(v)}</span></div>`;
- const ors=[5,15,30].map(X=>{const o=L_.ors[X];if(!o)return '';return `<div class="mrow"><span>Opening range ${X}m <span class="${p>o.h?'up':p<o.l?'dn':'nu'}">${p>o.h?'broke up':p<o.l?'broke down':'inside'}</span></span><span class="num">${f2(o.l)} - ${f2(o.h)}</span></div>`}).join('');
- $('#lv').innerHTML=row('Prior day high',L_.ph)+row('Prior day low',L_.pl)+row('Prior day close',L_.pc)
-  +(L_.prH!=null?row('Premarket high',L_.prH)+row('Premarket low',L_.prL):'')
-  +row('Today open',L_.open,L_.gp>=0?'gap up '+f2(Math.abs(L_.gp))+'%':'gap down '+f2(Math.abs(L_.gp))+'%')
-  +`<div class="mrow"><span>Gap from prior close</span><span class="num ${cls(L_.gp)}">${f2(L_.pc)} / ${L_.filled?'filled':'still open'}</span></div>`
+ const p=S.price,a=S.an||{},row=(n,v,x='',t='')=>`<div class="irow"><div class="iline"><span class="iname">${n}${x?' <span class="muted">'+x+'</span>':''}</span><span class="ival num">${f2(v)}</span>${exp(n,t)}</div></div>`;
+ const ors=[5,15,30].map(X=>{const o=L_.ors[X];if(!o)return '';return `<div class="irow"><div class="iline"><span class="iname">Opening range ${X}m <span class="${p>o.h?'up':p<o.l?'dn':'nu'}">${p>o.h?'broke up':p<o.l?'broke down':'inside'}</span></span><span class="ival num">${f2(o.l)} - ${f2(o.h)}</span>${exp('Opening range '+X+'m','The high and low of the first '+X+' minutes after the 09:30 ET open. Price above the range has broken up, below it has broken down, and inside it the session has not yet chosen a side. Traders watch these breaks because early direction often continues - though they fail often too.')}</div></div>`}).join('');
+ $('#lv').innerHTML=row('Prior day high',L_.ph,'','The highest price of the previous trading session. It is watched because price often reacts when it is retested from above or below.')
+  +row('Prior day low',L_.pl,'','The lowest price of the previous trading session. Like the prior high, it is a level the current session may react to when retested.')
+  +row('Prior day close',L_.pc,'','The last price of the previous session. It is the reference the current session is measured against, including for the gap below.')
+  +(L_.prH!=null?row('Premarket high',L_.prH,'','The highest price traded before the 09:30 ET open. Premarket trading is thin, so the level is less solid than a regular-session one.')+row('Premarket low',L_.prL,'','The lowest price traded before the 09:30 ET open, from the same thin premarket tape.'):'')
+  +row(L_.openLabel||'Today open',L_.open,L_.gp>=0?'gap up '+f2(Math.abs(L_.gp))+'%':'gap down '+f2(Math.abs(L_.gp))+'%','The first price of the current session, with how far it opened from the prior close. A gap means the session began away from where the last one ended.')
+  +`<div class="irow"><div class="iline"><span class="iname">Gap from prior close</span><span class="ival num ${cls(L_.gp)}">${f2(L_.pc)} / ${L_.filled?'filled':'still open'}</span>${exp('Gap from prior close','The distance between the prior close and today\u2019s open. A gap is filled when price trades back through the prior close during the session; an unfilled gap is still open.')}</div></div>`
   +ors
-  +`<div class="mrow"><span>VWAP bands <span class="muted">-2/-1/+1/+2 SD</span></span><span class="num">${f2(a.vwap-2*a.vsd)} ... ${f2(a.vwap+2*a.vsd)}</span></div>`
-  +`<div class="mrow"><span>VWAP</span><span class="num">${f2(a.vwap)}</span></div>`
-  +`<div class="mrow"><span>Round numbers</span><span class="num">${L_.round.map(r=>`<span class="${p-r>0?'up':p-r<0?'dn':'nu'}" style="margin-left:6px">${r}</span>`).join('')}</span></div>`}
-function mtfRender(){const M=S.mtf;if(!M){$('#mtf').innerHTML='<p class="x">Add keys and load data to compare timeframes.</p>';return}if(M.err){$('#mtf').innerHTML='<p class="x">Higher-timeframe error: '+esc(M.err)+'</p>';return}
- const row=(n,v)=>`<div class="mrow"><span>${n} min</span><span>${tag(v)}</span></div>`;
- $('#mtf').innerHTML=row(1,M['1Min']||0)+row(5,M['5Min']||0)+row(15,M['15Min']||0)+`<p class="x">Each row asks whether the 9 EMA is above the 21 EMA with price above both (bullish), below both (bearish) or mixed. When all three agree, the trend reading is consistent across timeframes. Alignment ${M.score||0} of 3.</p>`}
+  +`<div class="irow"><div class="iline"><span class="iname">VWAP bands <span class="muted">-2/-1/+1/+2 SD</span></span><span class="ival num">${f2(a.vwap-2*a.vsd)} ... ${f2(a.vwap+2*a.vsd)}</span>${exp('VWAP bands','VWAP plus and minus one and two standard deviations of price around it. They mark where price is unusual relative to the session\u2019s own volume-weighted average: near the outer band the move is stretched by the session\u2019s standards, which can mean either continuation or a snap back.')}</div></div>`
+  +`<div class="irow"><div class="iline"><span class="iname">VWAP</span><span class="ival num">${f2(a.vwap)}</span>${exp('VWAP','The volume-weighted average price for the session: every trade\u2019s price weighted by how many shares traded. Price above it means the average buyer this session is currently in profit; below it, the average buyer is under water.')}</div></div>`
+  +`<div class="irow"><div class="iline"><span class="iname">Round numbers</span><span class="ival num">${L_.round.map(r=>`<span class="${p-r>0?'up':p-r<0?'dn':'nu'}" style="margin-left:6px">${r}</span>`).join('')}</span>${exp('Round numbers','Whole-number prices near the current price. Orders and options strikes cluster on round figures, so price often hesitates there - a tendency, not a rule.')}</div></div>`}
+function mtfRender(){const R=S.mtfRows;if(!R){$('#mtf').innerHTML='<p class="x">Timeframe alignment loads with the symbol.</p>';return}
+ if(S.mtf&&S.mtf.err){$('#mtf').innerHTML='<p class="x">Higher-timeframe error: '+esc(S.mtf.err)+'</p>';return}
+ $('#mtf').innerHTML=R.map(r=>`<div class="irow"><div class="iline"><span class="iname">${esc(r.n)}</span><span>${tag(r.v)}</span>${exp(r.n+' alignment','On the '+r.n+' chart: the 9-period EMA above the 21-period EMA with price above both reads bullish, below both reads bearish, and anything else reads mixed.')}</div></div>`).join('')
+  +`<p class="x">Each row asks the same question on a different timeframe. When they all agree, the trend reading is consistent across timeframes; when they disagree, the shorter timeframe is usually just noise inside the longer one. Alignment ${(S.mtf&&S.mtf.score)||0} of ${R.length}.</p>`}
 function etNow(){const[h,mi,s]=new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}).split(':').map(Number);return{h,mi,s,min:h*60+mi}}
 function phaseOf(m){if(m<240)return['Closed','Overnight session.'];
  if(m<570)return['Pre-market','Pre-market session. Liquidity is thinner than the regular session.'];
@@ -436,11 +576,26 @@ function phaseOf(m){if(m<240)return['Closed','Overnight session.'];
  if(m<930)return['Afternoon','13:30 to 15:30 ET. Volume typically builds from here.'];
  if(m<960)return['Close','15:30 to 16:00 ET. Volume typically peaks around the close.'];
  return['Closed','After-hours session.']}
-function sessRender(){const t=etNow(),ph=phaseOf(t.min),hot=/volatile|Power/.test(ph[0])?'dn':ph[0]=='Lunch lull'?'nu':'up';let ev='';
+let sessKey='',sessClk='';
+function sessRender(){const t=etNow();
+ // Free mode shows the replayed session's clock, so the phase label underneath
+ // describes the bars on screen rather than the wall clock.
+ if(S.mode==='free'&&S.rep&&FREE){const c=FREE.displayClock(S.rep,Date.now(),S.sessionDate);t.h=c.h;t.mi=c.mi;t.s=c.s;t.min=c.minutes;
+  $('#st').textContent='Previous session \u00b7 '+(S.sessionDate?FREE.prettyDate(S.sessionDate):'\u2014')+' \u00b7 '+FREE.replayLabel(S.rep,S.sessionDate)+' \u00b7 delayed'}
+ // Amber marks the phases that behave differently from a normal session: the
+ // busiest (open and close) and the quietest (midday). The old test here looked
+ // for phase names this function no longer returns, so it never matched.
+ const ph=phaseOf(t.min),hot=/Open|Midday|Close/.test(ph[0])?'nu':'up';let ev='';
  if(S.cal?.length){const nx=S.cal.find(e=>new Date(e.date).getTime()>Date.now());if(nx){const mins=Math.round((new Date(nx.date)-Date.now())/6e4),h=Math.floor(mins/60),mm=mins%60;ev=`<p class="x">Next event: <b>${esc(nx.title)}</b> (${nx.impact}) in ${h?h+'h ':''}${mm}m, ${new Date(nx.date).toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET.</p>`}}
 /* Calendar event alerts are configurable and handled by calAlertTick(); the old
    hard-coded six-minute warning that lived here would now double-fire. */
- $('#sess').innerHTML=`<div class="hrow"><span class="num" style="font-size:17px">${String(t.h).padStart(2,'0')}:${String(t.mi).padStart(2,'0')}:${String(t.s).padStart(2,'0')} ET</span><span class="${hot}">${ph[0]}</span></div><p class="x">${ph[1]}</p>${ev}`}
+ const clk=String(t.h).padStart(2,'0')+':'+String(t.mi).padStart(2,'0')+':'+String(t.s).padStart(2,'0');
+ // Seconds change every tick but the rest of the panel almost never does, so
+ // rebuilding this innerHTML once a second was pure wasted parsing and layout.
+ const key=ph[0]+'|'+ph[1]+'|'+ev,el=$('#sess');
+ if(key!==sessKey){sessKey=key;sessClk=clk;
+  el.innerHTML=`<div class="hrow"><span class="num" style="font-size:17px" id="sess-clk">${clk} ET</span><span class="${hot}">${ph[0]}</span>${exp('Session phase','Which part of the US trading day is running, in New York time, and what is typical for it. Volume and volatility follow a well-known pattern through the day - widest at the open and close, thinnest around midday - so the phase tells you how much to trust a move.')}</div><p class="x">${ph[1]}</p>${ev}`}
+ else if(clk!==sessClk){sessClk=clk;const c=document.getElementById('sess-clk');if(c)c.textContent=clk+' ET'}}
 function risk(){const a=+$('#ra').value,r=+$('#rr').value,e=+$('#re').value,s=+$('#stop').value;if(!e||!s||e==s){$('#ro').textContent='Enter an entry and a different stop.';return}
  const per=Math.abs(e-s),amt=a*r/100,sh=Math.floor(amt/per);if(sh<1){$('#ro').textContent='Account risk is smaller than one share of risk ($'+f2(per)+'). Widen the account or tighten the stop.';return}
  $('#ro').innerHTML=`<b>${sh}</b> shares, a dollar exposure of $${f2(sh*per)} of the $${f2(a)} entered (${f2(sh*per/(a||1)*100)}%).\nDistance from entry to stop: $${f2(per)}. Notional value about $${f2(sh*e)}.\nThis is arithmetic on the numbers you typed, not a suggestion.`}
@@ -496,32 +651,56 @@ function drawVolChart(s){const cv=$('#vch');if(!cv||!cv.clientWidth)return;const
  series.forEach(a=>{x.strokeStyle=a[2];x.lineWidth=1.4;x.beginPath();let f=1;a[1].forEach((v,i)=>{if(v==null||!isFinite(v))return;f?x.moveTo(X(i),Y(v)):x.lineTo(X(i),Y(v));f=0});x.stroke();x.lineWidth=1});
  x.fillStyle='#8A94A3';const l0=(s.labels[0]||'').slice(5,16),l1=(s.labels[N-1]||'').slice(5,16);x.fillText(l0,pad.l,H-5);x.fillText(l1,W-pad.r-x.measureText(l1).width,H-5)}
 function volBt(b){const o=$('#vbt');if(!b||!b.samples){o.innerHTML='<p class="x">Not enough clean out-of-sample bars for a backtest.</p>';return}
- const pc=v=>v==null||!isFinite(v)?'--':(v>=0?'+':'')+f2(v)+'%',good=v=>v>=0?'up':'dn',r=(a,v)=>`<div class="mrow"><span>${a}</span><span class="num">${v}</span></div>`,
+ const pc=v=>v==null||!isFinite(v)?'--':(v>=0?'+':'')+f2(v)+'%',good=v=>v>=0?'up':'dn',r=(a,v,t)=>`<div class="irow"><div class="iline"><span class="iname">${esc(a)}</span><span class="ival num">${v}</span>${exp(a,t)}</div></div>`,
   pctN=v=>v==null||!isFinite(v)?'--':f2(v*100)+'%';
- o.innerHTML=r('Out-of-sample test bars',b.samples)
-  +r('Direction hit rate',`${pctN(b.direction_accuracy)} <span class="muted">vs always-neutral ${pctN(b.direction_baseline)}</span>`)
-  +r('Vol RMSE — combined',f3(b.vol_rmse_combined)+'%')
-  +r('Vol RMSE — stage 1 linear',f3(b.vol_rmse_linear)+'%')
-  +r('Vol RMSE — persistence',f3(b.vol_rmse_persistence)+'%')
-  +r('Combined vs persistence',`<span class="${good(b.combined_vs_persistence_pct)}">${pc(b.combined_vs_persistence_pct)}</span>`)
-  +r('Combined vs stage 1',`<span class="${good(b.combined_vs_linear_pct)}">${pc(b.combined_vs_linear_pct)}</span>`)
-  +r('Direction — balanced accuracy',`${pctN(b.direction_balanced_accuracy)} <span class="muted">vs ${f2(100/3)}% chance</span>`)
-  +r('Direction — non-neutral accuracy',pctN(b.direction_nonneutral_accuracy))
-  +r('R2 of combined estimate',f3(b.r2_combined))
+ o.innerHTML=r('Out-of-sample test bars',b.samples,'The number of held-out bars the model never trained on. Everything below is measured on these only, so it is a genuine test rather than a memory of the training data.')
+  +r('Direction hit rate',`${pctN(b.direction_accuracy)} <span class="muted">vs always-neutral ${pctN(b.direction_baseline)}</span>`,'How often the up / flat / down call was right on the test bars, next to the score a model that always answered "flat" would get. Close to that baseline means the direction call adds nothing.')
+  +r('Vol RMSE — combined',f3(b.vol_rmse_combined)+'%','Root-mean-square error of the combined estimate, in percent per bar; lower is better. This is the number to judge the volatility model by.')
+  +r('Vol RMSE — stage 1 linear',f3(b.vol_rmse_linear)+'%','The same error for the HAR-only estimate, so the two parts can be compared on equal footing.')
+  +r('Vol RMSE — persistence',f3(b.vol_rmse_persistence)+'%','The error of the naive baseline "the next bar\u2019s volatility equals the last one\u2019s". A model that cannot beat this has no skill, however good its R2 looks.')
+  +r('Combined vs persistence',`<span class="${good(b.combined_vs_persistence_pct)}">${pc(b.combined_vs_persistence_pct)}</span>`,'By what margin the combined estimate beats the naive baseline. The measured record over five years of SPY 5-minute bars was +10.8% to +16.5%, positive in every fold, but only about +8% in the calmest third of bars.')
+  +r('Combined vs stage 1',`<span class="${good(b.combined_vs_linear_pct)}">${pc(b.combined_vs_linear_pct)}</span>`,'How much the LSTM added over the HAR-only fit. In the browser build stage 2 usually cannot beat stage 1, so this is commonly zero - which is why the headline estimate is HAR-only unless this number is positive.')
+  +r('Direction — balanced accuracy',`${pctN(b.direction_balanced_accuracy)} <span class="muted">vs ${f2(100/3)}% chance</span>`,'The three-way call scored so that always guessing the commonest answer cannot inflate it; chance here is about 33%. Well above 33% is real edge, near it is none.')
+  +r('Direction — non-neutral accuracy',pctN(b.direction_nonneutral_accuracy),'Accuracy counting only the bars where the model called up or down, ignoring the "flat" calls. A high figure from very few such bars is not an edge.')
+  +r('R2 of combined estimate',f3(b.r2_combined),'The share of the variation in realized volatility the estimate explains, from 0 to 1. It can look strong while the absolute level is still mistimed, which is why it is shown beside the RMSE rather than instead of it.')
   +`<p class="x">The model trains only on the first 80% of the bars, then estimates the held-out last 20% one step at a time, so the test never sees its own future. Direction hit rate is a three-way call (up / flat / down). RMSE is percent per bar; lower is better.</p>`}
 function volRender(j){const dcls=j.direction_signal=='bullish'?'up':j.direction_signal=='bearish'?'dn':'nu',rcls=j.regime=='High Volatility Expansion'?'dn':j.regime=='Breakout Risk'?'nu':'up';
- $('#vmeta').textContent=`${j.symbol} ${S.tf} · ${j.bars} bars · ${j.model}${j.cached?' · cached':''}`;
+ // The volatility tab always trains on daily bars in free mode, whatever the
+ // chart's timeframe is, so the label must say so.
+ const vTf=S.mode==='free'?'1 day':S.tf;
+ $('#vmeta').textContent=`${j.symbol} ${vTf} · ${j.bars} bars · ${j.model}${j.cached?' · cached':''}`;
  const cyc=n=>n+(n%10==1&&n%100!=11?'st':n%10==2&&n%100!=12?'nd':n%10==3&&n%100!=13?'rd':'th'),p=volPct(j.vol_percentile);
- const rows=[['Combined estimate (HAR + LSTM residual)',f3(j.predicted_volatility)+'%'],['Stage 1 linear (HAR 1 / 5 / 22)',f3(j.linear_volatility)+'%'],['Stage 2 LSTM residual',(j.residual_correction>=0?'+':'')+f3(j.residual_correction)+'%'],['GARCH(1,1) cross-check',j.garch_volatility?f3(j.garch_volatility)+'%':'--'],['Current realized (Garman-Klass)',f3(j.current_volatility)+'%'],['Estimate percentile in RV history',cyc(p)],['Uncertainty band (+/- out-of-sample RMSE)',f3(j.vol_low)+' - '+f3(j.vol_high)+'%'],['Stage-2 LSTM weight earned',((j.stage2_weight||0)*100).toFixed(0)+'%'+(j.stage2_weight>0?'':' (muted)')],['Sessions / bars / folds',((j.data_quality&&j.data_quality.sessions)||'--')+' / '+j.bars+' / '+((j.backtest&&j.backtest.folds)||1)]];
+ const rows=[['Combined estimate (HAR + LSTM residual)',f3(j.predicted_volatility)+'%','The headline number: the stage-1 linear fit with the stage-2 LSTM correction added. It is volatility - the typical size of the next bar move, as a percent of price - not its direction. The LSTM is only allowed to contribute in proportion to the accuracy it earned out of sample, so on many samples this equals the stage-1 line exactly.'],['Stage 1 linear (HAR 1 / 5 / 22)',f3(j.linear_volatility)+'%','The HAR baseline: a linear regression of volatility on the 1-, 5- and 22-bar realized volatility. This part always runs and does the real work; when the output is called a combined estimate, this is what it is unless the LSTM actually earned a weight.'],['Stage 2 LSTM residual',(j.residual_correction>=0?'+':'')+f3(j.residual_correction)+'%','What the neural network added on top of the linear fit, in percentage points. Small or zero means it found nothing the HAR fit had missed, and the out-of-sample weighting muted it.'],['GARCH(1,1) cross-check',j.garch_volatility?f3(j.garch_volatility)+'%':'--','An independent volatility model fitted to the same returns, shown only as a sanity check on the HAR estimate. On some samples it fails to converge, in which case it is reported blank rather than as a made-up number.'],['Current realized (Garman-Klass)',f3(j.current_volatility)+'%','The most recent measured volatility from the loaded bars, using the Garman-Klass estimator (open, high, low, close). This is a measurement of the past, not a forecast.'],['Estimate percentile in RV history',cyc(p),'Where the estimate sits in the distribution of past realized volatility: the Nth percentile of the history it was fitted on. A high reading means this is one of the more volatile periods in the sample, a low one one of the calmest.'],['Uncertainty band (+/- out-of-sample RMSE)',f3(j.vol_low)+' - '+f3(j.vol_high)+'%','The estimate plus and minus its own measured out-of-sample error. The true value is expected to fall inside roughly two times in three. The band is wide because volatility is genuinely hard to pin down, so read it as a range, not a precise level.'],['Stage-2 LSTM weight earned',((j.stage2_weight||0)*100).toFixed(0)+'%'+(j.stage2_weight>0?'':' (muted)'),'The share of the correction the network was allowed to apply, set by how much it improved the held-out test. 0% means it was muted because it did not earn its place; a higher figure means the backtest showed it helped.'],['Sessions / bars / folds',((j.data_quality&&j.data_quality.sessions)||'--')+' / '+j.bars+' / '+((j.backtest&&j.backtest.folds)||1),'How much data the estimate was built from and how many out-of-sample folds the backtest used. More bars and more folds make the reliability reading beside it more trustworthy.']];
  const bt=j.backtest||{},ba=bt.direction_balanced_accuracy,nna=bt.direction_nonneutral_accuracy;
  const relLine=(bt.samples?`<p class="x" style="margin-top:6px"><b class="${j.reliable?'up':'nu'}">${j.reliable?'Volatility estimate: reliable':'Volatility estimate: NOT reliable on this sample'}</b> — ${f2(bt.combined_vs_persistence_pct)}% ${bt.combined_vs_persistence_pct>=0?'better':'worse'} than the naive baseline (R2 ${f3(bt.r2_combined)}) across ${bt.samples} out-of-sample bars.</p>`:'<p class="x" style="margin-top:6px">No out-of-sample sample; the number above is not validated.</p>');
  const edgeLine=`<p class="x" style="margin-top:6px"><b class="${j.direction_edge=='usable'?'up':j.direction_edge=='none'?'nu':'muted'}">Direction edge: ${esc(j.direction_edge||'unknown')}.</b> Balanced accuracy ${ba==null?'--':f2(ba*100)+'%'} vs ${f2(100/3)}% chance, non-neutral ${nna==null?'--':f2(nna*100)+'%'}.${j.direction_edge=='none'?' The bullish/bearish bias is not trustworthy — it is close to a coin flip.':''}</p>`;
- $('#vout').innerHTML=`<div class="score"><span class="n num ${dcls}">${f3(j.predicted_volatility)}%</span><span class="muted">per bar</span><span class="call ${dcls}">${j.direction_signal}</span><span class="muted">${j.direction_confidence==null?'no directional model':Math.round(j.direction_confidence*100)+'% conf'}</span></div>`
+ $('#vout').innerHTML=`<div class="score"><span class="n num ${dcls}">${f3(j.predicted_volatility)}%</span><span class="muted">per bar</span>${exp('Volatility estimate','The estimate of how much the next bar is likely to move, as a percent of price. It says how big a move is likely, never which way. It is a statistical estimate from past prices, can be wrong, and on a calm tape it is often barely better than assuming the next bar behaves like the last one.')}<span class="call ${dcls}">${j.direction_signal}</span>${exp('Direction signal','A three-way call - bullish, bearish or neutral - from the same model. The measured hit rate is shown under "Direction edge" in the Backtest panel; when that says none, the call is close to a coin flip and should not be relied on.')}<span class="muted">${j.direction_confidence==null?'no directional model':Math.round(j.direction_confidence*100)+'% conf'}</span>${exp('Direction confidence','The model\u2019s own confidence in the bullish/bearish call above, from 0 to 100%. A high figure is not a guarantee of accuracy: it is the model rating itself, and the backtest shows how often such calls were right.')}</div>`
   +`<div class="track"><i class="${dcls}" style="width:${p}%"></i></div>`
   +`<div class="pbody"><div class="hrow"><span class="regime ${rcls}">${esc(j.regime)}</span>${j.predicted_vol_annual_pct!=null?`<span class="muted">${f2(j.predicted_vol_annual_pct)}% annualized</span>`:''}</div><p class="x" style="margin-top:6px">${esc(j.regime_reason)}</p>${relLine}${edgeLine}</div>`
-  +rows.map(x=>`<div class="mrow"><span>${x[0]}</span><span class="num">${x[1]}</span></div>`).join('')
+  +rows.map(x=>`<div class="irow"><div class="iline"><span class="iname">${esc(x[0])}</span><span class="ival num">${x[1]}</span>${exp(x[0],x[2])}</div></div>`).join('')
   +(j.warnings&&j.warnings.length?`<p class="x" style="padding:8px 12px 12px">Notes: ${j.warnings.map(esc).join(' ')}</p>`:'');
  volBt(j.backtest);drawVolChart(j.series)}
+/* ---------- the volatility worker ----------
+   The LSTM is trained by TensorFlow.js, which runs on whatever thread calls it.
+   Doing that in the page froze the whole desk for a minute or more, with the
+   progress bar stuck. volworker.js runs the identical stage-1/stage-2 code in a
+   Web Worker instead, so the chart, the clock and the bar all keep moving.
+   Cancelling terminates the worker - which is why the promise needs its own
+   abort path: a terminated worker never sends anything back. */
+let volWorker=null,volAbort=null;
+function volWorkerRun(bars,opts,onInfo){
+ return new Promise((res,rej)=>{
+  let w;try{w=new Worker('volworker.js')}catch(e){rej(e);return}
+  let done=false;
+  const settle=(fn,arg)=>{if(done)return;done=true;volAbort=null;try{w.terminate()}catch(_){}if(volWorker===w)volWorker=null;fn(arg)};
+  volWorker=w;volAbort=()=>settle(rej,Error('cancelled'));
+  w.onmessage=e=>{const m=(e&&e.data)||{};
+   if(m.type==='progress')onInfo(m.info);
+   else if(m.type==='done')settle(res,m.result);
+   else settle(rej,Error(m.message||'the volatility worker failed'))};
+  w.onerror=e=>settle(rej,Error((e&&e.message)||'the volatility worker could not start'));
+  try{w.postMessage({bars:bars,opts:opts})}catch(e){settle(rej,e)}
+ })}
 let volBusy=false,volCancel=false;
 const vkey=()=>S.sym+'|'+S.tf+'|'+(($('#vstrict')&&$('#vstrict').checked)?'strict':'single');
 function fmtEta(ms){const s=Math.max(0,Math.round(ms/1000));return s<60?s+' s':Math.floor(s/60)+' min '+String(s%60).padStart(2,'0')+' s'}
@@ -533,14 +712,20 @@ function vprog(pct,etaMs,text){const t=$('#vpt'),b=$('#vpb'),x=$('#vptx');if(!t)
 // The chart only loads 500 bars, which is far too little to fit or judge a
 // volatility model (~1 hour of test data). Pull a deep history with pagination
 // specifically for this tab.
-async function volHistory(){if(!cfg().ak)throw Error('Add your Alpaca keys in Settings first.');
+async function volHistory(){
+ // Free mode trains on the daily series. One session of 5-minute bars is far too
+ // short for a model that needs at least 120 observations, and the daily history
+ // is real, unedited and just as out of sample.
+ if(S.mode==='free'){const n=(S.daily||[]).length;if(n<120)throw Error('Only '+n+' daily bars available for '+S.sym+'.');
+  return S.daily.slice(-900).map(b=>({t:new Date(b.t).toISOString(),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}))}
+ if(!cfg().ak)throw Error('Add your Alpaca keys in Settings first.');
  const lim={'1Min':20000,'5Min':5000,'15Min':2000}[S.tf]||20000;
  const start=new Date(Date.now()-80*864e5).toISOString();let tok='',out=[];
  for(let p=0;p<4;p++){const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${start}&limit=10000&sort=asc&feed=iex&adjustment=raw${tok?'&page_token='+encodeURIComponent(tok):''}`);out=out.concat((j.bars||[]).map(x=>({t:x.t,o:x.o,h:x.h,l:x.l,c:x.c,v:x.v})));tok=j.next_page_token||'';if(!tok)break}
  return out.slice(-lim)}
 async function volRun(force){if(volBusy)return;
  const st=$('#vstatus'),btn=$('#vrun'),cb=$('#vcancel'),key=vkey();
- const ppy={'1Min':390*252,'5Min':78*252,'15Min':26*252}[S.tf]||390*252,strict=!!$('#vstrict').checked;
+ const ppy=S.mode==='free'?252:({'1Min':390*252,'5Min':78*252,'15Min':26*252,'1Hour':7*252}[S.tf]||390*252),strict=!!$('#vstrict').checked;
  // Re-opening the tab must not retrain the network; force only on Refresh.
  if(!force&&S.vol&&S.volKey===key){st.textContent=(S.vol.cached?'cached model':'fitted')+' on '+(S.vol.bars||0).toLocaleString()+' bars';return}
  volBusy=true;btn.disabled=true;volCancel=false;cb.style.display='';cb.disabled=false;
@@ -550,20 +735,25 @@ async function volRun(force){if(volBusy)return;
   if(bars.length<120)throw Error('Only '+bars.length+' bars available for '+S.sym+' '+S.tf+'.');
   let j;
   if(DESK_API===null){
-   // Static host: no Python, so train the stage-2 LSTM here in the browser.
-   // If TensorFlow.js cannot load, fall back to the stage-1 engine rather
-   // than losing the forecast entirely.
-   try{
-    if(!window.DeskVol2)throw Error('the stage-2 engine did not load');
-    st.textContent='Loading the model runtime...';vprog(0,null,'Loading the model runtime...');
-    j=await window.DeskVol2.run(bars,{symbol:S.sym,periodsPerYear:ppy,strict,isCancelled:()=>volCancel},info=>{
-     st.textContent=info.message||'Training...';
-     vprog(info.pct,info.etaMs,info.epoch?('epoch '+info.epoch+' / up to '+info.epochs+(info.folds>1?(' · fold '+info.fold+' / '+info.folds):'')+' · stops early when it stops improving'):info.message)});
-   }catch(e){
+   // Static host: no Python, so the stage-2 LSTM has to run in the client.
+   // Three tiers, best first: the worker, then this page, then stage 1 alone.
+   const onInfo=info=>{
+    st.textContent=info.message||'Training...';
+    vprog(info.pct,info.etaMs,info.epoch?('epoch '+info.epoch+' / up to '+info.epochs+(info.folds>1?(' · fold '+info.fold+' / '+info.folds):'')+' · stops early when it stops improving'):info.message)};
+   st.textContent='Loading the model runtime...';vprog(0,null,'Loading the model runtime...');
+   try{j=await volWorkerRun(bars,{symbol:S.sym,periodsPerYear:ppy,strict},onInfo)}
+   catch(e){
     if(volCancel)throw e;
-    vprog(null,null,'');
-    st.textContent='Stage 2 unavailable ('+((e&&e.message)||e)+'); using the stage-1 engine...';
-    j=window.DeskVol.run(bars,{symbol:S.sym,periodsPerYear:ppy});
+    try{
+     if(!window.DeskVol2)throw Error('the stage-2 engine did not load');
+     st.textContent='Stage 2 is training inside this page, so it may stutter...';
+     j=await window.DeskVol2.run(bars,{symbol:S.sym,periodsPerYear:ppy,strict,isCancelled:()=>volCancel},onInfo);
+    }catch(e2){
+     if(volCancel)throw e2;
+     vprog(null,null,'');
+     st.textContent='Stage 2 unavailable ('+((e2&&e2.message)||e2)+'); using the stage-1 engine...';
+     j=window.DeskVol.run(bars,{symbol:S.sym,periodsPerYear:ppy});
+    }
    }
   }else{
    st.textContent='Fitting on '+bars.length.toLocaleString()+' bars (first run trains the LSTM)...';
@@ -577,24 +767,35 @@ async function volRun(force){if(volBusy)return;
   st.textContent='';$('#vout').innerHTML='<p class="x" style="padding:12px">Estimate unavailable: '+esc(netErr(e))+'</p>';$('#vbt').innerHTML='<p class="x">No backtest.</p>'}
  finally{volBusy=false;btn.disabled=false;cb.style.display='none';cb.disabled=false;vprog(null,null,'')}}
 $('#vrun').onclick=()=>volRun(true);
-$('#vcancel').onclick=()=>{volCancel=true;$('#vcancel').disabled=true};
+$('#vcancel').onclick=()=>{volCancel=true;$('#vcancel').disabled=true;if(volAbort)volAbort()};
 /* ---------- news ---------- */
 const relTime=iso=>{const t=new Date(iso).getTime();if(!isFinite(t))return '--';const s=Math.max(0,Math.round((Date.now()-t)/1000));
  if(s<45)return 'just now';if(s<3600)return Math.round(s/60)+'m ago';if(s<86400)return Math.round(s/3600)+'h ago';return Math.round(s/86400)+'d ago'};
 function newsRender(){const o=$('#nl');if(!o)return;
  o.innerHTML=S.news.slice(0,40).map(x=>{const fresh=S.newsFresh.has(String(x.id));
-  return `<div class="item${fresh?' fresh':''}"><div class="hrow"><a href="${esc(x.url||'#')}" target="_blank" rel="noopener"><b>${esc(x.headline)}</b></a>${fresh?'<span class="tagnew">NEW</span>':''}</div><div class="muted num" style="font-size:12px">${relTime(x.created_at)} · ${new Date(x.created_at).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})} ET${x.source?' · '+esc(x.source):''}</div><p class="x">${esc((x.summary||'').slice(0,220))}</p></div>`}).join('')
+  return `<div class="item${fresh?' fresh':''}"><div class="hrow"><a href="${esc(safeUrl(x.url)||'#')}" target="_blank" rel="noopener noreferrer"><b>${esc(x.headline)}</b></a>${fresh?'<span class="tagnew">NEW</span>':''}</div><div class="muted num" style="font-size:12px">${relTime(x.created_at)} · ${new Date(x.created_at).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'})} ET${x.source?' · '+esc(x.source):''}</div><p class="x">${esc((x.summary||'').slice(0,220))}</p></div>`}).join('')
   ||'<p class="x" style="padding:12px">No recent news for this symbol yet.</p>'}
 function newsPush(items){for(const x of items||[]){const id=String(x.id);if(id=='undefined'||S.newsIds.has(id))continue;S.newsIds.add(id);S.news.push(x)}
  S.news.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));S.news=S.news.slice(0,60)}
-async function news(){if(!cfg().ak)return;
+/* Free mode has no per-symbol news feed, so the aggregated market headlines are
+   filtered by ticker and company name. It says so on screen: this is a filter, not
+   that company's own feed. */
+async function freeNews(){if(!EDGE_API)return;
+ if(!S.mnews||Date.now()-S.mnewsAt>3e5){try{await marketNews()}catch(e){}}
+ const items=FREE.newsForSymbol(S.mnews||[],S.sym,40);
+ S.news=items.map(n=>({id:String(n.id||n.url||n.title),headline:n.title,created_at:new Date(n.publishedAt||Date.now()).toISOString(),summary:n.summary||'',url:n.url||'',source:n.source||''}));
+ S.nk=S.news.slice(0,5).map(x=>x.id).join('');S.nt=Date.now();
+ const st=$('#nstat');if(st)st.textContent=S.news.length?S.news.length+' market headlines mention '+S.sym:'nothing mentions '+S.sym+' right now';
+ newsRender();
+ if(!S.news.length)$('#nl').innerHTML='<p class="x" style="padding:12px">No aggregated market headline mentions '+esc(S.sym)+' at the moment. Without keys this panel filters the market headlines by ticker and company name - connect Alpaca for that symbol\'s own news feed.</p>'}
+async function news(){if(S.mode==='free')return freeNews();if(!cfg().ak)return;
  try{const j=await alp(`/v1beta1/news?symbols=${S.sym}&limit=30`),n=j.news||[];
-  newsPush(n);newsRender();
-  const k=n.slice(0,5).map(x=>x.id).join();if(k!=S.nk&&Date.now()-S.nt>6e5&&cfg().gk)nai()}
+  newsPush(n);newsRender()}
  catch(e){$('#nl').innerHTML='<p class="x" style="padding:12px">News unavailable: '+esc(netErr(e))+'</p>'}}
 /* The REST endpoint above only backfills; it lags. Alpaca also pushes news over a
    websocket, which is the only way to see a headline as it lands. */
 function newsStream(){try{S.newsWs&&S.newsWs.close()}catch(_){}
+ if(S.mode!=='live')return;
  const c=cfg();if(!c.ak){const e=$('#nstat');if(e)e.textContent='needs your Alpaca keys';return}
  const w=S.newsWs=new WebSocket('wss://stream.data.alpaca.markets/v1beta1/news'),sym=S.sym;let open=false;
  const stat=t=>{const e=$('#nstat');if(e&&S.newsWs==w)e.textContent=t};
@@ -619,12 +820,12 @@ async function marketNews(force){if(mNewsBusy)return;const st=$('#mstat');
  mNewsBusy=true;if(st)st.textContent='loading...';
  try{const j=await edgeGet('/api/news');S.mnews=j.news||[];S.mnewsAt=Date.now();
   if(st)st.textContent=S.mnews.length+' headlines · '+j.sourcesOk+'/'+j.sourcesTotal+' sources'+(j.cache&&j.cache.hit?' · cached':'');
-  $('#ml').innerHTML=S.mnews.slice(0,40).map(n=>`<div class="item"><div class="hrow"><a href="${esc(n.url||'#')}" target="_blank" rel="noopener"><b>${esc(n.title)}</b></a></div><div class="muted num" style="font-size:12px">${relTime(relIso(n.publishedAt))} · ${esc(n.source)}</div>${n.summary?`<p class="x">${esc(n.summary.slice(0,180))}</p>`:''}</div>`).join('')||'<p class="x" style="padding:12px">No headlines right now.</p>';
+  $('#ml').innerHTML=S.mnews.slice(0,40).map(n=>`<div class="item"><div class="hrow"><a href="${esc(safeUrl(n.url)||'#')}" target="_blank" rel="noopener noreferrer"><b>${esc(n.title)}</b></a></div><div class="muted num" style="font-size:12px">${relTime(relIso(n.publishedAt))} · ${esc(n.source)}</div>${n.summary?`<p class="x">${esc(n.summary.slice(0,180))}</p>`:''}</div>`).join('')||'<p class="x" style="padding:12px">No headlines right now.</p>';
  }catch(e){if(st)st.textContent='unavailable';$('#ml').innerHTML='<p class="x" style="padding:12px">Market news unavailable: '+esc(e.message||e)+'</p>'}
  finally{mNewsBusy=false}}
 let ovwBusy=false;
 async function loadOverview(force){if(ovwBusy)return;const st=$('#ostat');
- if(!EDGE_API){if(st)st.textContent='edge API not configured';$('#ovw').innerHTML='<p class="x">The shared AI overview needs the edge API. See worker/README.md. Without it, the per-symbol summary below still works with your own Gemini key.</p>';return}
+ if(!EDGE_API){if(st)st.textContent='edge API not configured';$('#ovw').innerHTML='<p class="x">The shared AI overview needs the edge API. See worker/README.md; deploy it before publishing the desk.</p>';return}
  if(!force&&S.ovw&&Date.now()-S.ovwAt<3e5)return;
  ovwBusy=true;if(st)st.textContent='loading...';
  try{const j=await edgeGet('/api/overview',25000);S.ovw=j;S.ovwAt=Date.now();
@@ -633,10 +834,7 @@ async function loadOverview(force){if(ovwBusy)return;const st=$('#ostat');
   $('#ovw').innerHTML=esc(j.text||'').replace(/\n/g,'<br>')+`<div class="hrow" style="margin-top:10px"><span class="muted" style="font-size:12px">Written by ${esc(j.model||'Gemini')} from ${(j.headlines||[]).length} headlines across ${(j.sourcesUsed||[]).length} sources${j.events&&j.events.length?' and '+j.events.length+' scheduled events':''}.</span></div>`;
  }catch(e){if(st)st.textContent='unavailable';$('#ovw').innerHTML='<p class="x">AI overview unavailable: '+esc(e.message||e)+'</p>'}
  finally{ovwBusy=false}}
-$('#mbtn').onclick=()=>marketNews(true);
-async function nai(){if(!S.news?.length)return;S.nk=S.news.slice(0,5).map(x=>x.id).join();S.nt=Date.now();$('#nai').textContent='Thinking...';
- try{$('#nai').textContent=await gem('Symbol: '+S.sym+'\nHeadlines (newest first):\n'+S.news.slice(0,12).map(x=>'- '+x.headline).join('\n'),'You summarise news headlines factually. Reply with 2 to 3 short bullets stating what each headline reports, and nothing more. Do not interpret. Do not judge whether it is good or bad for the company, the industry or the market. Do not predict price. Never mention buying, selling or holding. Name the source. If the headlines are old, duplicated or unrelated to the symbol, say so plainly.')}catch(e){$('#nai').textContent=e.message}}
-$('#nbtn').onclick=nai;
+$('#mbtn').onclick=async()=>{await marketNews(true);if(S.mode==='free')freeNews()};
 /* ---------- calendar ---------- */
 const EXP=[[/Inflation Expectations/i,'Survey of expected future inflation, from the University of Michigan consumer survey.'],[/CPI|PCE|PPI/i,'Inflation measure: the change in the price of a basket of consumer goods and services.'],[/Non-Farm|Employment Change|NFP/i,'Jobs report: the change in the number of employed people.'],[/FOMC|Fed|Powell|Funds Rate/i,'Central bank policy decision and target interest rate.'],[/Unemployment Claims|JOLTS|ADP/i,'Labour-market data: unemployment claims and job openings.'],[/GDP|Retail Sales|ISM|PMI/i,'Growth data: economic output, consumer spending and activity surveys.'],[/Sentiment|Confidence/i,'Survey of consumer or business sentiment.']];
 /* The upstream calendar sends no CORS headers, so a static build cannot call it
@@ -655,12 +853,22 @@ async function calFetch(){const srcs=DESK_API===null?[CAL_SRC,CAL_SRC_ALT]:[CAL_
  if(EDGE_API){try{const j=await edgeGet('/api/calendar',15000);if(Array.isArray(j.events))return j.events;throw Error('malformed response')}catch(e){last=e}}
  for(const s of srcs){try{const r=await fetch(s);if(!r.ok)throw Error(r.status);return await r.json()}catch(e){last=e}}
  throw last||Error('No calendar source.')}
-async function cal(){let d=JSON.parse(LS.calc||'null');if(!d||Date.now()-d.t>18e5){
- try{const j=await calFetch();d={t:Date.now(),e:Array.isArray(j)?j:[]};LS.calc=JSON.stringify(d)}
- catch(e){if(!d){$('#cl').innerHTML='<p class="x" style="padding:12px">Calendar unavailable: '+esc(netErr(e))+'</p>';['#cstat','#csum'].forEach(s=>{const el=$(s);if(el)el.textContent=''});return}}}
- S.cal=(d.e||[]).filter(e=>e.country=='USD'&&/High|Medium/.test(e.impact||'')).sort((a,b)=>new Date(a.date)-new Date(b.date));
- calRender();
- if(cfg().gk&&LS.cai_k!=S.cal.length+':'+new Date().toDateString())cai()}
+/* The calendar is a rolling "this week" file, so its cache is dropped when the
+   US/Eastern date rolls over as well as after the ordinary TTL: a desk left open
+   overnight must not keep showing last week's list. cal() is safe to call often
+   - it only refetches when the cache has actually gone stale - so boot, the
+   visibility handler and a slow timer can all just ask for it. */
+const etDay=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/New_York'});
+let calBusy=false;
+async function cal(){let d=null;try{d=JSON.parse(LS.calc||'null')}catch(_){d=null}
+ const fresh=!!(d&&Array.isArray(d.e)&&Date.now()-d.t<18e5&&d.day===etDay());
+ if(!fresh&&!calBusy){calBusy=true;
+  try{const j=await calFetch();d={t:Date.now(),day:etDay(),e:Array.isArray(j)?j:[]};LS.calc=JSON.stringify(d)}
+  catch(e){if(!d||!Array.isArray(d.e)){$('#cl').innerHTML='<p class="x" style="padding:12px">Calendar unavailable: '+esc(netErr(e))+'</p>';['#cstat','#csum'].forEach(s=>{const el=$(s);if(el)el.textContent=''});return}}
+  finally{calBusy=false}}
+ if(!d||!Array.isArray(d.e))return;
+ S.cal=d.e.filter(e=>e.country=='USD'&&/High|Medium/.test(e.impact||'')).sort((a,b)=>new Date(a.date)-new Date(b.date));
+ calRender();calAList()}
 function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checked)||e.impact=='High'),now=Date.now();
  const stat=$('#cstat');if(stat)stat.textContent=evs.length+' event'+(evs.length==1?'':'s')+(evs.length<S.cal.length?' (filtered)':'');
  const nx=evs.find(e=>new Date(e.date).getTime()>=now),sum=$('#csum');
@@ -678,9 +886,6 @@ function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checke
    const tstr=t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'}),full=t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'long',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
    return `<div class="item${past?' past':''}"><details class="evtd"><summary class="hrow" title="Click to read more"><span class="evtime num">${tstr}</span><b class="evttl">${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${soon.has(e.title+'|'+e.date)?`<span class="chipbadge nu" title="You will be alerted before this event">alert in ${Math.max(0,Math.round((t.getTime()-now)/6e4))}m</span>`:''}${past?'<span class="muted" style="font-size:11px">released</span>':''}<span class="muted evtchev">read more</span></summary><div class="evtmore"><p class="x"><b>${esc(e.title)}</b><br>${esc(full)} ET · ${esc(e.impact)} impact${past?' · already released':''}</p>${ex?`<p class="x">${ex}</p>`:''}<div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div><p class="x">The forecast figure is the consensus economists surveyed by the data provider expected. It is not an estimate produced by TickSPY.</p></div></details></div>`}).join('')}
  $('#cl').innerHTML=html||'<p class="x" style="padding:12px">No medium or high impact USD events in this view.</p>'}
-async function cai(){if(!S.cal?.length)return;LS.cai_k=S.cal.length+':'+new Date().toDateString();$('#cai').textContent='Thinking...';const now=Date.now(),n=S.cal.filter(e=>new Date(e.date)>now-864e5).slice(0,12);
- try{$('#cai').textContent=await gem('Now: '+new Date().toLocaleString('en-US',{timeZone:'America/New_York'})+' ET\nUpcoming/recent US events:\n'+n.map(e=>`${e.date} ${e.title} (${e.impact}) forecast ${e.forecast||'-'} prev ${e.previous||'-'} actual ${e.actual||'-'}`).join('\n'),'You summarise economic calendar events factually. Reply with at most 3 short bullets: the event, when it occurs in ET, and its forecast versus previous value. Do not predict market reactions. Do not say whether events are bullish or bearish. Do not advise. Never mention buying or selling. Note plainly any event that has no forecast available.')}catch(e){$('#cai').textContent=e.message}}
-$('#cbtn').onclick=cai;
 /* ---------- calendar event alerts (user-configurable) ---------- */
 /* Fires a toast (and a tone, unless silenced) a chosen number of minutes before
    a scheduled release, and optionally when the figure is published. Preferences
@@ -733,19 +938,16 @@ CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
  if(lead)lead.onchange=e=>calASave({lead:+e.target.value||15});
  if(rel)rel.onchange=e=>calASave({releases:e.target.checked});
  if(snd)snd.onchange=e=>calASave({sound:e.target.checked})});
-/* ---------- Gemini ---------- */
-const pday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Los_Angeles'});let lastG=0;
-const used=()=>+(LS['g'+pday()]||0);
-const showUse=()=>{const c=cfg();$('#use').textContent=`(${used()}/${c.cap||400} requests today, model: ${c.gm||'none'})`};
-async function gem(text,sys,hist=[]){const c=cfg();
- if(!c.gk||!c.gm)throw Error('Add your Gemini key and choose a model in Settings.');if(used()>=(c.cap||400))throw Error('Daily safety cap reached. Raise it in Settings or wait until midnight Pacific.');
- await new Promise(r=>setTimeout(r,Math.max(0,lastG+5000-Date.now())));lastG=Date.now();LS['g'+pday()]=used()+1;showUse();
- const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${c.gm}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':c.gk},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[...hist,{role:'user',parts:[{text}]}]})});
- if(r.status==429)throw Error('Gemini rate limit hit (429). Wait a minute, or choose another Flash-Lite model.');if(!r.ok)throw Error('Gemini error '+r.status+': '+(await r.text()).slice(0,150));
- const j=await r.json();return(j.candidates?.[0]?.content?.parts||[]).map(p=>p.text).join('')||'(empty reply)'}
+/* ---------- no client-side AI ----------
+   The desk used to let a visitor paste their own Gemini key and generate a
+   per-symbol and per-calendar summary from this browser. That is gone: it asked
+   people to create an API key before the AI text worked, and it made every
+   visitor's click a separate call against a key. There is now exactly one piece
+   of machine-written text here - the shared market overview - and it is written
+   on the server, cached, and read by everyone (see loadOverview above). */
 /* ---------- legal & disclosures ---------- */
 const LEGAL={title:'Important - please read before using this dashboard',
- short:'Pure information to help you do your own research. Not advice, not a recommendation. We accept no responsibility for any decision you make or any outcome. Trading risks loss of capital. Market data via Alpaca / IEX, personal non-commercial use only. Provided "as is" without warranty.',
+ short:'Pure information to help you do your own research. Not advice, not a recommendation. We accept no responsibility for any decision you make or any outcome. Trading risks loss of capital. Market data via Alpaca / IEX when you connect your own keys, or one shared free end-of-day series served by our own server when you do not; personal non-commercial use only. Provided "as is" without warranty.',
  points:[
   ['Information only','This dashboard is a reference tool. It displays market data and mathematical summaries of it so that you can do your own research. It does not tell you what to do. We give no view on whether any security is suitable for you, and we accept no responsibility for any decision you make or for any outcome. You use it entirely at your own risk.'],
   ['Not investment advice','Nothing on this dashboard is investment, financial, legal or tax advice, and nothing is a recommendation, solicitation or offer to buy or sell any security. It is impersonal commentary of general circulation, not advice tailored to your situation.'],
@@ -753,11 +955,11 @@ const LEGAL={title:'Important - please read before using this dashboard',
   ['Risk of loss','Trading and investing involve substantial risk, including the total loss of your capital. You are solely responsible for your own decisions. Consult a licensed professional before acting.'],
   ['Estimates, not predictions','The statistical and AI outputs are estimates derived from historical prices. They can be wrong, they are not guaranteed, and past or hypothetical results never indicate future results. The volatility model reports a measured reliability, and often has little or no skill.'],
   ['Hypothetical backtests','Backtest figures are simulated on past data. They exclude commissions, fees, slippage, taxes and borrow costs, cover limited samples, and are not evidence of future performance.'],
-  ['Market data','Market data is provided by Alpaca and IEX under their terms and is for personal, non-commercial use only. It may be delayed, incomplete or inaccurate, must not be redistributed or served to the public, and all trademarks belong to their owners.'],
-  ['Auto-generated summaries','The only machine-generated text here is the factual news and calendar summary, which restates headlines and scheduled events. It is unverified and may be wrong or incomplete, and it makes no recommendation. You are responsible for complying with the terms of every provider you connect.'],
+  ['Market data','With no keys saved, the desk shows one shared, cached copy of the most recent completed session, from a free public price source (Yahoo Finance, with Stooq as a fallback), fetched by our own server rather than by your browser. That view is delayed, end-of-day, one session old, and replayed rather than streamed; it is not a current quote. Once you connect your own Alpaca keys the data becomes Alpaca/IEX under their terms and is current. Either way it may be delayed, incomplete or inaccurate, it must not be redistributed or served to the public, and all trademarks belong to their owners.'],
+  ['Auto-generated summaries','The only machine-generated text here is one shared market overview, written on our own server from public headlines and the scheduled events and then shown to every visitor from the same copy. It is unverified and may be wrong or incomplete, and it makes no recommendation. There is no AI key to enter anywhere, so nobody can spend one on your behalf. You are responsible for complying with the terms of every provider you connect.'],
   ['No warranty','This software is provided "as is" without warranty of any kind, express or implied, including merchantability, fitness for a particular purpose and non-infringement. To the maximum extent permitted by law, the authors accept no liability for any loss or damage arising from its use.'],
-  ['Privacy policy','No accounts, no analytics, no advertising, no telemetry, no tracking pixels and no cookies. Your API keys and watchlist are stored only in your own browser and are sent only to the providers you choose. If you run the bundled local server it forwards requests on your own machine and keeps nothing. No personal data is sent to the authors, because there is no author-operated server to send it to.'],
-  ['Not for redistribution','Do not publish, host or share this dashboard in a way that redistributes market data. Running it yourself, locally, for your own use is the intended purpose.']
+  ['Privacy policy','No accounts, no analytics, no advertising, no telemetry, no tracking pixels and no cookies. Your API keys, watchlist, alerts and calendar preferences are stored only in your own browser and are sent only to the providers you choose. A small server of ours relays the public news feeds, the economic calendar and the free end-of-day prices, and writes that one shared overview; it holds no accounts and keeps no record of who read it, seeing only the ordinary request information (such as an IP address) that Cloudflare handles for any web request. No personal data is stored about you.'],
+  ['Not for redistribution','Market data is licensed, not owned. On the published desk a visitor who has no keys of their own is served one shared, cached copy of the free end-of-day session, fetched for them by our own server. If you host your own copy, do not serve market data to others and do not publish it in a way that redistributes that data; personal, non-commercial use is the intended purpose.']
  ]};
 function legalBody(withAccept){return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+LEGAL.points.map(p=>`<p class="x"><b>${esc(p[0])}.</b> ${esc(p[1])}</p>`).join('')+`<div class="legal-actions">${withAccept?'<button class="btn" id="gate-ok" type="button">I understand and accept</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline':'Close'}</button></div>`}
 function closeGate(){$('#gate').classList.remove('on')}
@@ -797,19 +999,37 @@ function wizRender(){const s=WIZ[wizI],last=wizI===WIZ.length-1,c=cfg();
   if(!ak||!as){toast('Please paste both the Key ID and the Secret Key.');return}
   LS.cfg=JSON.stringify(Object.assign(cfg(),{ak,as}));LS.wiz='done';$('#wiz').classList.remove('on');fill();go('live');load()};
  $('#wiz-skip').onclick=()=>{LS.wiz='skipped';$('#wiz').classList.remove('on')}}
-function wizMaybe(){if(!cfg().ak&&LS.wiz!=='done'&&LS.wiz!=='skipped')setTimeout(()=>wizOpen(0),400)}
+/* The wizard is an optional upgrade now, not a gate. It only opens by itself when
+   the desk genuinely has no way to show anything (no keys and no edge API); in
+   free mode the visitor already has data and is left alone. */
+function wizMaybe(){if(!cfg().ak&&LS.wiz!=='done'&&LS.wiz!=='skipped'&&S.mode==='none')setTimeout(()=>wizOpen(0),400)}
 $('#wizbtn').onclick=()=>wizOpen(0);
 $('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
-function fill(){const c=cfg();['ak','as','gk','cap'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]));if(c.gm)$('#gm').innerHTML=`<option>${esc(c.gm)}</option>`;showUse()}
-$('#gl').onclick=async()=>{try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':$('#gk').value}});const j=await r.json();if(!r.ok)throw Error(j.error?.message);
- const m=j.models.filter(x=>x.supportedGenerationMethods?.includes('generateContent')&&/flash/.test(x.name)).map(x=>x.name.replace('models/','')).sort((a,b)=>(/lite/.test(b)-/lite/.test(a))||b.localeCompare(a));$('#gm').innerHTML=m.map(x=>`<option>${x}</option>`).join('')}catch(e){alert('Could not load models: '+e.message)}};
-$('#sv').onclick=()=>{LS.cfg=JSON.stringify({ak:$('#ak').value.trim(),as:$('#as').value.trim(),gk:$('#gk').value.trim(),gm:$('#gm').value,cap:+$('#cap').value||400});showUse();go('live');load()};
+function fill(){const c=cfg();['ak','as'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]))}
+$('#sv').onclick=()=>{LS.cfg=JSON.stringify({ak:$('#ak').value.trim(),as:$('#as').value.trim()});go('live');load()};
+/* A one-click way back to the no-account feed. Without it, saved keys could only
+   be removed by clearing the site's data in the browser. */
+$('#sfree').onclick=()=>{LS.cfg=JSON.stringify({ak:'',as:''});$('#ak').value='';$('#as').value='';go('live');load()};
 $('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
-$('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#jadd').onclick=journalAdd;$('#scb').onclick=scan;
+$('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#atest').onclick=()=>beep();$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
-addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});setInterval(news,12e4);setInterval(newsRender,3e4);setInterval(sessRender,1000);setInterval(calAlertTick,10000);sessRender();
+addEventListener('resize',()=>{draw();if(S.vol)drawVolChart(S.vol.series)});
+setInterval(news,12e4);setInterval(newsRender,3e4);
+// The clock still ticks once a second, but sessRender() now rewrites only the
+// seconds text unless the phase or the next event actually changed.
+setInterval(()=>{sessRender();freeTick()},1000);
+// Alerts get their own cadence, so they no longer depend on the chart redrawing.
+setInterval(alerCheck,5000);setInterval(calAlertTick,10000);
+// cal() guards itself: this only refetches when its cache is stale or the
+// US/Eastern day has rolled over.
+setInterval(()=>cal(),600000);
+// Coming back to the tab after a while: catch the replay up, re-read a stale
+// calendar and re-check alerts, none of which a throttled background tab can do.
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return;primeAudio();freeTick();sessRender();cal();alerCheck();calAlertTick()});
+sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
-$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();alertRender();journalRender();wlRender();fill();calARender();if(!LS.legal)gateShow();else wizMaybe();go('live');load();
+$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();
+alertRender();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go('live');load();
 </script></body></html>
