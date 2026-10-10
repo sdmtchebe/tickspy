@@ -5,14 +5,12 @@
 /* ===========================================================================
    TickSPY landing page — design tokens
    ---------------------------------------------------------------------------
-   Direction: a dark instrument panel. The page is a working surface, not a
+   Direction: a dark instrument panel with a lit slate material. The page is a working surface, not a
    poster, so the design language is deliberately narrow:
 
-     · One material, lit. Depth comes from value (void -> surface -> well),
-       from a soft lighting wash and a fine film grain over the whole page, and
-       from machined panel edges — a 1px inset highlight along the top of every
-       panel, a recessed shadow inside every well. Never from stacking
-       translucent layers, never from a glow.
+      · One material, lit. Depth comes from value (void -> surface -> well),
+        directional light, a fine film grain, and machined panel edges. Never
+        from stacking translucent layers or a glow.
      · One accent, two jobs. Green marks data — a number that moved up — and it
        marks wayfinding: every section eyebrow, every step number, and one
        load-bearing phrase per key heading. It never glows, never becomes a
@@ -32,9 +30,11 @@
      sit except flat. Everything below moved up together so the page reads as
      dim rather than switched off. */
   --void: #10141c;
-  --surface: #171d28;
+  --surface: #1a202c;
   --surface-2: #1f2632;
-  --well: #131822;
+  --well: #141a25;
+  --surface-light: rgba(255, 255, 255, 0.065);
+  --surface-shadow: rgba(0, 0, 0, 0.42);
 
   /* lines */
   --line: rgba(255, 255, 255, 0.09);
@@ -108,14 +108,11 @@ html {
 body {
   margin: 0;
   background-color: var(--void);
-  background-image: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.018) 14%,
-    rgba(255, 255, 255, 0) 32%,
-    rgba(0, 0, 0, 0) 72%,
-    rgba(0, 0, 0, 0.3) 100%
-  );
+  background-image:
+    radial-gradient(900px 520px at 8% -7%, rgba(91, 130, 190, 0.16), transparent 68%),
+    radial-gradient(760px 500px at 92% 18%, rgba(0, 229, 160, 0.055), transparent 72%),
+    radial-gradient(900px 680px at 50% 108%, rgba(116, 137, 170, 0.10), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.018) 14%, rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, 0) 72%, rgba(0, 0, 0, 0.3) 100%);
   background-repeat: no-repeat;
   color: var(--ink);
   font-family: var(--sans);
@@ -284,10 +281,23 @@ h4 {
    The inset highlight along the top edge is what makes a panel read as a milled
    face catching the light rather than a flat rectangle of grey. */
 .panel {
-  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.035), transparent 28%),
+    linear-gradient(180deg, var(--surface-2), var(--surface));
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 34px -30px rgba(0, 0, 0, 0.95);
+  box-shadow: inset 0 1px 0 var(--surface-light), inset 0 -1px 0 rgba(0, 0, 0, 0.28), 0 22px 42px -30px var(--surface-shadow);
+}
+
+.panel::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  content: "";
+  background: linear-gradient(112deg, rgba(255, 255, 255, 0.035), transparent 23%, transparent 76%, rgba(0, 0, 0, 0.09));
 }
 
 .panel-plain {
@@ -298,10 +308,10 @@ h4 {
 /* A recessed area for artwork or a mock. Darker than the panel above it, so
    nesting reads as depth instead of as two layers of frosted glass. */
 .well {
-  background: var(--well);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 34%), var(--well);
   border: 1px solid var(--line);
   border-radius: var(--r-well);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55), inset 0 -1px 0 rgba(255, 255, 255, 0.025);
 }
 
 /* Film grain. A single tiled turbulence tile at ~3.5%, the same device the desk
@@ -314,11 +324,30 @@ h4 {
 }
 
 .panel-hover {
-  transition: border-color 200ms var(--ease-out), background-color 200ms var(--ease-out);
+  transition: transform 240ms var(--ease-out), border-color 200ms var(--ease-out), box-shadow 240ms var(--ease-out);
 }
 
 .panel-hover:hover {
+  transform: translateY(-2px);
   border-color: var(--line-2);
+  box-shadow: inset 0 1px 0 var(--surface-light), inset 0 -1px 0 rgba(0, 0, 0, 0.28), 0 26px 48px -30px rgba(0, 0, 0, 0.95);
+}
+
+/* Floating chrome with a soft scroll-edge fade instead of a hard bar. */
+[data-testid="site-nav"] {
+  background: linear-gradient(180deg, rgba(16, 20, 28, 0.88), rgba(16, 20, 28, 0.58));
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+[data-testid="site-nav"]::after {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -18px;
+  height: 18px;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(180deg, rgba(16, 20, 28, 0.16), transparent);
 }
 
 .live-dot {
@@ -362,10 +391,12 @@ h4 {
 .btn-solid {
   background: var(--mint);
   color: #04130d;
+  box-shadow: 0 8px 18px rgba(0, 229, 160, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .btn-solid:hover {
   background: var(--mint-ink);
+  box-shadow: 0 11px 24px rgba(0, 229, 160, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.32);
 }
 
 .btn-ghost {
@@ -638,6 +669,12 @@ html.lenis body {
   .well,
   .chip {
     background: var(--surface-2);
+  }
+
+  [data-testid="site-nav"] {
+    background: var(--void);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 

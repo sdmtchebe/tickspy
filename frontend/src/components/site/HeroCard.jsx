@@ -21,7 +21,7 @@ export const HeroCard = () => {
   const up = (s?.change ?? 0) >= 0;
 
   return (
-    <div className="panel overflow-hidden" data-testid="hero-mock-card">
+    <div className="panel panel-hover overflow-hidden" data-testid="hero-mock-card">
       <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3.5">
         <div className="flex items-center gap-3">
           <span className="live-dot" aria-hidden="true" />
