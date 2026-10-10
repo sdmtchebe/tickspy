@@ -377,8 +377,8 @@ export const SetupGuide = () => (
         <Reveal delay={0.12} className="lg:col-span-5">
           <div className="max-w-[460px] lg:ml-auto">
             <p className="t-body">
-              You do not need any of this to look around. With no keys at all, the desk still opens with the last completed
-              session's prices, the news, the calendar and a shared market overview. Free keys from{" "}
+              You do not need any of this to look around. <strong>With no keys at all</strong>, the desk still opens with the last
+              completed session's prices, the news, the calendar and a shared market overview. Free keys from{" "}
               <a href={ALPACA} target="_blank" rel="noopener noreferrer" className="link">
                 Alpaca
               </a>{" "}

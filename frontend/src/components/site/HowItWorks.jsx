@@ -126,8 +126,8 @@ export const HowItWorks = () => (
         </div>
         <Reveal delay={0.12} className="lg:col-span-5">
           <p className="t-body max-w-[430px] lg:ml-auto">
-            There is nothing to configure and no manual to read first. The whole loop is three steps long and it starts the moment
-            the desk opens.
+            There is nothing to configure and no manual to read first. The whole loop is <strong>three steps long</strong> and it starts
+            the moment the desk opens.
           </p>
         </Reveal>
       </div>

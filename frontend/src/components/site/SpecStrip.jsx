@@ -26,7 +26,7 @@ const FACTS = [
 ];
 
 export const SpecStrip = () => (
-  <section className="relative z-10 border-y border-line bg-surface/40" data-testid="spec-strip">
+  <section className="relative z-10 border-y border-line bg-surface/60" data-testid="spec-strip">
     <div className="shell grid gap-8 py-10 md:grid-cols-3 md:gap-10">
       {FACTS.map((f, i) => (
         <Reveal key={f.k} delay={i * 0.06}>

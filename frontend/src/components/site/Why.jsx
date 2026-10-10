@@ -55,8 +55,8 @@ export const Why = () => (
             The parts we would <span className="acc">rather not print</span> are on this page too.
           </h2>
           <p className="t-lead mt-5 max-w-[420px]">
-            A trading tool that only describes its good days is not giving you analysis, it is giving you a pitch. So here is the
-            whole picture, including the results that argue against us.
+            A trading tool that only describes its good days is not giving you analysis, <strong>it is giving you a pitch</strong>. So here
+            is the whole picture, including the results that argue against us.
           </p>
         </div>
 

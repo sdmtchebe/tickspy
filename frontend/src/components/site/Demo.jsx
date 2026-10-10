@@ -45,8 +45,8 @@ export const Demo = () => {
           </div>
           <Reveal delay={0.1}>
             <p className="max-w-[430px] text-[15px] leading-relaxed text-steel lg:pb-2">
-              Click through them. Every figure on this page is generated in your browser from a simulated series, so it moves the
-              way the real desk moves without pretending to be today&rsquo;s quote.
+              Click through them. Every figure on this page is <strong>generated in your browser</strong> from a simulated series, so it
+              moves the way the real desk moves without pretending to be today&rsquo;s quote.
             </p>
           </Reveal>
         </div>

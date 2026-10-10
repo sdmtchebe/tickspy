@@ -44,7 +44,8 @@ export const Hero = () => {
 
           <p className="t-lead rise mt-7 max-w-[560px]" style={{ animationDelay: "380ms" }} data-testid="hero-subheadline">
             TickSPY draws the candles, runs 14 indicators, a volatility model, the news and the calendar for any US ticker, then says
-            what each reading means in one plain sentence. No account required, and nothing held back behind a paywall.
+            what each reading means in one plain sentence. <strong>No account required</strong>, and nothing held back behind a
+            paywall.
           </p>
 
           <div className="rise mt-9 flex flex-wrap items-center gap-3" style={{ animationDelay: "460ms" }}>
@@ -59,7 +60,7 @@ export const Hero = () => {
           <dl className="rise mt-12 grid grid-cols-2 gap-x-6 gap-y-7 border-t border-line pt-7 sm:grid-cols-4" style={{ animationDelay: "540ms" }} data-testid="hero-stats">
             {STATS.map(([k, v]) => (
               <div key={v}>
-                <dt className="num text-[21px] leading-none text-ink">{k}</dt>
+                <dt className="num text-[21px] leading-none text-mint">{k}</dt>
                 <dd className="mt-2 text-[13px] leading-snug text-steel">{v}</dd>
               </div>
             ))}

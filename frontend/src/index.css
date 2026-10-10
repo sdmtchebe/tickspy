@@ -8,8 +8,11 @@
    Direction: a dark instrument panel. The page is a working surface, not a
    poster, so the design language is deliberately narrow:
 
-     · One material. Depth comes from value (void -> surface -> well), never
-       from stacking translucent layers on top of each other.
+     · One material, lit. Depth comes from value (void -> surface -> well),
+       from a soft lighting wash and a fine film grain over the whole page, and
+       from machined panel edges — a 1px inset highlight along the top of every
+       panel, a recessed shadow inside every well. Never from stacking
+       translucent layers, never from a glow.
      · One accent, two jobs. Green marks data — a number that moved up — and it
        marks wayfinding: every section eyebrow, every step number, and one
        load-bearing phrase per key heading. It never glows, never becomes a
@@ -92,9 +95,23 @@ html {
   min-height: 100dvh;
 }
 
+/*
+ * Two quiet gradients over the void, so the page gets lighter where it starts
+ * and settles darker at the floor instead of being one flat slab of colour for
+ * 11,000px. Both are neutral and under 3% — they read as light, not as colour.
+ */
 body {
   margin: 0;
-  background: var(--void);
+  background-color: var(--void);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.028) 0%,
+    rgba(255, 255, 255, 0.01) 14%,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(0, 0, 0, 0) 74%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  background-repeat: no-repeat;
   color: var(--ink);
   font-family: var(--sans);
   font-size: 1rem;
@@ -157,6 +174,15 @@ h4 {
   font-size: 0.9375rem;
   line-height: 1.65;
   color: var(--steel);
+}
+
+/* Emphasis inside prose is a value step, not a colour and not a highlight: the
+   load-bearing clause of a paragraph comes forward in ink while the rest stays
+   steel. One per paragraph at most. */
+.t-lead strong,
+.t-body strong {
+  color: var(--ink);
+  font-weight: 500;
 }
 
 /* The one micro-label style. Used at most once per section, and it is the
@@ -249,11 +275,14 @@ h4 {
 
 /* ---------------------------------------------------------- materials ---- */
 
-/* The only surface treatment on the page. Content sits on value, not on blur. */
+/* The only surface treatment on the page. Content sits on value, not on blur.
+   The inset highlight along the top edge is what makes a panel read as a milled
+   face catching the light rather than a flat rectangle of grey. */
 .panel {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-panel);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 34px -30px rgba(0, 0, 0, 0.95);
 }
 
 .panel-plain {
@@ -267,6 +296,16 @@ h4 {
   background: var(--well);
   border: 1px solid var(--line);
   border-radius: var(--r-well);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Film grain. A single tiled turbulence tile at ~3.5%, the same device the desk
+   uses, so a large dark field has texture instead of looking like empty space.
+   Static by design: grain that moves is a gimmick. */
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  opacity: 0.035;
 }
 
 .panel-hover {
@@ -412,6 +451,7 @@ select.field option {
   border-radius: 8px;
   border: 1px solid var(--line);
   background: var(--surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   font-size: 12.5px;
   color: var(--steel);
 }

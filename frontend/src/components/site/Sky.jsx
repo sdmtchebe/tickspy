@@ -33,10 +33,22 @@ export const Sky = () => {
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-void" aria-hidden="true" data-testid="backdrop">
-      {/* One soft wash at the top, so the hero has a light source. */}
+      {/* Two light sources, not one: the accent over the hero, and a cooler
+          slate from the top right. Two off-centre lights are what stop the top
+          of the page reading as a flat black rectangle. */}
       <div
         className="absolute left-1/2 top-0 h-[46vh] w-[130vw] -translate-x-1/2"
-        style={{ background: "radial-gradient(60% 100% at 50% 0%, rgba(0,229,160,0.05), transparent 70%)" }}
+        style={{ background: "radial-gradient(60% 100% at 50% 0%, rgba(0,229,160,0.055), transparent 70%)" }}
+      />
+      <div
+        className="absolute right-0 top-0 h-[64vh] w-[72vw]"
+        style={{ background: "radial-gradient(70% 90% at 100% 0%, rgba(126,152,196,0.06), transparent 72%)" }}
+      />
+      {/* A horizon along the bottom of the viewport, so the field has a near and
+          a far instead of fading to the same black in every direction. */}
+      <div
+        className="absolute inset-x-0 bottom-0 h-[34vh]"
+        style={{ background: "linear-gradient(0deg, rgba(120,142,180,0.05), transparent)" }}
       />
       <motion.div className="absolute inset-0" style={{ y }}>
         {STARS.map((s) => (
@@ -47,6 +59,9 @@ export const Sky = () => {
           />
         ))}
       </motion.div>
+      {/* Grain goes on last, over the washes and the stars, so everything sits in
+          one material rather than floating on it. */}
+      <div className="grain absolute inset-0" />
     </div>
   );
 };
