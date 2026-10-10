@@ -141,6 +141,16 @@ node desk/tests/volmodel_stage2.js    # no extra dependencies
 
 ## Notes
 
+- `frontend/package.json` sets `"homepage": "."`, so the build emits **relative**
+  asset paths. The same `frontend/build/` therefore renders identically at a
+  domain root (Netlify), under a subpath (GitHub Pages `/tickspy/`), and when the
+  folder is opened straight from disk — double-clicking `index.html` used to give
+  an unstyled page, because absolute `/static/...` paths resolve against the
+  filesystem root. Keep it relative; a `PUBLIC_URL` env var would override it.
+- The desk opens fine from disk too, but its no-key prices come from the Worker,
+  which only grants CORS to real web origins. Opened as a local `file://` page the
+  desk renders correctly and reports that it cannot reach the data; serve it over
+  http (or use the deployed URL) to see live numbers.
 - `.env` files and `desk/local-config.js` hold secrets and are git-ignored.
 - Market data is licensed for personal, non-commercial use — see
   `desk/DISCLAIMER.md`. Do not deploy the desk in a way that redistributes it.
