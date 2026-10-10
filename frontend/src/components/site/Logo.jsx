@@ -1,5 +1,5 @@
-const YGlyph = () => (
-  <svg viewBox="0 0 62 72" className="inline-block h-[0.72em] w-[0.6em] align-baseline" aria-hidden="true">
+const Glyph = (props) => (
+  <svg viewBox="0 0 62 72" className="inline-block h-[0.72em] w-[0.6em] align-baseline" aria-hidden="true" {...props}>
     <path d="M-2 -14 L31 38 L64 -14" fill="none" stroke="currentColor" strokeWidth="13.5" strokeLinejoin="miter" />
     <path d="M31 36 V45 M31 54 V72" fill="none" stroke="currentColor" strokeWidth="13.5" />
     <path d="M17 49.5 H24 M38 49.5 H45" stroke="#00E5A0" strokeWidth="3" />
@@ -13,22 +13,16 @@ const IGlyph = () => (
   </svg>
 );
 
-/* The wordmark. The T glyph keeps the accent; nothing here is allowed to glow,
-   because a glowing logo is the first thing that reads as a template. */
-export const Logo = ({ className = "", testId = "brand-logo" }) => (
+export const Logo = ({ className = "", testId = "brand-logo", alt = "TickSPY" }) => (
   <span
     data-testid={testId}
     className={`inline-flex items-baseline font-display font-medium leading-none tracking-[-0.03em] ${className}`}
-    aria-label="TickSPY"
   >
-    <span className="text-mint" aria-hidden="true">
-      T<IGlyph />ck
-    </span>
-    <span className="ml-[0.06em] text-ink" aria-hidden="true">
-      SP
-    </span>
-    <span className="text-ink" aria-hidden="true">
-      <YGlyph />
-    </span>
+    <img
+      src="/tickspy-logo.png"
+      alt={alt}
+      className="h-[0.72em] w-auto"
+      style={{ display: "block" }}
+    />
   </span>
 );
