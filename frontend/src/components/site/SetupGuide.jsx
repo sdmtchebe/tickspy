@@ -90,10 +90,13 @@ const Target = ({ children, label }) => (
   </div>
 );
 
+/* A label and its value. A key is twenty unbreakable mono characters, which
+   cannot shrink inside a flex row, so the row wraps and the value breaks rather
+   than pushing four pixels of itself off the side of a 320px screen. */
 const Row = ({ k, v }) => (
-  <div className="flex items-center justify-between gap-3 rounded-lg border border-line bg-surface2 px-3 py-2">
-    <span className="text-[13px] text-steel">{k}</span>
-    <span className="num text-[13px] text-ink">{v}</span>
+  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-lg border border-line bg-surface2 px-3 py-2">
+    <span className="shrink-0 text-[13px] text-steel">{k}</span>
+    <span className="num min-w-0 break-all text-[13px] text-ink">{v}</span>
   </div>
 );
 
@@ -216,9 +219,9 @@ const PasteMock = () => (
     <div className="space-y-2.5">
       <Row k="Alpaca key ID" v="PKXXXXXXXXXXXXXXXXXX" />
       <Target label="press Save">
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-mint/25 bg-mint/[0.06] px-3 py-2">
-          <span className="text-[13px] text-steel">Alpaca secret</span>
-          <span className="num text-[13px] text-ink">••••••••••</span>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-lg border border-mint/25 bg-mint/[0.06] px-3 py-2">
+          <span className="shrink-0 text-[13px] text-steel">Alpaca secret</span>
+          <span className="num min-w-0 break-all text-[13px] text-ink">••••••••••</span>
         </div>
       </Target>
       <span className="inline-block rounded-lg bg-mint px-3 py-1.5 text-[12px] font-semibold text-[#04130D]">Save</span>
