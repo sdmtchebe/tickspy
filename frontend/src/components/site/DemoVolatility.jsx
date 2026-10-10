@@ -87,6 +87,25 @@ export const DemoVolatility = ({ active }) => {
             <li className="flex items-center gap-2"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${m.quality ? "bg-mint" : "bg-amber"}`} aria-hidden="true" />Data quality {m.quality ? "passed" : "flagged"}</li>
             <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-mint" aria-hidden="true" />Simulation path, not a model run on real bars</li>
           </ul>
+
+          <div className="mt-5" data-testid="vol-direction-head">
+            <div className="mb-2 text-[12.5px] text-steel">Direction head <span className="font-medium text-amber">(simulated, not scored)</span></div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                ["Negative", "bear", m.probs[0]],
+                ["Neutral", "warn", m.probs[1]],
+                ["Positive", "bull", m.probs[2]]
+              ].map(([label, tone, prob], i) => (
+                <div key={label} className={`rounded-lg border p-2.5 transition-colors duration-200 ${i === m.probs.indexOf(Math.max(...m.probs)) ? TONE[tone].border : "border-line"}`}>
+                  <div className="h-10 w-full overflow-hidden rounded-md bg-line">
+                    <motion.div className="h-full w-full origin-bottom" style={{ background: TONE[tone].hex, opacity: 0.8 }} animate={{ scaleY: prob }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} />
+                  </div>
+                  <div className={`num mt-1.5 text-[12px] ${i === m.probs.indexOf(Math.max(...m.probs)) ? TONE[tone].text : "text-steel"}`}>{Math.round(prob * 100)}%</div>
+                  <div className="text-[11px] text-steel">{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

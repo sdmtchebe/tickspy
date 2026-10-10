@@ -4,9 +4,9 @@ import { Num, Info, scoreTone, TONE } from "@/components/site/bits";
 import { TICKERS, fmt } from "@/lib/market";
 
 const readouts = (s) => [
-  { id: "atr", k: "ATR 14", v: `$${fmt(s.atr)}`, tip: `ATR 14: Average true range across the last 14 bars — the usual measure of how far price travels in one bar. $${fmt(s.atr)} is a typical single-bar swing at this interval, not a prediction.` },
+  { id: "atr", k: "ATR 14", v: `$${fmt(s.atr)}`, tip: `ATR 14: Average true range across the last 14 bars, the usual measure of how far price travels in one bar. $${fmt(s.atr)} is a typical single-bar swing at this interval, not a prediction.` },
   { id: "vwap", k: "VWAP", v: fmt(s.vwap), c: "text-amber", tip: `VWAP: The average price paid today, weighted by volume. Price is currently ${s.price > s.vwap ? "above" : "below"} it.` },
-  { id: "bb", k: "Bollinger %B", v: fmt(s.pctB), tip: `%B: Where price sits inside its normal range. 0 = bottom band, 1 = top band. ${fmt(s.pctB)} means ${s.pctB > 0.8 ? "price is near the top of its recent range" : s.pctB < 0.2 ? "price is near the bottom of its recent range" : "price is in the middle of its range"}.` },
+  { id: "bb", k: "Bollinger %B", v: fmt(s.pctB), tip: `%B: Where price sits inside its normal range. 0 is the bottom band, 1 is the top. ${fmt(s.pctB)} means ${s.pctB > 0.8 ? "it is stretched high" : s.pctB < 0.2 ? "it is stretched low" : "it is in the middle of its range"}.` },
   { id: "volume", k: "Volume, 20 bars", v: `${(s.volume / 1000).toFixed(1)}K`, tip: "Volume: How many shares changed hands across the last 20 candles. Bars under the chart show each one." },
 ];
 

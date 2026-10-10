@@ -22,8 +22,8 @@ export const Spark = ({ points, color = "#FFB347", className = "h-10 w-full" }) 
 
 export const scoreTone = (s) => (s >= 60 ? "bull" : s <= 40 ? "bear" : "warn");
 export const TONE = {
-  bull: { text: "text-mint", bg: "bg-mint/10", border: "border-mint/30", hex: "#00E5A0", label: "Positive" },
-  bear: { text: "text-bear", bg: "bg-bear/10", border: "border-bear/30", hex: "#FF4D6A", label: "Negative" },
+  bull: { text: "text-mint", bg: "bg-mint/10", border: "border-mint/30", hex: "#00E5A0", label: "Bullish" },
+  bear: { text: "text-bear", bg: "bg-bear/10", border: "border-bear/30", hex: "#FF4D6A", label: "Bearish" },
   warn: { text: "text-amber", bg: "bg-amber/10", border: "border-amber/30", hex: "#FFB347", label: "Mixed" },
 };
 

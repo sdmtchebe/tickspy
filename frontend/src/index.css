@@ -358,6 +358,62 @@ h4 {
   flex: none;
 }
 
+/* Sparse candle constellations: chart-like enough to read as TickSPY, quiet
+   enough to remain atmosphere behind the actual interface. */
+.cosmic-candles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cosmic-candle-cluster {
+  position: absolute;
+  width: 92px;
+  height: 82px;
+  opacity: 0.13;
+  transform: scale(var(--candle-scale)) rotate(var(--candle-rotate));
+  animation: cosmic-drift var(--candle-duration) ease-in-out var(--candle-delay) infinite alternate;
+}
+
+.cosmic-candle {
+  position: absolute;
+  width: 5px;
+  min-width: 5px;
+  border-radius: 1px;
+}
+
+.cosmic-candle::before {
+  position: absolute;
+  top: -9px;
+  bottom: -9px;
+  left: 2px;
+  width: 1px;
+  content: "";
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.cosmic-candle-up {
+  color: var(--mint);
+  background: var(--mint);
+}
+
+.cosmic-candle-down {
+  color: var(--bear);
+  background: var(--bear);
+}
+
+@keyframes cosmic-drift {
+  from {
+    margin-top: -6px;
+    margin-left: -4px;
+  }
+  to {
+    margin-top: 7px;
+    margin-left: 6px;
+  }
+}
+
 /* ------------------------------------------------------------ controls ---- */
 
 .btn {
