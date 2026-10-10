@@ -1,9 +1,12 @@
 import { Logo } from "@/components/site/Logo";
 import { NAV_LINKS } from "@/components/site/Nav";
 import { scrollToId, DESK_PATH } from "@/lib/site";
+import { useLocale } from "@/lib/i18n";
 
-export const Footer = () => (
-  <footer className="relative z-10 mt-8 border-t border-line" data-testid="site-footer">
+export const Footer = () => {
+  const { copy } = useLocale();
+  return (
+    <footer className="relative z-10 mt-8 border-t border-line" data-testid="site-footer">
     <div className="shell grid gap-10 py-14 md:grid-cols-12">
       <div className="md:col-span-5">
         <Logo testId="footer-logo" />
@@ -19,7 +22,7 @@ export const Footer = () => (
           {NAV_LINKS.map((l) => (
             <li key={l.id}>
               <button onClick={() => scrollToId(l.id)} className="link-quiet text-[14px]" data-testid={`footer-link-${l.id}`}>
-                {l.label}
+                {copy.nav[l.index]}
               </button>
             </li>
           ))}
@@ -58,5 +61,6 @@ export const Footer = () => (
           </div>
         </div>
       </div>
-  </footer>
-);
+    </footer>
+  );
+};

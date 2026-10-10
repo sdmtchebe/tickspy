@@ -76,8 +76,8 @@ In Netlify Dashboard → **Functions** → **update-hfdata** → **Invoke**:
 The function runs daily at **06:00 UTC** (defined in `netlify.toml`):
 
 ```toml
-[functions.schedule]
-  "update-hfdata" = "0 6 * * *"
+[functions."update-hfdata"]
+  schedule = "0 6 * * *"
 ```
 
 To change the schedule, edit `netlify.toml` and redeploy. Cron format: `minute hour day month weekday` (UTC).
@@ -203,7 +203,7 @@ Regenerate key at hfdatalibrary.com and update Netlify env var.
 ### Function not triggering
 
 Check:
-- `netlify.toml` has `[functions.schedule]` section
+- `netlify.toml` has `[functions."update-hfdata"]` with `schedule = "0 6 * * *"`
 - Function appears in Netlify Dashboard → Functions
 - Site is on a paid plan (scheduled functions require Pro or above on Netlify)
 

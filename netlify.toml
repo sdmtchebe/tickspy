@@ -18,7 +18,7 @@
 #      GH_REPO     = owner/repo (e.g., sdmtchebe/tickspy)
 #      HF_TICKERS  = optional JSON array, e.g., '["SPY","QQQ","AAPL"]'
 #   2. The scheduled function runs daily at 06:00 UTC (after US market close).
-#      Adjust the cron in [functions.schedule] if needed.
+#      Adjust the cron in [functions."update-hfdata"] if needed.
 #   3. On success, it commits updated desk/hfdata/*.json to the repo, triggering
 #      a new Netlify build with fresh data.
 
@@ -41,8 +41,8 @@
   included_files = ["package.json", "package-lock.json"]
 
 # Daily at 06:00 UTC (after US market close, before EU open)
-[functions.schedule]
-  "update-hfdata" = "0 6 * * *"
+[functions."update-hfdata"]
+  schedule = "0 6 * * *"
 
 # Headers for security (also in _headers generated at build time)
 [[headers]]

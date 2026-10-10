@@ -31,8 +31,7 @@
       <p>No advertising runtime or advertising cookies are loaded in the current release. If a future deployment enables Google AdSense, the following choices apply. Enabling advertising requires an updated deployment and any consent platform required by Google and applicable law.</p>
       <p>Advertising is optional. Until you choose <strong>Allow ads</strong>, the landing page does not load the Google AdSense runtime or request an ad. If you choose <strong>No thanks</strong>, no AdSense ad units are requested for that browser.</p>
       <p>If you allow ads, this site asks Google for <strong>non-personalized ads</strong>. Google and its vendors may nevertheless use cookies, local storage, IP address, browser and device data, and similar technologies for ad delivery, frequency capping, fraud prevention, security, and aggregated measurement. Google controls those technologies and may process data under its own policies.</p>
-      <p>Read Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">advertising technology information</a> for details. You can revisit this decision below or use Google's ad controls where available.</p>
-      <p><button id="cookie-settings" type="button">Change advertising cookie choice</button></p>
+      <p>Read Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">advertising technology information</a> for details. There is no advertising choice to change in this release because advertising is disabled.</p>
 
       <h2>Service providers</h2>
       <p><strong>Netlify</strong> hosts the website and proxies public edge requests to <strong>Cloudflare</strong>. Both process request information such as IP addresses, requested paths, timestamps, and browser details and may retain operational or security logs according to their own policies. Tickspycorp does not operate an account database or independent analytics system.</p>
@@ -54,11 +53,5 @@
       <h2>Contact and changes</h2>
       <p>For support and privacy questions, email <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a>. This policy may change when site functionality or providers change; this page will show the updated date.</p>
     </main>
-    <script>
-      document.getElementById("cookie-settings").addEventListener("click", function () {
-        try { localStorage.removeItem("tickspy-ad-consent"); } catch (_) {}
-        window.location.href = "./";
-      });
-    </script>
   </body>
 </html>

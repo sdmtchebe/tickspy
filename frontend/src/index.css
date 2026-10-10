@@ -476,6 +476,24 @@ h4 {
   color: var(--ink);
 }
 
+.language-select {
+  height: 38px;
+  max-width: 112px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--steel);
+  font-family: var(--sans);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.language-select:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}
+
 .btn-sm {
   height: 38px;
   padding-inline: 16px;

@@ -2,20 +2,22 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "@/components/site/Logo";
 import { scrollToId, DESK_PATH } from "@/lib/site";
+import { LANGUAGES, useLocale } from "@/lib/i18n";
 
 /* Ordered the way the page reads. */
 export const NAV_LINKS = [
-  { id: "home", label: "Home" },
-  { id: "demo", label: "The desk" },
-  { id: "features", label: "Features" },
-  { id: "how-it-works", label: "How it works" },
-  { id: "setup", label: "Setup" },
-  { id: "contact", label: "Contact" },
+  { id: "home", index: 0 },
+  { id: "demo", index: 1 },
+  { id: "features", index: 2 },
+  { id: "how-it-works", index: 3 },
+  { id: "setup", index: 4 },
+  { id: "contact", index: 5 },
 ];
 
 export const Nav = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { locale, setLocale, copy } = useLocale();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -42,27 +44,31 @@ export const Nav = () => {
         </button>
 
         <ul className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.filter((l) => l.id !== "home").map((l) => (
+           {NAV_LINKS.filter((l) => l.id !== "home").map((l) => (
             <li key={l.id}>
               <button
                 onClick={() => go(l.id)}
                 data-testid={`nav-link-${l.id}`}
                 className="rounded-lg px-3 py-2 text-[14px] text-steel transition-colors duration-150 hover:text-ink"
               >
-                {l.label}
+                 {copy.nav[l.index]}
               </button>
             </li>
           ))}
         </ul>
 
         <div className="flex items-center gap-2">
-          <a className="btn btn-solid btn-sm" href={DESK_PATH} target="_blank" rel="noopener noreferrer" data-testid="nav-open-app-button">
-            Open desk
+           <label className="sr-only" htmlFor="language-selector">{copy.language}</label>
+           <select id="language-selector" className="language-select" value={locale} onChange={(event) => setLocale(event.target.value)} data-testid="language-selector">
+             {LANGUAGES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+           </select>
+           <a className="btn btn-solid btn-sm" href={DESK_PATH} target="_blank" rel="noopener noreferrer" data-testid="nav-open-app-button">
+             {copy.openDesk}
           </a>
           <button
             className="btn btn-quiet grid h-9 w-9 place-items-center !px-0 lg:hidden"
             onClick={() => setOpen((v) => !v)}
-            aria-label="Menu"
+            aria-label={copy.menu}
             aria-expanded={open}
             data-testid="nav-menu-toggle"
           >
@@ -91,7 +97,7 @@ export const Nav = () => {
                   data-testid={`nav-mobile-link-${l.id}`}
                   className="block w-full rounded-lg px-3 py-3 text-left text-[15px] text-ink transition-colors hover:bg-surface2"
                 >
-                  {l.label}
+                   {copy.nav[l.index]}
                 </button>
               ))}
             </div>
