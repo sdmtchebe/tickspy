@@ -10,8 +10,13 @@
 
      · One material. Depth comes from value (void -> surface -> well), never
        from stacking translucent layers on top of each other.
-     · One accent. Green means a number moved up. It is never decoration, and
-       it never glows.
+     · One accent, two jobs. Green marks data — a number that moved up — and it
+       marks wayfinding: every section eyebrow, every step number, and one
+       load-bearing phrase per key heading. It never glows, never becomes a
+       gradient, and never lands on prose the reader did not ask to have
+       emphasised, so the page reads as one instrument rather than a paint box.
+     · Amber is the second voice, reserved for a single callout in a section
+       (a warning, a "look for this" chip). It is never decoration either.
      · Numbers and labels are mono, prose is sans, headings are display. That
        is the whole vocabulary.
      · Motion is small and quick: things move 8px and stop. Springs are for
@@ -131,13 +136,28 @@ h4 {
   color: var(--steel);
 }
 
-/* The one micro-label style. Used at most once per section. */
+/* The one micro-label style. Used at most once per section, and it is the
+   page's wayfinding colour: mint, the same green as the mark, so every section
+   is keyed by the accent instead of by yet another shade of grey. */
 .t-label {
   font-family: var(--mono);
   font-size: 0.6875rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--mint);
+}
+
+/* A step number on a numbered rail (how it works, setup). Same treatment as a
+   section label: mono, mint, quiet because the size is small. */
+.step-num {
+  font-family: var(--mono);
+  color: var(--mint);
+}
+
+/* One load-bearing phrase in a heading, given the accent so the claim reads
+   before the qualifier. At most one per heading. */
+.acc {
+  color: var(--mint);
 }
 
 .num {

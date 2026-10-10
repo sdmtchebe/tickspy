@@ -73,26 +73,89 @@ export const BARS_CRON = "17 5 * * *";
 /** How many symbols one request may ask for. */
 const MAX_SYMBOLS = 12;
 
+/*
+ * Origins allowed to call this API. Two kinds of entry:
+ *
+ *   - an exact origin, e.g. https://tickspy.example.com
+ *   - a host suffix, e.g. *.netlify.app, which matches any subdomain of it
+ *
+ * The suffix form exists because moving this site to another host used to break
+ * the desk's no-key mode silently: the browser blocks the response, and all the
+ * visitor sees is a chart that never loads. Netlify makes that worse by giving
+ * every deploy preview its own random subdomain, which cannot be listed ahead of
+ * time.
+ *
+ * This is not the security boundary. Every endpoint is a public, read-only GET
+ * that returns the same cached payload to every caller: no credentials, no
+ * cookies, no per-user data, nothing to authorise. What protects the upstream
+ * quota is the per-isolate request budget (see BARS_FETCH_BUDGET), not this list.
+ * The list exists so the API is not embedded by any site that happens to find it,
+ * which is why hosts are named here rather than opened up with "*".
+ */
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://sdmtchebe.github.io",
+  "http://localhost:3000",
+  "http://localhost:8000",
+  "http://localhost:8767",
+  "*.netlify.app",
+  "*.netlify.com",
+];
+
 function allowedOrigins(env) {
-  const raw = (env && env.ALLOWED_ORIGINS) || "https://sdmtchebe.github.io,http://localhost:3000,http://localhost:8000,http://localhost:8767";
+  const raw = env && typeof env.ALLOWED_ORIGINS === "string" ? env.ALLOWED_ORIGINS.trim() : "";
+  // An explicit ALLOWED_ORIGINS replaces the defaults, so a deployment can
+  // narrow the list. wrangler.toml sets it, which is why the patterns live there
+  // too and not only here.
+  if (!raw) return DEFAULT_ALLOWED_ORIGINS;
   return raw
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
 }
 
+/** The origin to echo back, or null when this origin is not allowed. */
+function originAllowed(origin, allow) {
+  // A wildcard is granted to every caller, exactly as it was before origin
+  // patterns existed: it does not depend on the request carrying an Origin.
+  if (allow.includes("*")) return "*";
+  if (!origin) return null;
+  if (allow.includes(origin)) return origin;
+
+  let host;
+  let protocol;
+  try {
+    const url = new URL(origin);
+    host = url.host;
+    protocol = url.protocol;
+  } catch (e) {
+    return null; // not a URL at all, which includes the literal "null" origin
+  }
+  // Only real web origins. data:, file: and javascript: URLs never get a grant.
+  if (protocol !== "http:" && protocol !== "https:") return null;
+
+  for (const raw of allow) {
+    // Accept both "*.netlify.app" and "https://*.netlify.app", because the
+    // scheme is meaningless here (only http and https get this far) and writing
+    // it out is the natural thing to do.
+    const entry = raw.replace(/^[a-z]+:\/\//i, "").replace(/\/+$/, "");
+    if (!entry.startsWith("*.")) continue;
+    const suffix = entry.slice(1); // ".netlify.app"
+    // The leading dot matters: it keeps "evilnetlify.app" from matching.
+    if (host.length > suffix.length && host.endsWith(suffix)) return origin;
+  }
+  return null;
+}
+
 function corsHeaders(request, env) {
   const origin = request.headers.get("Origin") || "";
-  const allow = allowedOrigins(env);
+  const granted = originAllowed(origin, allowedOrigins(env));
   const headers = {
     Vary: "Origin",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Max-Age": "86400",
   };
-  if (allow.includes("*") || allow.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = allow.includes("*") ? "*" : origin;
-  }
+  if (granted) headers["Access-Control-Allow-Origin"] = granted;
   return headers;
 }
 

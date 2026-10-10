@@ -1,0 +1,32 @@
+# Netlify configuration.
+#
+# Drop this repository in as-is: the settings below reproduce the same artifact
+# the GitHub Pages workflow builds — the landing page at the site root and the
+# trading desk at /desk/ — with no manual steps.
+#
+# `base` is the frontend folder, because the desk is copied into it at build
+# time by scripts/sync-desk.js (wired to `prebuild`, so it always runs). That
+# script writes from ../desk into frontend/public/desk and strips the
+# local-config.js reference out of the published desk, so no keys file is ever
+# published.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  # Same major version the Pages workflow pins, so the bundle matches.
+  NODE_VERSION = "20"
+  # React 19 alongside a few Radix packages that still declare React 18 peers.
+  # CI installs with this flag, so a Netlify install has to as well or `npm ci`
+  # fails on the peer tree.
+  NPM_FLAGS = "--legacy-peer-deps"
+  # The repository carries both a package-lock.json and a yarn.lock. npm is what
+  # CI uses, so make the choice explicit rather than leaving it to detection.
+  NETLIFY_USE_YARN = "false"
+  # Uncomment and set an address to switch on the contact and feedback forms.
+  # They post straight to that inbox through formsubmit.co — there is no server
+  # of ours involved, and with this unset they say they are not configured
+  # rather than failing silently.
+  # REACT_APP_SUPPORT_EMAIL = "you@example.com"

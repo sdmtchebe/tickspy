@@ -188,12 +188,23 @@ export const Contact = () => (
   <section id="contact" className="section-pad relative z-10" data-testid="contact-section">
     <div className="shell">
       <div className="mb-11 grid gap-5 lg:grid-cols-12 lg:items-end">
-        <h2 className="t-title text-ink lg:col-span-7">Tell us what broke, or what to build next.</h2>
+        <h2 className="t-title text-ink lg:col-span-7">
+          Tell us <span className="acc">what broke</span>, or what to build next.
+        </h2>
         <Reveal delay={0.15} className="lg:col-span-5 lg:justify-self-end">
-          <p className="flex items-center gap-3 text-[14px] text-steel" data-testid="contact-note">
-            <span className="live-dot" aria-hidden="true" />
-            Every message reaches a real inbox.
-          </p>
+          {/* Only promise an inbox when one is actually wired up. On a build
+              with no support address the form says messaging is not configured,
+              so claiming every message lands somewhere would be a lie. */}
+          {ENDPOINT ? (
+            <p className="flex items-center gap-3 text-[14px] text-steel" data-testid="contact-note">
+              <span className="live-dot" aria-hidden="true" />
+              Every message reaches a real inbox.
+            </p>
+          ) : (
+            <p className="max-w-[360px] text-[13.5px] leading-relaxed text-steel lg:ml-auto lg:text-right" data-testid="contact-note">
+              Messaging is not switched on for this deployment yet, so the forms below will say so rather than fail quietly.
+            </p>
+          )}
         </Reveal>
       </div>
       <div className="grid gap-5 lg:grid-cols-2">

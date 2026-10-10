@@ -39,7 +39,9 @@ export const Demo = () => {
         <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="t-label">The desk</p>
-            <h2 className="t-title mt-3 text-ink">Four views of the same market.</h2>
+            <h2 className="t-title mt-3 text-ink">
+              <span className="acc">Four views</span> of the same market.
+            </h2>
           </div>
           <Reveal delay={0.1}>
             <p className="max-w-[430px] text-[15px] leading-relaxed text-steel lg:pb-2">

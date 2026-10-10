@@ -120,7 +120,9 @@ export const HowItWorks = () => (
       <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-7">
           <p className="t-label">How it works</p>
-          <h2 className="t-title mt-4 text-ink">What happens after you type a ticker</h2>
+          <h2 className="t-title mt-4 text-ink">
+            What happens after you <span className="acc">type a ticker</span>
+          </h2>
         </div>
         <Reveal delay={0.12} className="lg:col-span-5">
           <p className="t-body max-w-[430px] lg:ml-auto">
@@ -139,7 +141,7 @@ export const HowItWorks = () => (
       >
         {STEPS.map(({ n, title, text, Mock }, i) => (
           <motion.li key={n} variants={groupItem} className="border-t border-line pt-6" data-testid={`how-step-${i + 1}`}>
-            <span className="num text-[12.5px] text-faint">{n}</span>
+            <span className="step-num text-[12.5px]">{n}</span>
             <h3 className="t-subtitle mt-3 text-ink">{title}</h3>
             <p className="t-body mt-2.5">{text}</p>
             <div className="mt-5">

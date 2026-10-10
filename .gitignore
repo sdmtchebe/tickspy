@@ -21,7 +21,7 @@ backend/.env
 desk/local-config.js
 
 # Generated: frontend/scripts/sync-desk.js copies desk/index.html here on
-# `yarn start` / `yarn build`. The real source is desk/index.html.
+# `npm start` / `npm run build`. The real source is desk/index.html.
 frontend/public/desk/
 
 # Emergent tooling state (session recordings, markers, cron runs)

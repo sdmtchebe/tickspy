@@ -322,7 +322,7 @@ const Step = ({ n, title, short, text, look, why, Mock: MockView }, i) => (
     className={`relative grid gap-6 pl-14 md:grid-cols-2 md:gap-10 md:pl-16 ${i < STEPS.length - 1 ? "pb-14" : ""}`}
     data-testid={`setup-step-${i + 1}`}
   >
-    <span className="num absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-[13px] text-ink">
+    <span className="step-num absolute left-0 top-0 grid h-9 w-9 place-items-center rounded-full border border-mint/30 bg-surface text-[13px]">
       {n}
     </span>
     <div>
@@ -370,7 +370,9 @@ export const SetupGuide = () => (
       <div className="grid gap-6 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-7">
           <p className="t-label">Setup</p>
-          <h2 className="t-title mt-4 text-ink">How to create and paste your free Alpaca keys</h2>
+          <h2 className="t-title mt-4 text-ink">
+            How to create and paste your <span className="acc">free Alpaca keys</span>
+          </h2>
         </div>
         <Reveal delay={0.12} className="lg:col-span-5">
           <div className="max-w-[460px] lg:ml-auto">

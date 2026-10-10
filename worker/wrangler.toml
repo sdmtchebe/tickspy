@@ -48,9 +48,14 @@ DESK_SYMBOLS = "SPY,QQQ,AAPL,NVDA,TSLA"
 # unless the session looks shifted - then set it to e.g. "Europe/Warsaw".
 # STOOQ_ZONE = "Europe/Warsaw"
 
-# Browser origins allowed to call this API. Add your own domain if you move the
-# site off GitHub Pages. "*" would work but is needlessly permissive.
-ALLOWED_ORIGINS = "https://sdmtchebe.github.io,http://localhost:3000,http://localhost:8000,http://localhost:8767"
+# Browser origins allowed to call this API. An entry is either an exact origin
+# or a host suffix ("*.netlify.app"), which matches any subdomain of it - that
+# is what lets a Netlify deploy, and every deploy preview, reach the API without
+# a redeploy here. Add your own domain if you move the site somewhere else.
+# "*" works too but is needlessly permissive. This list is not the security
+# boundary: every endpoint is a public, read-only GET, and the request budget is
+# what protects the upstream quota.
+ALLOWED_ORIGINS = "https://sdmtchebe.github.io,*.netlify.app,*.netlify.com,http://localhost:3000,http://localhost:8000,http://localhost:8767"
 
 [observability]
 enabled = true

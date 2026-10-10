@@ -51,7 +51,9 @@ export const Why = () => (
       <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
           <p className="t-label">The measured record</p>
-          <h2 className="t-title mt-5 text-ink">The parts we would rather not print are on this page too.</h2>
+          <h2 className="t-title mt-5 text-ink">
+            The parts we would <span className="acc">rather not print</span> are on this page too.
+          </h2>
           <p className="t-lead mt-5 max-w-[420px]">
             A trading tool that only describes its good days is not giving you analysis, it is giving you a pitch. So here is the
             whole picture, including the results that argue against us.

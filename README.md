@@ -19,12 +19,50 @@ Published on GitHub Pages with nothing running locally:
 **Open App** on the landing page opens the desk. `.github/workflows/pages.yml`
 builds the site, bundles the desk into it and publishes the whole thing.
 
+## Deploying to Netlify
+
+The repo is ready to drop into Netlify as-is. `netlify.toml` at the root sets the
+base to `frontend`, the build command to `npm run build`, and the publish
+directory to `build` — the build's `prebuild` hook copies `desk/` into the site,
+so the desk is published at `/desk/` with the landing page.
+
+1. **Import the repo.** In Netlify, *Add new site → Import an existing project*
+   and pick `sdmtchebe/tickspy`. Leave the build settings alone; `netlify.toml`
+   supplies them.
+2. **Use Node 20.** Already pinned in `netlify.toml` (`NODE_VERSION = "20"`).
+   `NPM_FLAGS = "--legacy-peer-deps"` covers the peer-dependency mismatch the
+   CRA/craco toolchain ships with.
+3. **Add the Worker's origin.** The keyless price, news, calendar and overview
+   data come from the Cloudflare Worker in `worker/`. It only grants CORS to
+   origins it knows, so either:
+   - add your Netlify domain to `ALLOWED_ORIGINS` in `worker/wrangler.toml`
+     before deploying the Worker (or set it as a Worker variable in the
+     Cloudflare dashboard), or
+   - rely on the built-in `*.netlify.app` / `*.netlify.com` patterns, which
+     already cover the default Netlify subdomain.
+
+   A custom domain is not covered by those patterns, so add it explicitly. If
+   CORS is wrong, the site still loads but every free-tier panel says it cannot
+   reach the data.
+4. **(Optional) Turn the contact forms on.** They post through formsubmit.co,
+   which needs a destination address. Set `REACT_APP_SUPPORT_EMAIL` in
+   *Site settings → Environment variables* (or `window.DESK_SUPPORT_EMAIL` in
+   `frontend/public/index.html`). Until one is set the forms say messaging is
+   not configured instead of failing.
+5. **Deploy.** Netlify runs `npm run build` in `frontend/` and publishes
+   `frontend/build/`. `local-config.js` is deliberately never published; the CI
+   workflow and `scripts/sync-desk.js` both strip it.
+
+Set `SUPPORT_EMAIL` (a repository variable) the same way for the GitHub Pages
+build if you want the forms live there too.
+
 ## How the two connect
 
 - `frontend/scripts/sync-desk.js` copies `desk/index.html`, `desk/volmodel.js`,
   `desk/volmodel2.js`, `desk/volworker.js`, `desk/freesrc.js` and
-  `desk/edge-config.js` into `frontend/public/desk/` before `yarn start` and
-  `yarn build`. `public/desk/` is generated and git-ignored, so `desk/` stays the
+  `desk/edge-config.js` into `frontend/public/desk/` before `npm start` and
+  `npm run build` (via the `prestart`/`prebuild` hooks). `public/desk/` is
+  generated and git-ignored, so `desk/` stays the
   single source. `edge-config.js` holds only a public Worker URL, so it is safe
   to publish (unlike `local-config.js`).
 - `frontend/src/lib/site.js` `openApp()` opens `<base>/desk/index.html` in a new
@@ -64,8 +102,8 @@ builds the site, bundles the desk into it and publishes the whole thing.
 
 ```bash
 cd frontend
-yarn install
-yarn start
+npm install
+npm start
 ```
 
 **Desk, standalone** — this is all it takes, and the hosted version needs none of it:

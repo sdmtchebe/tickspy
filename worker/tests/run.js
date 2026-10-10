@@ -520,6 +520,31 @@ async function main() {
     assert.equal(res.headers.get("Access-Control-Allow-Origin"), null);
   });
 
+  await test("a Netlify origin is granted by default, so moving the site does not break the no-key desk", async () => {
+    for (const origin of ["https://tickspy.netlify.app", "https://deploy-preview-7--tickspy.netlify.app"]) {
+      const req = new Request("https://api.test/api/health", { headers: { Origin: origin } });
+      // No ALLOWED_ORIGINS at all: this is what the shipped defaults do.
+      const res = await worker.fetch(req, { CACHE: null }, {});
+      assert.equal(res.headers.get("Access-Control-Allow-Origin"), origin, `${origin} should be granted`);
+    }
+  });
+
+  await test("a host suffix only matches on a dot boundary", async () => {
+    for (const bad of ["https://evilnetlify.app", "https://netlify.app", "https://netlify.app.evil.example"]) {
+      const req = new Request("https://api.test/api/health", { headers: { Origin: bad } });
+      const res = await worker.fetch(req, { CACHE: null }, {});
+      assert.equal(res.headers.get("Access-Control-Allow-Origin"), null, `${bad} must not match *.netlify.app`);
+    }
+  });
+
+  await test("a non-web origin is never granted", async () => {
+    for (const bad of ["null", "javascript:alert(1)", "file://"]) {
+      const req = new Request("https://api.test/api/health", { headers: { Origin: bad } });
+      const res = await worker.fetch(req, { CACHE: null }, {});
+      assert.equal(res.headers.get("Access-Control-Allow-Origin"), null, `${bad} must not be granted`);
+    }
+  });
+
   await test("/api/health reports configuration without echoing secrets", async () => {
     const req = new Request("https://api.test/api/health");
     const res = await worker.fetch(req, { GEMINI_API_KEY: "SUPER-SECRET-VALUE", CACHE: null }, {});

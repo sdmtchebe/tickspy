@@ -141,8 +141,9 @@ npx wrangler login
 npx wrangler kv namespace create CACHE
 ```
 
-Paste the printed `id` into `wrangler.toml`, replacing
-`REPLACE_WITH_YOUR_KV_NAMESPACE_ID`.
+Paste the printed `id` into the `[[kv_namespaces]]` block in `wrangler.toml`.
+This repo already ships with an `id` for the live deployment; replace it with
+yours if you are standing up a separate Worker.
 
 ### 2. Store the Gemini key as a secret
 
@@ -182,7 +183,7 @@ needs two repository secrets: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
 ```bash
 cp .env.example .env      # fill in GEMINI_API_KEY
 npx wrangler dev          # http://localhost:8787
-npm test                  # 61 tests, no network needed
+npm test                  # 65 tests, no network needed
 ```
 
 ## Frontend usage

@@ -62,7 +62,8 @@ export const Features = () => (
         <Reveal>
           <p className="t-label">What is in the desk</p>
           <h2 className="t-title mt-4 text-ink">
-            Everything the desk can do is on the free tier, with nothing held back behind an account.
+            Everything the desk can do is on the <span className="acc">free tier</span>, with nothing held back behind an
+            account.
           </h2>
         </Reveal>
       </div>
