@@ -64,9 +64,32 @@
   min-width: 0;
 }
 
+/*
+ * Same page on every machine.
+ *
+ * Three things used to change the design from one computer to the next, and
+ * none of them are features:
+ *   · colour-scheme — without it Windows/Linux paint a LIGHT scrollbar and
+ *     light native form controls on a dark page, and the OS theme decides
+ *     which. Declaring dark makes the chrome match the page everywhere.
+ *   · text-size-adjust — mobile Safari and Chrome inflate body text in
+ *     landscape on their own, which reflows every panel. 100% opts out.
+ *   · min-height 100vh vs 100dvh — see .app-shell below; 100vh includes the
+ *     phone's collapsing address bar, so the page ran taller than the screen.
+ */
 html {
   background: var(--void);
   scroll-behavior: smooth;
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* svh on old browsers is unknown, so the plain vh line stays as the fallback
+   and the dynamic unit wins wherever it is understood. */
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 body {

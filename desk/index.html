@@ -3,10 +3,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0E1116;--surface:#151A22;--raised:#1B222C;--border:#2A323E;--text:#E6EAF0;--muted:#8A94A3;--up:#3DBE8B;--dn:#E5605F;--accent:#D9A441;--r:10px;--glass:rgba(26,30,37,.40);--glass-2:rgba(34,39,47,.34);--glass-3:rgba(44,50,59,.30);--gb:rgba(255,255,255,.11);--ghi:rgba(255,255,255,.16);--blur:blur(34px) saturate(135%);--blur-2:blur(20px) saturate(125%);--rim:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(255,255,255,.045),inset 1px 0 0 rgba(255,255,255,.05),inset -1px 0 0 rgba(255,255,255,.05);--shadow:0 18px 48px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.32)}
+:root{color-scheme:dark;--bg:#0E1116;--surface:#151A22;--raised:#1B222C;--border:#2A323E;--text:#E6EAF0;--muted:#8A94A3;--up:#3DBE8B;--dn:#E5605F;--accent:#D9A441;--r:10px;--glass:rgba(26,30,37,.40);--glass-2:rgba(34,39,47,.34);--glass-3:rgba(44,50,59,.30);--gb:rgba(255,255,255,.11);--ghi:rgba(255,255,255,.16);--blur:blur(34px) saturate(135%);--blur-2:blur(20px) saturate(125%);--rim:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(255,255,255,.045),inset 1px 0 0 rgba(255,255,255,.05),inset -1px 0 0 rgba(255,255,255,.05);--shadow:0 18px 48px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.32)}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background-color:#0A0C10;background-image:radial-gradient(54vw 42vw at 4% -12%,rgba(226,232,240,.10),transparent 62%),radial-gradient(46vw 38vw at 100% -4%,rgba(198,206,218,.075),transparent 64%),radial-gradient(74vw 60vw at 52% 118%,rgba(148,158,172,.11),transparent 68%),linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.22));background-attachment:fixed;background-repeat:no-repeat;color:var(--text);font:13px/1.45 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{background-color:#0A0C10;background-image:radial-gradient(54vw 42vw at 4% -12%,rgba(226,232,240,.10),transparent 62%),radial-gradient(46vw 38vw at 100% -4%,rgba(198,206,218,.075),transparent 64%),radial-gradient(74vw 60vw at 52% 118%,rgba(148,158,172,.11),transparent 68%),linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.22));background-attachment:fixed;background-repeat:no-repeat;color:var(--text);font:13px/1.45 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .num{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
 a{color:var(--text);text-decoration:none}a:hover{text-decoration:underline}
@@ -47,7 +47,14 @@ label{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 nav.tabs{display:flex;flex-direction:column;gap:2px;position:sticky;top:12px;align-self:start;padding:6px;background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);box-shadow:var(--shadow),var(--rim)}nav.tabs button{background:none;border:0;border-left:2px solid transparent;color:var(--muted);padding:8px 10px;cursor:pointer;text-align:left;border-radius:8px;font:inherit;transition:color 150ms ease,background-color 150ms ease}
 nav.tabs button:hover{color:var(--text);background:var(--glass-2)}
 nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:var(--glass-2);font-weight:600;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim)}
-@media(max-width:1100px){.layout{grid-template-columns:minmax(0,1fr)}.rail{position:static}nav.tabs{flex-direction:row;flex-wrap:wrap;position:static;margin-bottom:2px}nav.tabs button{border-left:0;border-bottom:2px solid transparent;text-align:center}nav.tabs button.on{border-left-color:transparent;border-bottom-color:var(--accent)}}
+/* Squeeze the rail and the tab strip before dropping the three-column layout,
+   so the desk stays a desk on a laptop. The old single breakpoint at 1100px sat
+   just above the ~1093px a 1366px screen reports at Windows' default 125%
+   scaling, so those machines fell through to the stacked phone layout and the
+   whole desk 'flipped'. The intermediate step keeps it three columns down to
+   1000px, where it genuinely runs out of room. */
+@media(max-width:1200px){.layout{grid-template-columns:148px minmax(0,1fr) 264px}}
+@media(max-width:1000px){.layout{grid-template-columns:minmax(0,1fr)}.rail{position:static}nav.tabs{flex-direction:row;flex-wrap:wrap;position:static;margin-bottom:2px}nav.tabs button{border-left:0;border-bottom:2px solid transparent;text-align:center}nav.tabs button.on{border-left-color:transparent;border-bottom-color:var(--accent)}}
 #cv{width:100%;height:min(70vh,640px);min-height:440px;display:block;background:transparent}
 .legend{color:var(--muted);font-size:11px;padding:8px 12px;border-top:1px solid var(--gb);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .tab{display:none;padding-top:12px}.tab.on{display:block}

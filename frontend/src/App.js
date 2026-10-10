@@ -27,7 +27,7 @@ function App() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-void text-ink">
+    <div className="app-shell relative bg-void text-ink">
       <Sky />
       <Nav />
       <main className="relative z-10">

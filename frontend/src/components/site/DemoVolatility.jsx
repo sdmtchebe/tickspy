@@ -6,9 +6,13 @@ import { createVolModel, STAGE2_FULL_IMPROVE } from "@/lib/volmodel";
 
 const DIR = [["Bearish", "bear"], ["Neutral", "warn"], ["Bullish", "bull"]];
 
+/* The tooltip opens to the LEFT of its trigger. This card sits in the right-hand
+   third of the panel, so a left-anchored 264px tip ran past the viewport edge
+   between roughly 1024 and 1152px — it widened the whole document and gave the
+   page a horizontal scrollbar. Anchoring it right keeps it inside the card. */
 const Row = ({ k, v, c = "text-ink", id, tip }) => (
   <div className="flex items-center justify-between gap-3 py-2" data-testid={`vol-row-${id}`}>
-    <span className="flex items-center gap-2 text-[13px] text-steel">{k}{tip && <Info id={`vol-${id}`} text={tip} align="left" />}</span>
+    <span className="flex items-center gap-2 text-[13px] text-steel">{k}{tip && <Info id={`vol-${id}`} text={tip} align="right" />}</span>
     <Num value={v} className={`text-[14px] ${c}`} />
   </div>
 );
