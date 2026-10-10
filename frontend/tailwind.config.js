@@ -20,6 +20,7 @@ module.exports = {
         faint: "#868FA0",
         // Data accents, carried over from the desk so the two surfaces match.
         mint: "#00E5A0",
+        cobalt: "#82A9FF",
         bear: "#FF4D6A",
         amber: "#FFB347",
         line: "rgba(255,255,255,0.09)",

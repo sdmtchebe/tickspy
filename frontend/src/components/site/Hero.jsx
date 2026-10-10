@@ -21,8 +21,8 @@ export const Hero = () => {
     <section ref={ref} id="home" className="relative pb-24 pt-32 sm:pt-36" data-testid="hero-section">
       <div className="shell grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-10">
         <motion.div className="lg:col-span-6" style={{ opacity: fade }}>
-          <p className="t-label rise flex items-center gap-3" style={{ animationDelay: "60ms" }}>
-            <span className="h-px w-6 bg-mint" aria-hidden="true" />
+          <p className="t-label rise flex items-center gap-3 text-cobalt" style={{ animationDelay: "60ms" }}>
+            <span className="h-px w-6 bg-cobalt" aria-hidden="true" />
             Free day trading desk
           </p>
 
@@ -44,7 +44,7 @@ export const Hero = () => {
 
           <p className="t-lead rise mt-7 max-w-[560px]" style={{ animationDelay: "380ms" }} data-testid="hero-subheadline">
             TickSPY draws the candles, runs 14 indicators, a volatility model, the news and the calendar for any US ticker, then says
-            what each reading means in one plain sentence. <strong>No account required</strong>, and nothing held back behind a
+            what each reading means in one plain sentence. <strong className="text-cobalt">No account required</strong>, and nothing held back behind a
             paywall.
           </p>
 
