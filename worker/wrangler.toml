@@ -55,7 +55,7 @@ DESK_SYMBOLS = "SPY,QQQ,AAPL,NVDA,TSLA"
 # "*" works too but is needlessly permissive. This list is not the security
 # boundary: every endpoint is a public, read-only GET, and the request budget is
 # what protects the upstream quota.
-ALLOWED_ORIGINS = "https://sdmtchebe.github.io,*.netlify.app,*.netlify.com,http://localhost:3000,http://localhost:8000,http://localhost:8767"
+ALLOWED_ORIGINS = "https://tickspy.com,https://www.tickspy.com,https://sdmtchebe.github.io,*.netlify.app,*.netlify.com,http://localhost:3000,http://localhost:8000,http://localhost:8767"
 
 [observability]
 enabled = true

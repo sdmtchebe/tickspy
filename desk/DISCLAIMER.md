@@ -1,6 +1,10 @@
 # Disclaimers, Terms of Use and Risk Disclosure
 
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-10
+
+Public-service operator: **Tickspycorp, Québec, Canada**.
+Contact: tickspysupport@gmail.com. Service terms and privacy notices are at
+<https://tickspy.com/terms.html> and <https://tickspy.com/privacy.html>.
 
 > **This file is a good-faith template, not legal advice, and no disclaimer can
 > make an unlawful activity lawful.** Before you publish, host or distribute this
@@ -31,8 +35,7 @@ relationship is created by your use of the Software, and none is intended. The
 authors are **not** registered investment advisers or broker-dealers with the
 U.S. Securities and Exchange Commission, any state regulator, the Financial
 Industry Regulatory Authority, or any equivalent authority anywhere. The authors
-receive no compensation for, and hold no position in, any security referenced by
-the Software, and no third party has paid for any security to be referenced.
+do not provide personalized investment recommendations through the Software.
 
 ## 3. Risk of loss
 
@@ -73,10 +76,10 @@ results.**
 
 Market data displayed by the Software is obtained from third-party providers.
 With your own credentials that is **Alpaca** and, through it, exchange feeds such
-as **IEX**. With no credentials the Software falls back to a public free price
-source fetched server-side — **Yahoo Finance**, with **Stooq** as a fallback —
-serving one shared, cached copy of the most recent completed session per symbol.
-Either way the data is licensed, not owned by you, and is subject to the
+as **IEX**. With no credentials the Software loads the previous completed session
+from **HF Data Library (IEX exchange data, CC BY 4.0)** — one shared, cached copy
+per symbol, delayed, end-of-day, one session old, and replayed rather than
+streamed. Either way the data is licensed, not owned by you, and is subject to the
 provider's terms.
 
 - Alpaca's published position is that **you may not redistribute its API data**.
@@ -84,6 +87,8 @@ provider's terms.
   for any customer-facing or public use.
 - Free or personal tiers are typically licensed for **personal, non-commercial
   use only**.
+- **HF Data Library (IEX) data is CC BY 4.0 redistributable with attribution.**
+  IEX represents ~2–3% of consolidated volume and is not the NBBO.
 - **The no-credentials view is one completed session old, end-of-day, and
   replayed** rather than streamed. It is not a live quote, it must never be
   presented or relied on as one, and it is labelled as such on screen.
@@ -105,12 +110,11 @@ affiliation is implied.
 
 The Software uses third-party services. Some you connect yourself — **Alpaca**,
 if you choose to enter your own free keys for live market data — and some the
-project operates on your behalf: **Yahoo Finance**, with **Stooq** as a fallback
-(the keyless end-of-day price source, which the small edge function fetches
-server-side), the public news
-feeds and the FairEconomy economic calendar it aggregates, **Cloudflare**, which
-hosts that edge function, and **Google Gemini**, which writes the single shared
-market overview. The page also loads its web fonts from **Google Fonts**,
+project operates on your behalf: **HF Data Library (IEX exchange data, CC BY 4.0)**
+(the keyless previous-session price source, bundled at build time), the public
+news feeds and the FairEconomy economic calendar it aggregates, **Cloudflare**,
+which hosts the edge function, and **Google Gemini**, which writes the single
+shared market overview. The page also loads its web fonts from **Google Fonts**,
 fetches the TensorFlow.js runtime from the **jsDelivr** CDN when the volatility
 estimate runs, and posts the optional contact and feedback forms through
 **FormSubmit**. Your use of the services you connect is governed entirely by

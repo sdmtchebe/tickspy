@@ -21,6 +21,34 @@ builds the site, bundles the desk into it and publishes the whole thing.
 
 ## Deploying to Netlify
 
+### Drag-and-drop release (tickspy.com)
+
+Run `npm run release:netlify` from `frontend/`. Upload the generated
+`Desktop/TickSPY-Netlify-Release/` folder at <https://app.netlify.com/drop>.
+Its `index.html` is at the top level; do not upload the repository source.
+The folder includes the desk, English/French legal pages, `_redirects`, and
+hash-based `_headers`. Advertising is disabled in this launch build.
+
+`tickspy.com`, `www.tickspy.com`, and Netlify subdomains use a same-origin
+`/edge/api/*` proxy to the existing Cloudflare Worker. Alpaca requests go
+directly to Alpaca; credentials never use the proxy. The proxy avoids the
+Worker's browser CORS restriction without requiring a separate Worker deploy.
+
+Manual deployment does not configure DNS or activate FormSubmit. Set the primary
+domain and HTTPS in Netlify, then activate the confirmation email sent to
+`tickspysupport@gmail.com` on the first real form submission. Verify delivery.
+
+Validation: `node scripts/security-check.cjs` and
+`node scripts/launch-check.cjs` from `frontend/`. The latter needs
+`playwright-core` and Chrome; `PLAYWRIGHT_MODULE` can point to an existing install.
+It emulates Netlify's headers/proxy in Chrome; forms and Alpaca use fixtures,
+while the free price/news/calendar/overview endpoints use the live Worker.
+
+Technical validation is separate from public-display permissions for market
+data/news and Québec privacy/language requirements. See the launch report.
+
+### Repository-connected deployment
+
 The repo is ready to drop into Netlify as-is. `netlify.toml` at the root sets the
 base to `frontend`, the build command to `npm run build`, and the publish
 directory to `build` — the build's `prebuild` hook copies `desk/` into the site,
@@ -65,7 +93,7 @@ build if you want the forms live there too.
   generated and git-ignored, so `desk/` stays the
   single source. `edge-config.js` holds only a public Worker URL, so it is safe
   to publish (unlike `local-config.js`).
-- `frontend/src/lib/site.js` `openApp()` opens `<base>/desk/index.html` in a new
+- Native links using `frontend/src/lib/site.js` `DESK_PATH` open `<base>/desk/index.html` in a new
   tab, where `<base>` is CRA's `PUBLIC_URL`, so it resolves at a domain root, a
   subpath such as `/tickspy/`, or in local dev. `REACT_APP_DESK_PATH` overrides it.
 - The contact and feedback forms need **no server**: they post the message (and an

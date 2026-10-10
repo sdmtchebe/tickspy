@@ -1,5 +1,4 @@
 import Lenis from "lenis";
-import { toast } from "sonner";
 
 let lenis = null;
 
@@ -23,7 +22,7 @@ export function scrollToId(id) {
   const el = document.getElementById(id);
   if (!el) return;
   if (lenis) lenis.scrollTo(el, { offset: -72 });
-  else el.scrollIntoView({ behavior: "smooth" });
+  else el.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
 }
 
 // The desk is bundled into this site at <base>/desk/index.html (a copy of
@@ -32,13 +31,7 @@ export function scrollToId(id) {
 // resolves at a domain root, under a subpath such as /tickspy/ on GitHub Pages,
 // in local dev, and even when the built folder is opened straight from disk.
 // Override with REACT_APP_DESK_PATH to point anywhere else.
-const DESK_PATH = process.env.REACT_APP_DESK_PATH || `${process.env.PUBLIC_URL || ""}/desk/index.html`;
-
-export function openApp() {
-  const win = window.open(DESK_PATH, "_blank", "noopener,noreferrer");
-  if (!win) {
-    // Pop-up blocked: fall back to opening the desk in this tab.
-    toast("Opening the TickSPY desk…", { description: "Pop-ups are blocked, so we opened it in this tab." });
-    window.location.assign(DESK_PATH);
-  }
-}
+export const DESK_PATH = process.env.REACT_APP_DESK_PATH || `${process.env.PUBLIC_URL || ""}/desk/index.html`;
+// Native links open exactly one tab and support keyboard / modifier clicks.
+// window.open(..., 'noopener') can return null even when it succeeds; never
+// treat that return value as a reason to perform a second navigation.

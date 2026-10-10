@@ -1,9 +1,11 @@
-import { ADSENSE_CLIENT } from "@/lib/ads";
+import { ADSENSE_CLIENT, ADS_ENABLED } from "@/lib/ads";
 
 const CONSENT_KEY = "tickspy-ad-consent";
 const listeners = new Set();
+let sessionConsent = null;
 
 const storedConsent = () => {
+  if (sessionConsent) return sessionConsent;
   try {
     const value = window.localStorage.getItem(CONSENT_KEY);
     return value === "accepted" || value === "rejected" ? value : "unknown";
@@ -21,11 +23,9 @@ export const subscribeAdsConsent = (listener) => {
 
 const notify = () => listeners.forEach((listener) => listener());
 
-// AdSense is always loaded with the non-personalized ad request flag.
-// Google's EU/UK policy requires a disclosure before serving any ads;
-// this banner provides that disclosure and records the visitor's choice.
+// Consent is checked here too, so no caller can load ads before permission.
 export const loadAdsense = () => {
-  if (typeof document === "undefined" || document.querySelector("script[data-tickspy-adsense]")) return;
+  if (!ADS_ENABLED || getAdsConsent() !== "accepted" || typeof document === "undefined" || document.querySelector("script[data-tickspy-adsense]")) return;
 
   window.adsbygoogle = window.adsbygoogle || [];
   // Serve non-personalized ads. Google may still use cookies for frequency
@@ -42,17 +42,22 @@ export const loadAdsense = () => {
 
 export const setAdsConsent = (consent) => {
   if (consent !== "accepted" && consent !== "rejected") return;
+  sessionConsent = consent;
   try {
     window.localStorage.setItem(CONSENT_KEY, consent);
   } catch {
     // The current page still honours the choice if storage is unavailable.
   }
-  // Always load ads (non-personalized), regardless of the choice.
-  loadAdsense();
+  if (consent === "accepted") loadAdsense();
+  else if (document.querySelector("script[data-tickspy-adsense]")) {
+    // Reload to stop the already-running third-party runtime after withdrawal.
+    window.location.reload();
+  }
   notify();
 };
 
 export const resetAdsConsent = () => {
+  sessionConsent = null;
   try {
     window.localStorage.removeItem(CONSENT_KEY);
   } catch {

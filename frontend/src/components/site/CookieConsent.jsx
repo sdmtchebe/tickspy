@@ -1,18 +1,15 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { getAdsConsent, loadAdsense, setAdsConsent, subscribeAdsConsent } from "@/lib/privacy";
+import { ADS_ENABLED } from "@/lib/ads";
 
 export const CookieConsent = () => {
   const consent = useSyncExternalStore(subscribeAdsConsent, getAdsConsent, () => "unknown");
 
-  // Always load ads once the consent banner is acknowledged.
   useEffect(() => {
-    loadAdsense();
+    if (consent === "accepted") loadAdsense();
   }, [consent]);
 
-  // After the visitor makes a choice, show a simple disclosure and remove the
-  // interactive buttons. The banner stays fixed at the top so the visitor can
-  // revoke at any time by clearing cookies or revisiting the page.
-  if (consent !== "unknown") return null;
+  if (!ADS_ENABLED || consent !== "unknown") return null;
 
   return (
     <section
@@ -26,10 +23,12 @@ export const CookieConsent = () => {
           still use cookies and similar storage for delivery, fraud prevention, and
           measurement. <a className="link-quiet text-ink underline underline-offset-4" href="privacy.html">Read the privacy and cookie policy</a>.
         </p>
-        {/* Visitor choice is recorded for disclosure compliance only. */}
         <div className="flex shrink-0 flex-wrap gap-2">
           <button className="btn btn-quiet btn-sm" type="button" onClick={() => setAdsConsent("rejected")}>
-            I understand
+            No thanks
+          </button>
+          <button className="btn btn-solid btn-sm" type="button" onClick={() => setAdsConsent("accepted")}>
+            Allow ads
           </button>
         </div>
       </div>

@@ -16,6 +16,7 @@ const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // deliberately never copied. edge-config.js holds only a public Worker URL, so
 // it is safe to publish.
 const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js"];
+const HFDATA_DIR = path.join(SRC_DIR, "hfdata");
 
 // desk/index.html loads local-config.js unconditionally, because that is how a
 // local checkout supplies keys and an API base. That file is git-ignored and
@@ -64,6 +65,19 @@ function main() {
   }
 
   console.log(`[sync-desk] bundled desk -> ${path.relative(process.cwd(), OUT_DIR)} (${FILES.join(", ")}, local-config tag stripped)`);
+
+  // Copy HF Data Library price data (desk/hfdata/*.json) if present
+  if (fs.existsSync(HFDATA_DIR)) {
+    const outHfdata = path.join(OUT_DIR, "hfdata");
+    fs.mkdirSync(outHfdata, { recursive: true });
+    const hfFiles = fs.readdirSync(HFDATA_DIR).filter(f => f.endsWith('.json'));
+    for (const name of hfFiles) {
+      fs.copyFileSync(path.join(HFDATA_DIR, name), path.join(outHfdata, name));
+    }
+    console.log(`[sync-desk] bundled HF data -> ${path.relative(process.cwd(), outHfdata)} (${hfFiles.length} files)`);
+  } else {
+    console.log("[sync-desk] no HF data directory found at ../desk/hfdata (will be created by scheduled function)");
+  }
 }
 
 main();

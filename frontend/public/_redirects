@@ -1,0 +1,3 @@
+# Same-origin public-data proxy. No Alpaca credentials are sent through here.
+/edge/api/* https://tickspy-api.sdmtchebe.workers.dev/api/:splat 200
+/desk /desk/ 301

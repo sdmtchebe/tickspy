@@ -1,6 +1,13 @@
 # Privacy Policy
 
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-10
+
+**Public service:** Tickspycorp, Québec, Canada, contact tickspysupport@gmail.com.
+The complete policy for the hosted website and desk is at
+<https://tickspy.com/privacy.html> (French: <https://tickspy.com/privacy-fr.html>).
+It covers Netlify/Cloudflare request logs, Google Fonts, jsDelivr, and messages
+received through FormSubmit and Gmail. The description below concerns local
+desk preferences; it does not override the public-service policy.
 
 This is a summary of what this dashboard does and does not do with your
 information. It is written to be read, not to be skimmed past. **This template
@@ -11,10 +18,10 @@ as a public service.
 
 ## The short version
 
-**We collect nothing about you.** There is no account, no sign-up, no analytics,
-no advertising, no telemetry, no tracking pixels and no cookies. Nothing you type
-here — not your keys, not your watchlist, not your alerts — is stored on our side,
-because there is no account for it to attach to.
+The desk has no account, sign-up, analytics, or advertising. Keys, watchlists and
+alerts remain in your browser. Hosting providers process ordinary request data,
+and support correspondence is received by the operator. Advertising is disabled
+on the launch version of the landing page.
 
 ## What is stored, and where
 
@@ -46,15 +53,15 @@ one exception: the web fonts load with the page itself.
   keys**, which is an optional upgrade: with no keys the desk still works, on a
   replayed previous session from the free source below.
 - **The edge API** — a small Cloudflare Worker run by this project. It serves the
-  aggregated market headlines, the economic calendar, the keyless end-of-day
-  price session and the shared AI market overview. It is an ordinary public web
-  request: it stores no accounts, keeps no per-visitor records beyond response
-  caches, and receives only what any HTTP request carries — your IP address and
-  user agent, which Cloudflare handles in order to answer it.
-- **Yahoo Finance** (`query1.finance.yahoo.com`) — the keyless end-of-day price
-  series. The edge API asks it for a chart series on your behalf, so the request
-  carries the Worker's address and not yours; your browser never contacts Yahoo
-  directly. Stooq is kept only as a fallback for the same request.
+  aggregated market headlines, the economic calendar, and the shared AI market
+  overview. It is an ordinary public web request: it stores no accounts, keeps no
+  per-visitor records beyond response caches, and receives only what any HTTP
+  request carries — your IP address and user agent, which Cloudflare handles in
+  order to answer it.
+- **HF Data Library** (`api.hfdatalibrary.com`) — the previous completed session
+  of IEX exchange data (CC BY 4.0). The build process fetches this data at
+  compile time and bundles it with the desk; the browser loads it from the same
+  origin. No visitor request reaches HF Data Library directly.
 - **Google Gemini** — used only by the edge API, with the project's own key, to
   write one market overview that is then shared by every visitor. You cannot
   supply a key of your own, and your browser never talks to Gemini.
@@ -93,10 +100,10 @@ You must be 18 or older to use this software.
 
 ## Your rights
 
-Because no personal data is collected or held by the authors, there is no data
-subject access request to make, no data to correct and no data to delete on our
-side. For data held by Alpaca, Google or any other provider you use, contact that
-provider directly.
+For access, correction, deletion where applicable, withdrawal of optional consent,
+or privacy complaints concerning support correspondence held by Tickspycorp,
+contact tickspysupport@gmail.com. For information held independently by providers,
+contact the relevant provider. Clear browser site data to delete local preferences.
 
 ## Changes
 

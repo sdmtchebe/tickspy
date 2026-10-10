@@ -1,18 +1,19 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { HeroCard } from "@/components/site/HeroCard";
-import { scrollToId, openApp } from "@/lib/site";
+import { scrollToId, DESK_PATH } from "@/lib/site";
 
 /* Four facts, all of them checkable in the desk. */
 const STATS = [
   ["$0", "no card, no account"],
-  ["7", "analysis panels"],
+  ["9", "desk sections"],
   ["14", "indicators scored"],
-  ["1 min – 1 day", "timeframes"],
+  ["1m – 1d", "timeframes"],
 ];
 
 export const Hero = () => {
   const ref = useRef(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const cardY = useTransform(scrollYProgress, [0, 1], [0, 70]);
   const fade = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
@@ -20,10 +21,10 @@ export const Hero = () => {
   return (
     <section ref={ref} id="home" className="relative pb-24 pt-32 sm:pt-36" data-testid="hero-section">
       <div className="shell grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-10">
-        <motion.div className="lg:col-span-6" style={{ opacity: fade }}>
+        <motion.div className="lg:col-span-6" style={{ opacity: reduceMotion ? 1 : fade }}>
           <p className="t-label rise flex items-center gap-3 text-cobalt" style={{ animationDelay: "60ms" }}>
             <span className="h-px w-6 bg-cobalt" aria-hidden="true" />
-            Free day trading desk
+            Free market analysis desk
           </p>
 
           {/* Two short lines, each one unbroken at every width from 320px up.
@@ -49,13 +50,14 @@ export const Hero = () => {
           </p>
 
           <div className="rise mt-9 flex flex-wrap items-center gap-3" style={{ animationDelay: "460ms" }}>
-            <button className="btn btn-solid" onClick={openApp} data-testid="hero-cta-open-app">
+            <a className="btn btn-solid" href={DESK_PATH} target="_blank" rel="noopener noreferrer" data-testid="hero-cta-open-app">
               Open the desk
-            </button>
+            </a>
             <button className="btn btn-ghost" onClick={() => scrollToId("demo")} data-testid="hero-cta-how-it-works">
               See it in action
             </button>
           </div>
+          <p className="mt-4 text-[13px] leading-relaxed text-steel">Free mode replays a completed session. Current prices and 1-minute bars require your own Alpaca keys.</p>
 
           <dl className="rise mt-12 grid grid-cols-2 gap-x-6 gap-y-7 border-t border-line pt-7 sm:grid-cols-4" style={{ animationDelay: "540ms" }} data-testid="hero-stats">
             {STATS.map(([k, v]) => (
@@ -67,7 +69,7 @@ export const Hero = () => {
           </dl>
         </motion.div>
 
-        <motion.div className="lg:col-span-6" style={{ y: cardY }}>
+        <motion.div className="lg:col-span-6" style={{ y: reduceMotion ? 0 : cardY }}>
           <div className="rise" style={{ animationDelay: "300ms" }}>
             <HeroCard />
           </div>

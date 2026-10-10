@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "@/components/site/Logo";
-import { scrollToId, openApp } from "@/lib/site";
+import { scrollToId, DESK_PATH } from "@/lib/site";
 
 /* Ordered the way the page reads. */
 export const NAV_LINKS = [
@@ -36,7 +36,7 @@ export const Nav = () => {
       }`}
       data-testid="site-nav"
     >
-      <nav className="shell flex h-16 items-center justify-between gap-6 lg:h-[84px]">
+      <nav aria-label="Main navigation" className="shell flex h-16 items-center justify-between gap-6 lg:h-[84px]">
         <button onClick={() => go("home")} className="text-[26px]" data-testid="nav-logo-link" aria-label="TickSPY home">
           <Logo testId="nav-logo" />
         </button>
@@ -56,9 +56,9 @@ export const Nav = () => {
         </ul>
 
         <div className="flex items-center gap-2">
-          <button className="btn btn-solid btn-sm" onClick={openApp} data-testid="nav-open-app-button">
+          <a className="btn btn-solid btn-sm" href={DESK_PATH} target="_blank" rel="noopener noreferrer" data-testid="nav-open-app-button">
             Open desk
-          </button>
+          </a>
           <button
             className="btn btn-quiet grid h-9 w-9 place-items-center !px-0 lg:hidden"
             onClick={() => setOpen((v) => !v)}

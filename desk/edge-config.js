@@ -18,3 +18,7 @@
  * URL — so this file is committed and published.
  */
 window.DESK_EDGE_API = "https://tickspy-api.sdmtchebe.workers.dev";
+// Netlify proxies only the public API; Alpaca credentials never use this path.
+if (location.hostname === "tickspy.com" || location.hostname === "www.tickspy.com" || location.hostname.endsWith(".netlify.app") || location.hostname.endsWith(".netlify.com")) {
+  window.DESK_EDGE_API = location.origin + "/edge";
+}

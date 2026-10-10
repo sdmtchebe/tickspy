@@ -1,7 +1,8 @@
 import { useEffect } from "react";
+import { MotionConfig } from "framer-motion";
 import { Toaster } from "sonner";
 import "lenis/dist/lenis.css";
-import { startLenis } from "@/lib/site";
+import { startLenis, scrollToId } from "@/lib/site";
 import { Sky } from "@/components/site/Sky";
 import { Nav } from "@/components/site/Nav";
 import { Hero } from "@/components/site/Hero";
@@ -31,16 +32,21 @@ import { AD_SLOTS } from "@/lib/ads";
 function App() {
   useEffect(() => {
     const stop = startLenis();
-    return () => stop();
+    const frame = requestAnimationFrame(() => {
+      const id = window.location.hash.slice(1);
+      if (id) scrollToId(id);
+    });
+    return () => { cancelAnimationFrame(frame); stop(); };
   }, []);
 
   // No opaque background on this wrapper either: painting bg-void here hid the
   // body's scrolling gradient, so the whole page sat on one flat colour.
   return (
-    <div className="app-shell relative text-ink">
+    <MotionConfig reducedMotion="user"><div className="app-shell relative text-ink">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[80] focus:rounded-lg focus:bg-surface focus:p-3">Skip to content</a>
       <Sky />
       <Nav />
-      <main className="relative z-10">
+      <main id="main-content" tabIndex={-1} className="relative z-10">
         <Hero />
         <SpecStrip />
         <Demo />
@@ -61,7 +67,7 @@ function App() {
           style: { background: "#141924", border: "1px solid rgba(255,255,255,0.14)", color: "#EDEFF3", fontFamily: "DM Sans, sans-serif" },
         }}
       />
-    </div>
+    </div></MotionConfig>
   );
 }
 

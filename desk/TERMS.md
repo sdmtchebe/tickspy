@@ -1,6 +1,11 @@
 # Terms of Use and Information-Only Policy
 
-**Last updated:** 2026-10-09
+**Last updated:** 2026-10-10
+
+The public TickSPY service is operated by **Tickspycorp, Québec, Canada**.
+Its service-specific terms are published at <https://tickspy.com/terms.html>
+and in French at <https://tickspy.com/terms-fr.html>. This file describes the
+standalone software and does not grant market-data distribution rights.
 
 Read this before using the software ("the Dashboard"). By using it, you agree to
 these terms. If you do not agree, do not use it.
@@ -55,13 +60,15 @@ is not indicative of future results.**
 ## 5. Market data — your responsibility, not ours
 
 Market data is **licensed, not owned**, and is supplied by third parties: with
-your own credentials, Alpaca and exchange feeds such as IEX; with none, a public
-free price source fetched server-side (Yahoo Finance, with Stooq as a fallback).
+your own credentials, Alpaca and exchange feeds such as IEX; with none, the
+previous completed session from **HF Data Library (IEX exchange data, CC BY 4.0)**.
 Their terms generally restrict use to **personal, non-commercial purposes** and
-**prohibit redistribution**.
+**prohibit redistribution**. HF Data Library data is redistributable under
+CC BY 4.0 with attribution; IEX exchange represents ~2–3% of consolidated volume
+and is not the NBBO.
 
 With no credentials the Dashboard serves **one shared, cached copy of the most
-recent completed session** per symbol, from that free source. It is delayed,
+recent completed session** per symbol from HF Data Library. It is delayed,
 end-of-day, one session old, and replayed rather than streamed; it is explicitly
 not a current quote, and the Dashboard labels it that way.
 
@@ -85,17 +92,16 @@ input from you reaches the model. Verify anything important at its source.
 ## 7. Third-party services
 
 The Dashboard depends on services the authors do not control: **Alpaca** and
-**IEX** for current market data when you connect your own keys, **Yahoo Finance**
-with **Stooq** as a fallback for the free keyless end-of-day prices behind the
-shared edge API, **Cloudflare** which
-hosts it, **Google Gemini** which writes the single shared market
-overview, the **FairEconomy** economic-calendar feed, and the public news feeds
-whose headlines are aggregated. The page also loads its web fonts from **Google
-Fonts**, downloads the TensorFlow.js runtime from the **jsDelivr** CDN when the
-volatility estimate runs, and relies on **FormSubmit** to relay the optional
-contact and feedback forms. You are responsible for complying with the terms
-of every service you connect, including their usage limits and fees. The authors
-are not a party to those agreements.
+**IEX** for current market data when you connect your own keys; **HF Data Library
+(IEX exchange data, CC BY 4.0)** for the free keyless previous-session prices;
+**Cloudflare** which hosts the edge API, **Google Gemini** which writes the
+single shared market overview, the **FairEconomy** economic-calendar feed, and
+the public news feeds whose headlines are aggregated. The page also loads its
+web fonts from **Google Fonts**, downloads the TensorFlow.js runtime from the
+**jsDelivr** CDN when the volatility estimate runs, and relies on **FormSubmit**
+to relay the optional contact and feedback forms. You are responsible for
+complying with the terms of every service you connect, including their usage
+limits and fees. The authors are not a party to those agreements.
 
 ## 8. Eligibility
 
@@ -141,5 +147,6 @@ held unenforceable, the rest remains in effect.
 
 ## 14. Governing law
 
-_Placeholder — insert the jurisdiction you intend to be governed by, and have a
-lawyer confirm it, before publishing publicly._
+The laws of Québec and the federal laws of Canada applicable there govern the
+public service, subject to mandatory consumer protections and jurisdiction rights.
+Contact: tickspysupport@gmail.com.

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
-import { ADSENSE_CLIENT } from "@/lib/ads";
+import { ADSENSE_CLIENT, ADS_ENABLED } from "@/lib/ads";
 import { getAdsConsent, subscribeAdsConsent } from "@/lib/privacy";
 
 /* One responsive AdSense unit.
@@ -22,14 +22,14 @@ export const AdSlot = ({ slot, className = "" }) => {
   const consent = useSyncExternalStore(subscribeAdsConsent, getAdsConsent, () => "unknown");
 
   useEffect(() => {
-    if (!slot || consent !== "accepted") return;
+    if (!ADS_ENABLED || !slot || consent !== "accepted") return;
     const el = ref.current;
     if (!el || queued.has(slot)) return;
     queued.add(slot);
     (window.adsbygoogle = window.adsbygoogle || []).push({});
   }, [consent, slot]);
 
-  if (!slot || consent !== "accepted") return null;
+  if (!ADS_ENABLED || !slot || consent !== "accepted") return null;
 
   return (
     <div className={`relative z-10 ${className}`} data-testid={`ad-slot-${slot}`}>

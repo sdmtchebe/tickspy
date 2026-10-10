@@ -16,6 +16,8 @@ const TABS = [
 const Panel = ({ active, children, id }) => (
   <motion.div
     role="tabpanel"
+    id={`demo-panel-${id}`}
+    aria-labelledby={`demo-tab-${id}`}
     aria-hidden={!active}
     data-testid={`demo-panel-${id}`}
     initial={false}
@@ -62,7 +64,18 @@ export const Demo = () => {
                 <button
                   key={t.id}
                   role="tab"
+                  id={`demo-tab-${t.id}`}
+                  aria-controls={`demo-panel-${t.id}`}
+                  tabIndex={tab === t.id ? 0 : -1}
                   aria-selected={tab === t.id}
+                  onKeyDown={(e) => {
+                    const i = TABS.findIndex((item) => item.id === t.id);
+                    const next = e.key === "ArrowRight" ? (i + 1) % TABS.length : e.key === "ArrowLeft" ? (i + TABS.length - 1) % TABS.length : e.key === "Home" ? 0 : e.key === "End" ? TABS.length - 1 : null;
+                    if (next === null) return;
+                    e.preventDefault();
+                    setTab(TABS[next].id);
+                    document.getElementById(`demo-tab-${TABS[next].id}`)?.focus();
+                  }}
                   onClick={() => setTab(t.id)}
                   data-testid={`demo-tab-${t.id}`}
                   className={`relative shrink-0 rounded-md px-4 py-2.5 text-[13.5px] font-medium transition-colors duration-150 ${

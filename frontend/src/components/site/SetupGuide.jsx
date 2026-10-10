@@ -13,7 +13,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { Reveal, group, groupItem } from "@/components/site/motion";
-import { openApp } from "@/lib/site";
+import { DESK_PATH } from "@/lib/site";
 
 /* --------------------------------------------------------------- links ---- */
 
@@ -441,10 +441,10 @@ export const SetupGuide = () => (
             and you can remove them whenever you like.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-            <button className="btn btn-solid" onClick={openApp} data-testid="setup-open-app">
+            <a className="btn btn-solid" href={DESK_PATH} target="_blank" rel="noopener noreferrer" data-testid="setup-open-app">
               Open the desk
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
+            </a>
             <a className="btn btn-ghost" href={ALPACA} target="_blank" rel="noopener noreferrer" data-testid="setup-alpaca-link">
               Open Alpaca
               <ExternalLink className="h-4 w-4" aria-hidden="true" />

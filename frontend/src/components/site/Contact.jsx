@@ -38,7 +38,7 @@ async function send(body) {
   });
   if (!res.ok) throw new Error(`send failed (${res.status})`);
   const j = await res.json().catch(() => ({}));
-  if (String(j.success) === "false") throw new Error(j.message || "send failed");
+  if (j.success !== true && j.success !== "true") throw new Error(j.message || "Mail service did not confirm delivery.");
   return j;
 }
 
@@ -114,7 +114,7 @@ const FeedbackForm = () => {
   const pick = (e) => {
     const x = e.target.files?.[0];
     if (!x) return;
-    if (!x.type.startsWith("image/")) { toast.error("Screenshot must be an image."); return; }
+     if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(x.type)) { toast.error("Use a PNG, JPEG, WebP, or GIF screenshot."); return; }
     if (x.size > 5 * 1024 * 1024) { toast.error("Screenshot must be under 5 MB."); return; }
     setFile(x);
   };
@@ -198,7 +198,7 @@ export const Contact = () => (
           {ENDPOINT ? (
             <p className="flex items-center gap-3 text-[14px] text-steel" data-testid="contact-note">
               <span className="live-dot" aria-hidden="true" />
-              Every message reaches a real inbox.
+              Contact: <a href={`mailto:${SUPPORT_EMAIL}`} className="link underline">{SUPPORT_EMAIL}</a>
             </p>
           ) : (
             <p className="max-w-[360px] text-[13.5px] leading-relaxed text-steel lg:ml-auto lg:text-right" data-testid="contact-note">
@@ -207,6 +207,7 @@ export const Contact = () => (
           )}
         </Reveal>
       </div>
+      <p className="mb-6 text-[13px] leading-relaxed text-steel">By sending a message, you agree that FormSubmit may relay your name, email, message, and optional screenshot to our support inbox to handle your request. Please remove API keys and personal financial details from screenshots. <a href="privacy.html" className="link">Privacy policy</a>. You can also email us directly.</p>
       <div className="grid gap-5 lg:grid-cols-2">
         <Reveal amount={0.15}><ContactForm /></Reveal>
         <Reveal amount={0.15} delay={0.08}><FeedbackForm /></Reveal>

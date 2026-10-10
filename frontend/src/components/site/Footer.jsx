@@ -1,6 +1,6 @@
 import { Logo } from "@/components/site/Logo";
 import { NAV_LINKS } from "@/components/site/Nav";
-import { scrollToId, openApp } from "@/lib/site";
+import { scrollToId, DESK_PATH } from "@/lib/site";
 
 export const Footer = () => (
   <footer className="relative z-10 mt-8 border-t border-line" data-testid="site-footer">
@@ -30,9 +30,9 @@ export const Footer = () => (
         <p className="t-label">The desk</p>
         <ul className="mt-4 space-y-2.5">
           <li>
-            <button onClick={openApp} className="link-quiet text-[14px]">
+            <a href={DESK_PATH} target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
               Open the desk
-            </button>
+            </a>
           </li>
           <li>
             <a href="https://alpaca.markets" target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
@@ -49,9 +49,11 @@ export const Footer = () => (
 
       <div className="border-t border-line">
         <div className="shell flex flex-col gap-2 py-6 text-[12.5px] text-faint sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 TickSPY</p>
+          <p>© 2026 Tickspycorp · Québec, Canada</p>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <a href="privacy.html" className="link-quiet">Privacy and cookies</a>
+            <a href="terms.html" className="link-quiet">Terms and risk disclosure</a>
+            <a href="mailto:tickspysupport@gmail.com" className="link-quiet">Support</a>
             <p>No accounts, no server of ours holding your keys.</p>
           </div>
         </div>

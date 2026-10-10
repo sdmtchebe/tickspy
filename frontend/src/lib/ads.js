@@ -11,6 +11,8 @@
  */
 
 export const ADSENSE_CLIENT = "ca-pub-3056395143178832";
+// Advertising is explicitly opt-in at deployment as well as per visitor.
+export const ADS_ENABLED = process.env.REACT_APP_ENABLE_ADS === "true";
 
 const slot = (name) => {
   const raw = process.env[name];

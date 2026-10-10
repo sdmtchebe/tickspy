@@ -4,8 +4,6 @@ import { Num, Info, TONE } from "@/components/site/bits";
 import { VolPipeline, VolForecastChart } from "@/components/site/VolPipeline";
 import { createVolModel, STAGE2_FULL_IMPROVE } from "@/lib/volmodel";
 
-const DIR = [["Bearish", "bear"], ["Neutral", "warn"], ["Bullish", "bull"]];
-
 /* The tooltip opens to the LEFT of its trigger. This card sits in the right-hand
    third of the panel, so a left-anchored 264px tip ran past the viewport edge
    between roughly 1024 and 1152px — it widened the whole document and gave the
@@ -27,7 +25,6 @@ export const DemoVolatility = ({ active }) => {
   }, [active, model]);
 
   const sign = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(3)}%`;
-  const dirIdx = m.probs.indexOf(Math.max(...m.probs));
   const regime = m.forecast > 1.15 ? "bear" : m.forecast > 0.95 ? "warn" : "bull";
   const regimeText = { bear: "Elevated", warn: "Normal", bull: "Calm" }[regime];
 
@@ -85,24 +82,9 @@ export const DemoVolatility = ({ active }) => {
             </div>
           </div>
 
-          <div className="mt-5">
-            <div className="mb-2 text-[12.5px] text-steel">Direction head (simulated, not scored)</div>
-            <div className="grid grid-cols-3 gap-2" data-testid="vol-direction">
-              {DIR.map(([label, tone], i) => (
-                <div key={label} className={`rounded-lg border p-2.5 transition-colors duration-200 ${i === dirIdx ? TONE[tone].border : "border-line"}`}>
-                  <div className="h-10 w-full overflow-hidden rounded-md bg-line">
-                    <motion.div className="h-full w-full origin-bottom" style={{ background: TONE[tone].hex, opacity: 0.8 }} animate={{ scaleY: m.probs[i] }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} />
-                  </div>
-                  <div className={`num mt-1.5 text-[12px] ${i === dirIdx ? TONE[tone].text : "text-steel"}`}>{Math.round(m.probs[i] * 100)}%</div>
-                  <div className="text-[11px] text-steel">{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <ul className="mt-5 space-y-1.5 text-[12px] text-steel" data-testid="vol-checks">
             <li className="flex items-center gap-2"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${m.masked ? "bg-amber" : "bg-mint"}`} aria-hidden="true" />Session boundary {m.masked ? "masked this bar" : "clear"}</li>
-            <li className="flex items-center gap-2"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${m.quality ? "bg-mint" : "bg-bear"}`} aria-hidden="true" />Data quality {m.quality ? "passed" : "flagged"}</li>
+            <li className="flex items-center gap-2"><span className={`h-1.5 w-1.5 shrink-0 rounded-full ${m.quality ? "bg-mint" : "bg-amber"}`} aria-hidden="true" />Data quality {m.quality ? "passed" : "flagged"}</li>
             <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-mint" aria-hidden="true" />Simulation path, not a model run on real bars</li>
           </ul>
         </div>

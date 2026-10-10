@@ -18,29 +18,41 @@
   </head>
   <body>
     <main>
-      <a class="back" href="./">Back to TickSPY</a>
+      <nav><a class="back" href="./">Back to TickSPY</a> · <a href="terms.html">Terms</a> · <a href="privacy-fr.html" lang="fr" hreflang="fr">Français</a></nav>
       <p class="eyebrow">Last updated October 10, 2026</p>
       <h1>Privacy and Cookie Policy</h1>
-      <div class="notice"><strong>In short:</strong> TickSPY has no account system. The landing page asks before loading Google AdSense. If you allow it, Google may process device, browser, IP-address, cookie, and related information to deliver and measure non-personalized ads. The trading desk itself does not contain advertising.</div>
+      <div class="notice"><strong>In short:</strong> TickSPY is operated by <strong>Tickspycorp, Québec, Canada</strong>. No account is required. Preferences and optional Alpaca keys remain in your browser. Support messages reach our inbox. Hosting and resource providers receive normal web-request information. <strong>Advertising is disabled in this release.</strong></div>
 
       <h2>Information this site handles</h2>
-      <p>The landing page can receive the name, email address, message, and optional screenshot you submit through a contact or feedback form. FormSubmit relays that information to the TickSPY support inbox. If you do not submit a form, the form provider is not contacted.</p>
+      <p>When you contact us, FormSubmit relays your name, email address, message, and optional screenshot to <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a>, hosted by Google Gmail. We use this information to respond to your request and investigate reported issues. Sending a message is optional; please exclude API keys, account numbers, and sensitive financial information.</p>
       <p>The desk stores your watchlist, alerts, preferences, and any optional Alpaca API keys in your browser's local storage. Those values are not stored by TickSPY. Alpaca keys are sent only to Alpaca when you choose to connect live data.</p>
 
       <h2>Google AdSense and cookies</h2>
+      <p>No advertising runtime or advertising cookies are loaded in the current release. If a future deployment enables Google AdSense, the following choices apply. Enabling advertising requires an updated deployment and any consent platform required by Google and applicable law.</p>
       <p>Advertising is optional. Until you choose <strong>Allow ads</strong>, the landing page does not load the Google AdSense runtime or request an ad. If you choose <strong>No thanks</strong>, no AdSense ad units are requested for that browser.</p>
       <p>If you allow ads, this site asks Google for <strong>non-personalized ads</strong>. Google and its vendors may nevertheless use cookies, local storage, IP address, browser and device data, and similar technologies for ad delivery, frequency capping, fraud prevention, security, and aggregated measurement. Google controls those technologies and may process data under its own policies.</p>
       <p>Read Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">advertising technology information</a> for details. You can revisit this decision below or use Google's ad controls where available.</p>
       <p><button id="cookie-settings" type="button">Change advertising cookie choice</button></p>
 
       <h2>Service providers</h2>
-      <p>TickSPY uses Cloudflare for the edge API, Google Fonts for typefaces, and FormSubmit for optional contact forms. The desk may contact Alpaca, Yahoo Finance, Stooq, FairEconomy, Google Gemini, and jsDelivr only when the relevant desk feature requires it. Those providers receive ordinary request information such as IP address and browser details, and each has its own privacy terms.</p>
+      <p><strong>Netlify</strong> hosts the website and proxies public edge requests to <strong>Cloudflare</strong>. Both process request information such as IP addresses, requested paths, timestamps, and browser details and may retain operational or security logs according to their own policies. Tickspycorp does not operate an account database or independent analytics system.</p>
+      <p><strong>Google Fonts</strong> receives your IP address and browser details when typefaces load. <strong>jsDelivr</strong> provides TensorFlow.js when the volatility model runs. The model trains in your browser; your credentials and watchlist are not sent to jsDelivr.</p>
+      <p>With your own credentials, your browser contacts <strong>Alpaca</strong> directly for data and streams; Tickspycorp's edge proxy does not receive those credentials. Without credentials, the desk loads the previous completed session from <strong>HF Data Library (IEX exchange data)</strong>, headlines from public feeds, and calendar entries from FairEconomy. Those upstream requests carry the server's network address, not your browser's. <strong>Google Gemini</strong> receives public headlines and calendar information from the edge server to produce a shared overview; no user-entered prompts or credentials are sent.</p>
+      <p>FormSubmit and Gmail process submitted messages. Providers can process and store information outside Québec and Canada, including in the United States. Their privacy practices and lawful access rules may differ from those in Québec.</p>
 
       <h2>Retention and choices</h2>
-      <p>Your advertising choice is saved in local storage under <code>tickspy-ad-consent</code>. You can change it with the button above, clear your browser's site data, or use your browser controls to delete or block cookies. Contact-form submissions are retained in the support inbox only as long as needed to respond and handle the request.</p>
+      <p>Your advertising choice, if made, is saved under <code>tickspy-ad-consent</code>. Desk storage includes <code>cfg</code> (optional Alpaca keys), <code>wl</code> (watchlist), <code>alerts</code>, <code>calalert</code>, <code>calfired</code>, <code>calc</code> (calendar cache), <code>legal</code> (disclosure acceptance), and <code>wiz</code> (setup preference). Storage remains until you clear this site's browser data or remove the relevant item in the desk. Browser-stored keys are not encrypted by TickSPY. Use Paper-account keys and avoid shared devices. If storage is unavailable, preferences are held only for the current page session.</p>
+      <p>Support messages are kept only as needed to answer the request, resolve the issue, and meet applicable legal obligations. Request deletion through the support address. Third-party log and backup retention follows each provider's own practices.</p>
+
+      <h2>Your rights and privacy contact</h2>
+      <p>You may request access to or correction of personal information held by Tickspycorp, request deletion where applicable, withdraw consent to optional processing, or raise a privacy complaint at <a href="mailto:tickspysupport@gmail.com?subject=Privacy%20request">tickspysupport@gmail.com</a>. Withdrawing consent does not undo processing already lawfully completed. We may need proportionate verification before providing private correspondence.</p>
+      <p>Privacy requests are directed to the person exercising the highest authority at Tickspycorp, responsible for personal-information protection unless that responsibility is delegated. The same email is the published privacy contact. You can also contact the <a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Commission d'accès à l'information du Québec</a>.</p>
+
+      <h2>Eligibility and security</h2>
+      <p>The desk is intended for people aged 18 or older. We do not knowingly solicit children's personal information. If such information was submitted, contact us to request its removal. HTTPS and browser security controls reduce risks, but no website or browser storage can be guaranteed completely secure.</p>
 
       <h2>Contact and changes</h2>
-      <p>For privacy questions, use the contact form on the TickSPY landing page. This policy may change when site functionality or providers change; this page will show the updated date.</p>
+      <p>For support and privacy questions, email <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a>. This policy may change when site functionality or providers change; this page will show the updated date.</p>
     </main>
     <script>
       document.getElementById("cookie-settings").addEventListener("click", function () {

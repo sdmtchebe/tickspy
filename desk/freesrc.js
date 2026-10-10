@@ -195,23 +195,47 @@
   /* Machine name -> the name a reader should see. The API reports whichever
      source it actually answered from, so the disclosure can name it honestly;
      brands are capitalised because they are trademarks, not nouns. */
-  var SOURCE_NAMES = { yahoo: "Yahoo Finance", stooq: "Stooq", mixed: "the free sources" };
+  var SOURCE_NAMES = { yahoo: "Yahoo Finance", stooq: "Stooq", mixed: "the free sources", hfdatalibrary: "HF Data Library (IEX)" };
 
   function labelled(payload) {
     var raw = payload && payload.source;
     var src = raw ? SOURCE_NAMES[raw] || raw : "the free feed";
     var when = payload && payload.sessionDate ? prettyDate(payload.sessionDate) : "the last session";
-    return "Previous session (" + when + "), delayed end-of-day data from " + src + ". Replayed as if live; not a current quote.";
+    var base = "Previous session (" + when + "), delayed end-of-day data from " + src + ". Replayed as if live; not a current quote.";
+    if (raw === "hfdatalibrary") base += " Data sourced from IEX exchange only (~2-3% of consolidated volume).";
+    return base;
   }
 
   /* --------------------------------------------------------------- fetch -- */
 
+  function hfdataUrl(symbol, tf) {
+    return "/desk/hfdata/" + encodeURIComponent(String(symbol || "").toUpperCase()) + ".json";
+  }
+
   function barsPath(symbol, tf) {
-    return "/api/bars?symbol=" + encodeURIComponent(String(symbol || "").toUpperCase()) + "&tf=" + encodeURIComponent(tf);
+    return hfdataUrl(symbol, tf);
   }
 
   function symbolsPath(symbols, tf) {
-    return "/api/bars?symbols=" + (symbols || []).map(function (s) { return encodeURIComponent(s); }).join(",") + "&tf=" + encodeURIComponent(tf);
+    return (symbols || []).map(function (s) { return hfdataUrl(s, tf); });
+  }
+
+  async function fetchHfdata(url) {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + url);
+    return res.json();
+  }
+
+  async function fetchBars(symbol, tf) {
+    return fetchHfdata(hfdataUrl(symbol, tf));
+  }
+
+  async function fetchSymbols(symbols, tf) {
+    const urls = symbolsPath(symbols, tf);
+    const results = await Promise.all(urls.map(u => fetchHfdata(u).catch(() => null)));
+    const bars = {};
+    results.forEach((r, i) => { if (r && r.bars) bars[symbols[i]] = r.bars; });
+    return { bars };
   }
 
   /* ---------------------------------------------------------- derived data -- */
@@ -372,6 +396,8 @@
     labelled: labelled,
     barsPath: barsPath,
     symbolsPath: symbolsPath,
+    fetchBars: fetchBars,
+    fetchSymbols: fetchSymbols,
     quotesFromDaily: quotesFromDaily,
     movers: movers,
     symbolTerms: symbolTerms,
