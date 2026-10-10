@@ -28,10 +28,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # CRA uses this as PUBLIC_URL, so the site's assets and the Open App link
-      # resolve correctly under the /tickspy/ Pages subpath.
-      PUBLIC_URL: https://sdmtchebe.github.io/tickspy
     steps:
       - uses: actions/checkout@v4
 

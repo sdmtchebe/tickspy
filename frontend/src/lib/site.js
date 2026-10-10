@@ -27,10 +27,11 @@ export function scrollToId(id) {
 }
 
 // The desk is bundled into this site at <base>/desk/index.html (a copy of
-// desk/index.html added by scripts/sync-desk.js). PUBLIC_URL is the site's base
-// path, so this resolves correctly at a domain root, under a subpath such as
-// /tickspy/ on GitHub Pages, and in local dev. Override with REACT_APP_DESK_PATH
-// to point anywhere else.
+// desk/index.html added by scripts/sync-desk.js). package.json sets
+// "homepage": ".", so PUBLIC_URL is "." and this stays a relative link — it
+// resolves at a domain root, under a subpath such as /tickspy/ on GitHub Pages,
+// in local dev, and even when the built folder is opened straight from disk.
+// Override with REACT_APP_DESK_PATH to point anywhere else.
 const DESK_PATH = process.env.REACT_APP_DESK_PATH || `${process.env.PUBLIC_URL || ""}/desk/index.html`;
 
 export function openApp() {
