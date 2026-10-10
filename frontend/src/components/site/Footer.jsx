@@ -6,7 +6,7 @@ export const Footer = () => (
   <footer className="relative z-10 mt-8 border-t border-line" data-testid="site-footer">
     <div className="shell grid gap-10 py-14 md:grid-cols-12">
       <div className="md:col-span-5">
-        <Logo className="text-[28px]" testId="footer-logo" />
+        <Logo testId="footer-logo" />
         <p className="mt-4 max-w-[380px] text-[13.5px] leading-relaxed text-steel">
           A free trading desk for people who want the number and the sentence that explains it. The charts on this page are drawn
           from a simulated series; the desk runs on real market data.

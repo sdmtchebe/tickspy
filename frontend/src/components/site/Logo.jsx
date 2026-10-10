@@ -1,4 +1,4 @@
-import logoImage from "@/assets/tickspy-wordmark.png";
+import logoImage from "@/assets/tickspy-logo-full.png";
 
 export const Logo = ({ className = "", testId = "brand-logo", alt = "TickSPY" }) => (
   <span
@@ -8,7 +8,7 @@ export const Logo = ({ className = "", testId = "brand-logo", alt = "TickSPY" })
     <img
       src={logoImage}
       alt={alt}
-      className="block h-11 w-[158px] object-contain sm:h-12 sm:w-[174px]"
+      className="block h-auto w-[72px] max-w-full sm:w-[84px] lg:w-[108px]"
     />
   </span>
 );

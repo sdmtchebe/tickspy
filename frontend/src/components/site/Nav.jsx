@@ -36,7 +36,7 @@ export const Nav = () => {
       }`}
       data-testid="site-nav"
     >
-      <nav className="shell flex h-16 items-center justify-between gap-6">
+      <nav className="shell flex h-16 items-center justify-between gap-6 lg:h-[84px]">
         <button onClick={() => go("home")} className="text-[26px]" data-testid="nav-logo-link" aria-label="TickSPY home">
           <Logo testId="nav-logo" />
         </button>
