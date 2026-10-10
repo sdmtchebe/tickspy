@@ -47,11 +47,14 @@ export const Footer = () => (
       </div>
     </div>
 
-    <div className="border-t border-line">
-      <div className="shell flex flex-col gap-2 py-6 text-[12.5px] text-faint sm:flex-row sm:items-center sm:justify-between">
-        <p>© 2026 TickSPY</p>
-        <p>No accounts, no tracking, no server of ours holding your keys.</p>
+      <div className="border-t border-line">
+        <div className="shell flex flex-col gap-2 py-6 text-[12.5px] text-faint sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 TickSPY</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <a href="privacy.html" className="link-quiet">Privacy and cookies</a>
+            <p>No accounts, no server of ours holding your keys.</p>
+          </div>
+        </div>
       </div>
-    </div>
   </footer>
 );

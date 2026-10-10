@@ -41,6 +41,10 @@
         -->
         <script>window.DESK_SUPPORT_EMAIL = "";</script>
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
+        <!-- AdSense is added to this head after an advertising-cookie choice.
+             See src/lib/privacy.js; its loader always appends the Google script
+             to document.head before any ad unit is requested. -->
+        <script>window.__TICKSPY_ADSENSE_CLIENT__ = "ca-pub-3056395143178832";</script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>

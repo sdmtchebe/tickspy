@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#06080F" />
+    <meta name="robots" content="noindex" />
+    <title>Privacy and Cookies | TickSPY</title>
+    <style>
+      :root { color-scheme: dark; --bg: #06080F; --surface: #101521; --line: rgba(255,255,255,.12); --ink: #EDEFF3; --steel: #A5ADBA; --mint: #67DEB0; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      main { width: min(760px, calc(100% - 40px)); margin: 0 auto; padding: 56px 0 80px; }
+      a { color: var(--mint); } h1, h2 { line-height: 1.18; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); margin: 0; } h2 { margin-top: 2.7rem; font-size: 1.25rem; }
+      p, li { color: var(--steel); } strong { color: var(--ink); } .eyebrow { color: var(--mint); font-size: .78rem; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+      .notice { margin-top: 2rem; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); } button { appearance: none; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: transparent; color: var(--ink); cursor: pointer; font: inherit; } button:hover, button:focus-visible { border-color: var(--mint); } .back { display: inline-block; margin-bottom: 2.5rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="./">Back to TickSPY</a>
+      <p class="eyebrow">Last updated October 10, 2026</p>
+      <h1>Privacy and Cookie Policy</h1>
+      <div class="notice"><strong>In short:</strong> TickSPY has no account system. The landing page asks before loading Google AdSense. If you allow it, Google may process device, browser, IP-address, cookie, and related information to deliver and measure non-personalized ads. The trading desk itself does not contain advertising.</div>
+
+      <h2>Information this site handles</h2>
+      <p>The landing page can receive the name, email address, message, and optional screenshot you submit through a contact or feedback form. FormSubmit relays that information to the TickSPY support inbox. If you do not submit a form, the form provider is not contacted.</p>
+      <p>The desk stores your watchlist, alerts, preferences, and any optional Alpaca API keys in your browser's local storage. Those values are not stored by TickSPY. Alpaca keys are sent only to Alpaca when you choose to connect live data.</p>
+
+      <h2>Google AdSense and cookies</h2>
+      <p>Advertising is optional. Until you choose <strong>Allow ads</strong>, the landing page does not load the Google AdSense runtime or request an ad. If you choose <strong>No thanks</strong>, no AdSense ad units are requested for that browser.</p>
+      <p>If you allow ads, this site asks Google for <strong>non-personalized ads</strong>. Google and its vendors may nevertheless use cookies, local storage, IP address, browser and device data, and similar technologies for ad delivery, frequency capping, fraud prevention, security, and aggregated measurement. Google controls those technologies and may process data under its own policies.</p>
+      <p>Read Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">advertising technology information</a> for details. You can revisit this decision below or use Google's ad controls where available.</p>
+      <p><button id="cookie-settings" type="button">Change advertising cookie choice</button></p>
+
+      <h2>Service providers</h2>
+      <p>TickSPY uses Cloudflare for the edge API, Google Fonts for typefaces, and FormSubmit for optional contact forms. The desk may contact Alpaca, Yahoo Finance, Stooq, FairEconomy, Google Gemini, and jsDelivr only when the relevant desk feature requires it. Those providers receive ordinary request information such as IP address and browser details, and each has its own privacy terms.</p>
+
+      <h2>Retention and choices</h2>
+      <p>Your advertising choice is saved in local storage under <code>tickspy-ad-consent</code>. You can change it with the button above, clear your browser's site data, or use your browser controls to delete or block cookies. Contact-form submissions are retained in the support inbox only as long as needed to respond and handle the request.</p>
+
+      <h2>Contact and changes</h2>
+      <p>For privacy questions, use the contact form on the TickSPY landing page. This policy may change when site functionality or providers change; this page will show the updated date.</p>
+    </main>
+    <script>
+      document.getElementById("cookie-settings").addEventListener("click", function () {
+        try { localStorage.removeItem("tickspy-ad-consent"); } catch (_) {}
+        window.location.href = "./";
+      });
+    </script>
+  </body>
+</html>
