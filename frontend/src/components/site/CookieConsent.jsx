@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from "react";
-import { getAdsConsent, loadAdsense, setAdsConsent } from "@/lib/privacy";
+import { getAdsConsent, loadAdsense, setAdsConsent, subscribeAdsConsent } from "@/lib/privacy";
 
 export const CookieConsent = () => {
   const consent = useSyncExternalStore(subscribeAdsConsent, getAdsConsent, () => "unknown");
