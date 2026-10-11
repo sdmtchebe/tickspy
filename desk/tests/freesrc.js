@@ -111,6 +111,7 @@ console.log("\nlabels");
   ok("the fallback source is named too, and capitalised", Free.labelled({ source: "stooq", sessionDate: SESSION }).includes("Stooq"), "stooq label");
   ok("a symbol list answered by both says so", Free.labelled({ source: "mixed", sessionDate: SESSION }).includes("the free sources"), "mixed label");
   ok("an unknown machine name is passed through rather than hidden", Free.labelled({ source: "somefeed", sessionDate: SESSION }).includes("somefeed"), "unknown label");
+  ok("generated bundles cannot be described as real market prices", Free.labelled({ source: "mock", sessionDate: SESSION }).includes("not real market prices"));
 }
 
 console.log("\nsession clock");
@@ -164,8 +165,8 @@ console.log("\nsymbol news");
 }
 
 console.log("\npaths");
-eq("single-symbol path", Free.barsPath("spy", "5Min"), "/api/bars?symbol=SPY&tf=5Min");
-eq("multi-symbol path", Free.symbolsPath(["SPY", "QQQ"], "1Day"), "/api/bars?symbols=SPY,QQQ&tf=1Day");
+eq("single-symbol path", Free.barsPath("spy", "5Min"), "/desk/hfdata/SPY.json");
+eq("multi-symbol path", Free.symbolsPath(["SPY", "QQQ"], "1Day").join(","), "/desk/hfdata/SPY.json,/desk/hfdata/QQQ.json");
 eq("the free timeframes are the ones the source can serve", Free.TIMEFRAMES.map((t) => t.id).join(","), "5Min,15Min,1Day");
 ok("each timeframe has a periods-per-year for the volatility model", Free.TIMEFRAMES.every((t) => Free.PERIODS_PER_YEAR[t.id] > 0));
 

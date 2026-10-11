@@ -85,7 +85,7 @@ Directional labels now use neutral wording ("Positive/Negative/Mixed" instead of
 - Corrected browser-key storage disclosure, third-party resource requests, overseas processing, and contact/privacy rights.
 - A visible support address and FormSubmit processing notice before sending messages.
 - Advertising disabled; no Google advertising requests observed. Re-enabling advertising requires revisiting privacy wording, slot configuration, applicable consent requirements, and Google's certified-CMP requirements for affected regions.
-- **Free mode now uses HF Data Library (IEX exchange data, CC BY 4.0)** — legal for redistribution with attribution. IEX volume disclaimer displayed in free mode banner.
+- **Keyless bundles currently contain generated demonstration data, not HF market prices.** The UI now labels samples explicitly; real IEX data requires a successful HF Data Library download and source-licence confirmation.
 - **Neutral directional language**: "Bullish/Bearish" → "Positive/Negative/Mixed", "outperforming/underperforming QQQ" → "above/below QQQ".
 - **Volatility direction head removed** from demo; backtester shows prominent "HYPOTHETICAL SIMULATION" banner.
 
@@ -104,7 +104,7 @@ The desk is usable on phone widths, but remains a dense information workspace be
 - Security/artifact/consent checks: **passed**; no private file or configured-key matches in the 27 public assets.
 - Static local HTML asset/page links: checked by `scripts/security-check.cjs`.
 - Live Worker price, news, calendar, overview, and health requests: **HTTP 200** during review. SPY replay supplied the October 9, 2026 completed session.
-- **Free mode serves HF Data Library (IEX) data** bundled at build time; Netlify scheduled function updates daily (see NETLIFY-SCHEDULED-FUNCTION-TUTORIAL.md).
+- **Current bundled bars are generated demonstrations.** The HF downloader and scheduled refresh can replace them after credentials and deployment are configured, but no authenticated HF download was verified during this review (see NETLIFY-SCHEDULED-FUNCTION-TUTORIAL.md).
 - Actual tickspy.com browser CORS on the existing Worker: absent. The prepared Netlify same-origin proxy avoids that dependency. The source Worker allowlist was updated, but the Worker was not redeployed.
 - Contact responses and Alpaca behavior were tested with fixtures; no test emails or real credential-authenticated Alpaca trades were sent. Actual inbox activation/delivery remains to be verified by the owner.
 - The Netlify proxy/headers were exercised using a browser route harness, not a deployed Netlify site. Verify actual headers/proxy after upload. No DNS change, public deployment, GitHub push, or commit was performed.

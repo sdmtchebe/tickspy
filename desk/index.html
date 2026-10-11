@@ -1,5 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>TickSPY | Analysis Desk</title>
 <link rel="icon" href="../favicon.png">
+<link rel="stylesheet" href="structure.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -151,7 +152,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><canvas id="cv" aria-label="Price chart. Drag to pan, scroll to zoom."></canvas><p class="legend">EMA 9 (amber), EMA 21 (grey), VWAP (white), Fibonacci (dim amber), volume bands (green up, red down). Drag to pan, scroll to zoom, Shift+scroll to pan only. Hover a bar for price and time, or hover a volume band for that bar's exact volume, time and OHLC.<button class="btn" id="cvlatest" style="padding:2px 8px;margin-left:8px">Latest</button><button class="btn" id="cvclear" style="padding:2px 8px;margin-left:6px">Clear highlight</button></p></div>
 <main>
 <section class="tab on" id="t-live"><div class="cols">
-<div class="panel"><h2>Volume profile</h2><div class="pbody"><canvas id="vp" aria-label="Volume profile" style="width:100%;height:210px;display:block"></canvas><p class="x">IEX volume by price over the last 90 candles. The amber bar is the point of control (POC), where the most volume traded; the brighter bars are the 70% value area. The dashed line marks the last price.</p><details class="exp"><summary aria-label="Explain the volume profile">?</summary><p class="iexp">A histogram of how much volume traded at each price over the last 90 candles, rather than over time. The point of control is the single busiest price; the value area is the band holding 70% of the volume. Price near a heavy band is said to have support or resistance there because that is where trades actually happened - a tendency, not a guarantee.</p></details></div></div>
+<div class="panel"><h2>Estimated volume profile</h2><div class="pbody"><canvas id="vp" aria-label="Estimated volume profile" style="width:100%;height:210px;display:block"></canvas><p class="x">Approximate volume distribution from the last 90 candles. Amber marks the largest estimated bucket (POC); brighter buckets form the 70% estimated value area. The dashed line marks the last price.</p><details class="exp"><summary aria-label="Explain the volume profile">?</summary><p class="iexp">This chart groups volume by an estimated price instead of by time. Each candle's entire volume is assigned to its typical price: (high + low + close) / 3. POC means point of control, the bucket receiving the most volume under that approximation. The value area collects about 70% of the assigned volume. Candle data cannot tell us the actual volume traded at every price, so this is not an order-flow or tick-by-tick profile. IEX-only data also excludes trading on other exchanges.</p></details></div></div>
 <div class="panel"><h2>Key levels</h2><div id="lv" class="stack"></div></div>
 <div class="panel"><h2>Timeframe alignment</h2><div id="mtf" class="pbody"></div></div>
 <div class="panel"><h2>Relative strength</h2><div id="rsx" class="pbody"></div></div>
@@ -198,7 +199,7 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div id="ro" class="ai">Enter entry and stop.</div><div class="disc">Illustrative arithmetic only. It is not tailored to your circumstances and is not investment advice.</div></div></div>
 <div class="panel"><h2>Backtester</h2><div class="pbody"><p class="x">Replays an EMA 9/21 crossover on the loaded bars, long above and short below. One short window and no costs: a sanity check, not proof.</p><details class="exp"><summary aria-label="Explain the backtest rule">?</summary><p class="iexp">The rule is fixed and simple: go long when the 9-period EMA crosses above the 21-period EMA, go short when it crosses below, and flip on the next opposite cross. It runs only on the bars currently loaded, with no costs, no slippage and no position sizing, so it says whether the rule was consistent in this window - not whether it makes money.</p></details><div class="row"><button class="btn" id="btb">Run backtest</button></div><div id="bto" class="ai">Not run yet.</div><div class="disc"><b>Hypothetical results.</b> Backtests are simulated on past data, exclude commissions, fees, slippage, taxes and borrow costs, and cover a single short window. They are a sanity check on a rule, not evidence of future performance, and not investment advice.</div></div></div>
 <div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><details class="exp"><summary aria-label="Explain the scanner">?</summary><p class="iexp">Shows which symbols are trading the most volume right now (most active) and which moved the most, up or down (top movers). Without Alpaca keys it instead ranks the largest moves among the symbols in your own watchlist, from the free daily feed, and says so on screen.</p></details><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
-</div></section>
+</div><div class="panel" id="structure"><h2>Market Structure</h2><p class="x" style="padding:12px">Loading the learning tools…</p></div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
 <p class="x" style="margin-top:0"><b>These keys are optional.</b> The desk already works with no account at all: it shows the previous completed session, replayed as if live, from a free public end-of-day source. Adding your own free Alpaca keys upgrades it to current prices, 1-minute bars, the live trade stream and the symbol's own news feed.</p>
@@ -234,6 +235,8 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <script src="volmodel.js"></script>
 <script src="volmodel2.js"></script>
 <script src="freesrc.js"></script>
+<script src="structure-engine.js"></script>
+<script src="structure-view.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 // Disabled storage and malformed saved preferences must not blank the desk.
@@ -334,7 +337,7 @@ let loadVersion=0;
 async function load(){
  const version=++loadVersion;
  if(volBusy){volCancel=true;if(volAbort)volAbort()}
- S.bars=[];S.price=null;S.an=null;S.rep=null;S.allBars=null;S.mtfRows=null;S.rs=null;
+  S.bars=[];S.price=null;S.an=null;S.rep=null;S.allBars=null;S.daily=[];S.free=null;S.sessionDate=null;S.mtfRows=null;S.rs=null;
  S.news=[];S.newsIds=new Set();S.newsFresh=new Set();S.vol=null;S.volKey=null;
  $('#vout').textContent='Open this tab or refresh the estimate after the new history loads.';$('#vbt').textContent='No estimate for this selection yet.';
  $('#px').textContent='--';$('#chg').textContent='';refresh();
@@ -381,7 +384,11 @@ function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayA
  S.bars=S.tf==='1Day'?S.allBars.slice():FREE.reveal(S.allBars,rep.at);
  S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
 function freeBanner(){if(S.mode!=='free'){banner('');return}
-  const freeMsg=`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`;
+   if(S.free?.source==='mock'){
+     banner(`<b>Demonstration mode — generated candles.</b> ${esc(FREE.labelled(S.free))} <a href="#" id="fbn-go">Want current market prices? Add your own Alpaca keys</a>`);
+     return;
+   }
+   const freeMsg=`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`;
   const iexMsg='<span class="muted" style="margin-left:12px">⚠ Data sourced from IEX exchange only (~2–3% of consolidated volume; not NBBO).</span>';
   banner(freeMsg + iexMsg)}
 /* One tick a second, same as the clock: recompute where the replay should be and
@@ -389,7 +396,17 @@ function freeBanner(){if(S.mode!=='free'){banner('');return}
 function freeTick(){if(S.mode!=='free'||!S.allBars||S.tf==='1Day')return;
  const rep=FREE.replayAt(Date.now(),S.sessionDate);if(S.rep&&rep.minutes===S.rep.minutes&&rep.complete===S.rep.complete)return;
  S.rep=rep;freeRefresh()}
-function refresh(){analyze();draw();head();render()}
+// Capture REST bars before the trade stream can mutate the last candle. The
+// structure engines never consume those trade-derived OHLC edits. A fresh REST
+// array replaces this snapshot, including any provider corrections.
+let structureReference=null,structureSnapshot=[];
+function structureRefresh(){
+ if(!window.StructureDesk)return;
+ if(structureReference!==S.bars){structureReference=S.bars;structureSnapshot=S.bars.map(b=>({...b}))}
+ const cutoff=S.mode==='live'?Date.now():S.tf==='1Day'?Infinity:S.rep?new Date(S.rep.at).getTime():0;
+ window.StructureDesk.update({bars:S.mode==='live'?structureSnapshot:S.bars,daily:S.daily,sessionDate:S.sessionDate,source:S.free?.source,symbol:S.sym,tf:S.tf,mode:S.mode,cutoff});
+}
+function refresh(){analyze();draw();head();render();structureRefresh()}
 /* In free mode the change is measured against the previous session's close, not
    today's open, because there is no today - the bars on screen ARE the previous
    session, and the label has to say so. */
@@ -994,7 +1011,7 @@ CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
    on the server, cached, and read by everyone (see loadOverview above). */
 /* ---------- legal & disclosures ---------- */
 const LEGAL={title:'Important - please read before using this dashboard',
- short:'Pure information to help you do your own research. Not advice, not a recommendation. We accept no responsibility for any decision you make or any outcome. Trading risks loss of capital. Market data via Alpaca / IEX when you connect your own keys, or one shared free end-of-day series served by our own server when you do not; personal non-commercial use only. Provided "as is" without warranty.',
+  short:'Pure information to help you do your own research. Not advice, not a recommendation. Trading risks loss of capital. Current market data requires your own Alpaca keys; keyless bars come from a labelled bundled replay file, which may be generated demonstration data. Provided "as is" without warranty.',
  points:[
   ['Information only','This dashboard is a reference tool. It displays market data and mathematical summaries of it so that you can do your own research. It does not tell you what to do. We give no view on whether any security is suitable for you, and we accept no responsibility for any decision you make or for any outcome. You use it entirely at your own risk.'],
   ['Not investment advice','Nothing on this dashboard is investment, financial, legal or tax advice, and nothing is a recommendation, solicitation or offer to buy or sell any security. It is impersonal commentary of general circulation, not advice tailored to your situation.'],
@@ -1002,12 +1019,12 @@ const LEGAL={title:'Important - please read before using this dashboard',
   ['Risk of loss','Trading and investing involve substantial risk, including the total loss of your capital. You are solely responsible for your own decisions. Consult a licensed professional before acting.'],
   ['Estimates, not predictions','The statistical and AI outputs are estimates derived from historical prices. They can be wrong, they are not guaranteed, and past or hypothetical results never indicate future results. The volatility model reports a measured reliability, and often has little or no skill.'],
   ['Hypothetical backtests','Backtest figures are simulated on past data. They exclude commissions, fees, slippage, taxes and borrow costs, cover limited samples, and are not evidence of future performance.'],
-  ['Market data','With no keys saved, the desk shows one shared, cached copy of the most recent completed session, from a free public price source (Yahoo Finance, with Stooq as a fallback), fetched by our own server rather than by your browser. That view is delayed, end-of-day, one session old, and replayed rather than streamed; it is not a current quote. Once you connect your own Alpaca keys the data becomes Alpaca/IEX under their terms and is current. Either way it may be delayed, incomplete or inaccurate, it must not be redistributed or served to the public, and all trademarks belong to their owners.'],
+   ['Market data','Without keys, the desk loads a bundled replay file. The current sample files contain generated demonstration data, not real market prices; this is marked on screen. When verified HF Data Library files replace them, the source is IEX-only exchange data, not a consolidated quote. With your own Alpaca keys, Alpaca/IEX supplies current data under its terms. Data may be incomplete, delayed or inaccurate. The Market Structure tools describe only the completed bars actually available for the selected timeframe; their labels are not trading forecasts.'],
   ['Auto-generated summaries','The only machine-generated text here is one shared market overview, written on our own server from public headlines and the scheduled events and then shown to every visitor from the same copy. It is unverified and may be wrong or incomplete, and it makes no recommendation. There is no AI key to enter anywhere, so nobody can spend one on your behalf. You are responsible for complying with the terms of every provider you connect.'],
   ['No warranty','This software is provided "as is" without warranty of any kind, express or implied, including merchantability, fitness for a particular purpose and non-infringement. To the maximum extent permitted by law, the authors accept no liability for any loss or damage arising from its use.'],
   ['Privacy policy','The desk has no accounts or advertising. Preferences and optional Alpaca keys are stored in your browser. Netlify and Cloudflare process normal request information, including IP addresses. Google Fonts and jsDelivr receive request information when their resources load. Contact messages and screenshots sent through the landing page are received by FormSubmit and our support inbox. See the linked privacy policy for details and your rights.'],
   ['Operator and eligibility','Operated by Tickspycorp in Québec, Canada. You must be 18 or older and legally able to use the service. Support and privacy contact: tickspysupport@gmail.com.'],
-  ['Not for redistribution','Market data is licensed, not owned. On the published desk a visitor who has no keys of their own is served one shared, cached copy of the free end-of-day session, fetched for them by our own server. If you host your own copy, do not serve market data to others and do not publish it in a way that redistributes that data; personal, non-commercial use is the intended purpose.']
+   ['Not for redistribution','Market data is licensed, not owned. The public desk bundles a labelled keyless replay dataset. If you host a copy, check the applicable source licence and attribution requirements before distributing data; your personal Alpaca access does not grant a general redistribution licence.']
  ]};
 function legalBody(withAccept){return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+LEGAL.points.map(p=>`<p class="x"><b>${esc(p[0])}.</b> ${esc(p[1])}</p>`).join('')+'<p class="x"><a href="../terms.html" target="_blank" rel="noopener noreferrer">Terms and risk disclosure</a> · <a href="../privacy.html" target="_blank" rel="noopener noreferrer">Privacy policy</a></p>'+`<div class="legal-actions">${withAccept?'<button class="btn" id="gate-ok" type="button">I am 18+ and accept the terms</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline and return home':'Close'}</button></div>`}
 let modalReturn=null;

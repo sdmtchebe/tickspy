@@ -199,6 +199,7 @@
 
   function labelled(payload) {
     var raw = payload && payload.source;
+    if (raw === "mock") return "Generated demonstration data, not real market prices; not a current quote. Replace the sample bundle with verified data before using these readings to study actual market history.";
     var src = raw ? SOURCE_NAMES[raw] || raw : "the free feed";
     var when = payload && payload.sessionDate ? prettyDate(payload.sessionDate) : "the last session";
     var base = "Previous session (" + when + "), delayed end-of-day data from " + src + ". Replayed as if live; not a current quote.";

@@ -69,7 +69,7 @@ async function main() {
     check("Open desk creates exactly one tab and keeps the landing page", context.pages().length === 2 && page.url() === original);
     check("New desk has no opener", await desk.evaluate(() => window.opener === null));
     check("Netlify custom-domain mode uses the same-origin proxy", await desk.evaluate(() => window.DESK_EDGE_API) === "https://tickspy.com/edge");
-    check("Live public API supplies the completed-session replay", (await desk.locator("#fbn").textContent()).includes("not a current quote"));
+    check("Bundled samples are labelled as generated, not real market quotes", (await desk.locator("#fbn").textContent()).includes("Generated demonstration data") && (await desk.locator("#fbn").textContent()).includes("not a current quote"));
     check("The desk has 9 working navigation sections", await desk.locator("#nav button").count() === 9);
     check("The desk computes the advertised 14 indicators", await desk.evaluate(() => S.an.it.length === 14));
     check("Feed links reject script URLs and HTML is escaped", await desk.evaluate(() => safeUrl('javascript:alert(1)') === '' && esc('<img src=x onerror=alert(1)>').startsWith('&lt;')));
@@ -104,6 +104,39 @@ async function main() {
     await desk.locator('#nav button[data-k="vol"]').click();
     await desk.waitForFunction(() => document.getElementById("vout").textContent.includes("per bar") || document.getElementById("vout").textContent.includes("unavailable"), null, { timeout: 180000 });
     check("Volatility Web Worker completes under CSP", (await desk.locator("#vout").textContent()).includes("per bar"));
+    await desk.locator('#nav button[data-k="tools"]').click();
+    const availableSymbols = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../hfdata-tickers.json'), 'utf8'));
+    for (const symbol of availableSymbols) {
+      for (const tf of ['5Min', '15Min', '1Day']) {
+        const result = await desk.evaluate(async ({symbol,tf}) => {
+          S.sym = symbol; document.getElementById('sym').value = symbol; S.tf = tf;
+          await load();
+          const expected = DeskStructure.freeBars(S.bars,S.daily,tf,tf==='1Day'?Infinity:new Date(S.rep.at).getTime(),S.sessionDate);
+          return {
+            source: S.free?.symbol, mode: S.mode, count: expected.length,
+            status: document.getElementById('ms-status').textContent,
+            cards: document.querySelectorAll('#ms-output .ms-card').length,
+            regime: document.querySelector('#ms-output .ms-value')?.textContent,
+            expectedRegime: expected.length>=77?DeskStructure.analyze(expected).current.regime:null,
+            latest: expected.at(-1)?.t,
+          };
+        }, {symbol,tf});
+        check(`Keyless ${symbol} ${tf} uses matching completed bars`, result.mode === 'free' && result.source === symbol && result.cards === 4 && result.regime === result.expectedRegime && result.status.includes(`${symbol} · ${tf}`) && result.status.includes(`${result.count} completed bars`) && result.status.includes(result.latest));
+      }
+    }
+    check('Keyless 15-minute views are aggregated from complete 5-minute groups', await desk.evaluate(() => {
+      const bars = S.allBars, at = new Date(S.rep.at).getTime();
+      return DeskStructure.freeBars(bars,S.daily,'15Min',at,S.sessionDate).length === 78 && bars.length === 234;
+    }));
+    const replayResult = await desk.evaluate(() => {
+      S.tf='5Min'; const old=S.rep; S.rep={at:S.allBars[20].t}; structureRefresh();
+      const short=document.querySelectorAll('#ms-output .ms-card').length===0 && document.getElementById('ms-status').textContent.includes('20 completed bars');
+      S.rep=old; structureRefresh(); return short && document.querySelectorAll('#ms-output .ms-card').length===4;
+    });
+    check('Keyless replay clears results until enough completed bars are available', replayResult);
+    await desk.evaluate(async () => { S.sym='UNKNOWN'; document.getElementById('sym').value='UNKNOWN'; S.tf='1Day'; await load(); });
+    check('Unavailable keyless symbols clear the previous daily results', await desk.evaluate(() => S.free===null && S.daily.length===0 && !document.querySelector('#ms-output .ms-card') && document.getElementById('ms-status').textContent.includes('UNKNOWN')));
+    await desk.evaluate(async () => { S.sym='SPY'; document.getElementById('sym').value='SPY'; S.tf='5Min'; await load(); });
     await desk.locator('#nav button[data-k="live"]').click();
     await desk.screenshot({ path: path.join(reports, "launch-desk-desktop.png"), fullPage: true });
     await page.getByTestId("demo-tab-news").scrollIntoViewIfNeeded();
@@ -156,7 +189,16 @@ async function main() {
     const fixtureBars = Array.from({length:90},(_,i)=>({t:new Date(Date.UTC(2026,9,9,13,30+i)).toISOString(),o:100+i*.1,h:101+i*.1,l:99+i*.1,c:100.5+i*.1,v:1000}));
     await live.route('https://data.alpaca.markets/**', (route) => {
       const url = new URL(route.request().url());
-      const series=url.pathname.includes('/QQQ/')?fixtureBars.map((b,i)=>({...b,c:200+i*2})):fixtureBars;
+      const selected=/\/v2\/stocks\/([^/]+)\/bars/.exec(url.pathname)?.[1];
+      const minutes={'1Min':1,'5Min':5,'15Min':15}[url.searchParams.get('timeframe')] || 1;
+      const prices={AAPL:180,NVDA:950,AMD:120,'BRK.B':400,MSFT:420,THIN:35};
+      const series=selected && prices[selected] ? Array.from({length:95},(_,i)=>{
+        const c=prices[selected]+i*.04+Math.sin(i/4);
+        return {t:new Date(Date.UTC(2026,9,9,13,30+i*minutes)).toISOString(),o:c-.1,h:c+.6,l:c-.6,c,v:1000+i};
+      }):url.pathname.includes('/QQQ/')?fixtureBars.map((b,i)=>({...b,c:200+i*2})):fixtureBars;
+      if(selected==='MSFT')series.push({...series.at(-1),t:new Date(Date.now()-30000).toISOString()});
+      if(selected==='THIN')series.length=50;
+      if(selected==='UNKNOWN')return route.fulfill({status:404,contentType:'application/json',body:'{"message":"Symbol unavailable"}'});
       const body = url.pathname.includes('news') ? {news:[]} : url.searchParams.has('symbols') ? {bars:{SPY:fixtureBars.slice(-3).reverse()}} : {bars:series.slice().reverse()};
       return route.fulfill({contentType:'application/json',body:JSON.stringify(body)});
     });
@@ -172,6 +214,46 @@ async function main() {
       S.bars=c.map((close,i)=>({t:new Date(1700000000000+i*60000),o:close,h:close+1,l:close-1,c:close,v:1000}));
       const a=ema(c,9),b=ema(c,21),crosses=c.slice(1).filter((_,i)=>(a[i+1]>b[i+1])!==(a[i]>b[i])).length;
       const result=backtest();S.bars=saved;return result.n===crosses;
+    }));
+    await livePage.locator('#nav button[data-k="tools"]').click();
+    check('Market Structure renders all four engines on fetched completed bars', await livePage.locator('#ms-output .ms-card').count() === 4);
+    for(const symbol of ['AAPL','NVDA','AMD','BRK.B'])for(const tf of ['1Min','5Min','15Min']){
+      const result=await livePage.evaluate(async ({symbol,tf})=>{
+        S.sym=symbol;document.getElementById('sym').value=symbol;S.tf=tf;await load();
+        const expected=DeskStructure.completedBars(S.allBars,tf,Date.now());
+        return {mode:S.mode,count:expected.length,cards:document.querySelectorAll('#ms-output .ms-card').length,status:document.getElementById('ms-status').textContent,regime:document.querySelector('#ms-output .ms-value')?.textContent,expectedRegime:DeskStructure.analyze(expected).current.regime,latest:expected.at(-1).t};
+      },{symbol,tf});
+      check(`Alpaca ${symbol} ${tf} follows the selected symbol`,result.mode==='live'&&result.cards===4&&result.regime===result.expectedRegime&&result.status.includes(`${symbol} · ${tf}`)&&result.status.includes(`${result.count} completed bars`)&&result.status.includes(result.latest));
+    }
+    await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
+    check('Alpaca current unfinished candle is excluded without losing completed history',await livePage.evaluate(()=>S.bars.length===96&&document.getElementById('ms-status').textContent.includes('95 completed bars')&&!!document.querySelector('#ms-output .ms-card')));
+    await livePage.evaluate(async()=>{S.sym='THIN';document.getElementById('sym').value='THIN';await load()});
+    check('Sparse Alpaca history shows a warmup state, not stale or invented readings',await livePage.evaluate(()=>S.bars.length===50&&!document.querySelector('#ms-output .ms-card')&&document.getElementById('ms-status').textContent.includes('50 completed bars')&&document.getElementById('ms-output').textContent.includes('77 completed bars')));
+    await livePage.evaluate(async()=>{S.sym='UNKNOWN';document.getElementById('sym').value='UNKNOWN';await load()});
+    check('Alpaca unavailable symbol clears old structure readings',await livePage.evaluate(()=>!document.querySelector('#ms-output .ms-card')&&document.getElementById('ms-status').textContent.includes('UNKNOWN')));
+    await livePage.evaluate(async()=>{S.sym='SPY';document.getElementById('sym').value='SPY';S.tf='1Min';await load()});
+    // Native details summaries expose keyboard controls without a custom modal.
+    await livePage.locator('[data-help="adx"] summary').focus();
+    await livePage.keyboard.press('Enter');
+    check('Structure question-mark explanations open with the keyboard', await livePage.locator('[data-help="adx"]').evaluate(el=>el.open));
+    check('Live tick edits do not leak into the closed-bar structure snapshot', await livePage.evaluate(()=>{
+      const before=document.getElementById('ms-output').innerHTML,old={...S.bars.at(-1)};
+      S.bars.at(-1).c+=50;S.bars.at(-1).h+=50;structureRefresh();
+      const same=document.getElementById('ms-output').innerHTML===before;Object.assign(S.bars.at(-1),old);return same;
+    }));
+    await livePage.selectOption('#ms-radius','5');
+    check('Structure settings recompute while retaining open explanations', await livePage.locator('[data-help="adx"]').evaluate(el=>el.open));
+    check('Replay cannot expose future bars through the structure adapter', await livePage.evaluate(()=>{
+      const oldMode=S.mode,oldRep=S.rep,oldTf=S.tf;S.mode='free';S.tf='5Min';S.rep={at:S.bars[10].t};structureRefresh();
+      const hidden=document.querySelectorAll('#ms-output .ms-card').length===0&&document.getElementById('ms-output').textContent.includes('77 completed bars');
+      S.mode=oldMode;S.tf=oldTf;S.rep=oldRep;structureRefresh();return hidden;
+    }));
+    for(const width of [375,812]){
+      await livePage.setViewportSize({width,height:812});
+      check(`Structure tools fit a ${width}px viewport`,await livePage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    }
+    check('Changing selection clears prior structure results', await livePage.evaluate(()=>{
+      const saved=S.bars;S.bars=[];structureRefresh();const clear=!document.querySelector('#ms-output .ms-card');S.bars=saved;structureRefresh();return clear;
     }));
     await live.close();
     const bad = await browser.newContext(); await routes(bad, "", true);

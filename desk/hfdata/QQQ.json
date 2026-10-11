@@ -1,7 +1,7 @@
 {
   "symbol": "QQQ",
   "tf": "5Min",
-  "source": "hfdatalibrary",
+  "source": "mock",
   "delayed": true,
   "tz": "America/New_York",
   "tzCoverage": 1,
@@ -3604,5 +3604,5 @@
       "v": 7399621
     }
   ],
-  "note": "3 session(s) of 5-minute bars from IEX exchange; the most recent completed session is replayed, delayed end-of-day data. IEX represents ~2-3% of consolidated volume. [MOCK DATA - will be replaced by scheduled function]"
+  "note": "Generated demonstration data, not market prices. Replace with verified data before using these readings to study actual market history."
 }

@@ -131,7 +131,7 @@ function buildPayload(symbol, intradayBars, dailyHistory) {
   return {
     symbol,
     tf: '5Min',
-    source: 'hfdatalibrary',
+    source: 'mock',
     delayed: true,
     tz: 'America/New_York',
     tzCoverage: 1,
@@ -140,7 +140,7 @@ function buildPayload(symbol, intradayBars, dailyHistory) {
     asOf: daily.length ? daily[daily.length - 1].t.slice(0, 10) : null,
     bars,
     daily,
-    note: `${sessions} session(s) of 5-minute bars from IEX exchange; the most recent completed session is replayed, delayed end-of-day data. IEX represents ~2-3% of consolidated volume. [MOCK DATA - will be replaced by scheduled function]`
+    note: `Generated demonstration data, not market prices. Replace these samples with real licensed data before presenting them as market replay.`
   };
 }
 

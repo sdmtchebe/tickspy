@@ -15,7 +15,7 @@ const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // Only the static assets the page actually loads. Secrets (local-config.js) are
 // deliberately never copied. edge-config.js holds only a public Worker URL, so
 // it is safe to publish.
-const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js"];
+const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js", "structure-engine.js", "structure-view.js", "structure.css"];
 const HFDATA_DIR = path.join(SRC_DIR, "hfdata");
 
 // desk/index.html loads local-config.js unconditionally, because that is how a

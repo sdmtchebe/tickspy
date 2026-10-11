@@ -19,11 +19,10 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const { ParquetReader } = require('parquetjs');
+const { buildPayload } = require('../../scripts/hfdata-bars');
 
 const HF_API_BASE = 'https://api.hfdatalibrary.com/v1';
 const DEFAULT_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'TSLA', 'MSFT', 'META', 'GOOGL', 'AMZN', 'AMD'];
-const RTH_OPEN = 9 * 60 + 30;
-const RTH_CLOSE = 16 * 60;
 
 function httpGet(url, headers = {}) {
   return new Promise((resolve, reject) => {
@@ -74,65 +73,6 @@ async function parseParquetToBars(parquetBuffer, symbol) {
   return bars;
 }
 
-function buildDailyBars(intradayBars) {
-  const byDate = new Map();
-  for (const b of intradayBars) {
-    const date = b.t.slice(0, 10);
-    if (!byDate.has(date) || new Date(b.t) > new Date(byDate.get(date).t)) {
-      byDate.set(date, b);
-    }
-  }
-  const daily = [];
-  for (const [date, bar] of byDate) {
-    daily.push({
-      t: new Date(`${date}T13:30:00.000Z`).toISOString(),
-      o: bar.o, h: bar.h, l: bar.l, c: bar.c, v: bar.v
-    });
-  }
-  daily.sort((a, b) => a.t.localeCompare(b.t));
-  return daily.slice(-900);
-}
-
-function findSessions(intradayBars) {
-  const byDate = new Map();
-  for (const b of intradayBars) {
-    const dt = new Date(b.t);
-    const etMinutes = dt.getUTCHours() * 60 + dt.getUTCMinutes();
-    const etDate = dt.toISOString().slice(0, 10);
-    if (etMinutes >= RTH_OPEN && etMinutes < RTH_CLOSE) {
-      if (!byDate.has(etDate)) byDate.set(etDate, []);
-      byDate.get(etDate).push(b);
-    }
-  }
-  const dates = [...byDate.keys()].sort();
-  const completeDates = dates.filter(d => byDate.get(d).length >= 20);
-  const lastThree = completeDates.slice(-3);
-  const sessionBars = lastThree.flatMap(d => byDate.get(d)).sort((a, b) => a.t.localeCompare(b.t));
-  return {
-    sessionDate: lastThree[lastThree.length - 1] || null,
-    sessions: lastThree.length,
-    bars: sessionBars
-  };
-}
-
-function buildPayload(symbol, intradayBars) {
-  const daily = buildDailyBars(intradayBars);
-  const { sessionDate, sessions, bars } = findSessions(intradayBars);
-  return {
-    symbol,
-    tf: '5Min',
-    source: 'hfdatalibrary',
-    delayed: true,
-    tz: 'America/New_York',
-    tzCoverage: 1,
-    sessionDate,
-    sessions,
-    asOf: daily.length ? daily[daily.length - 1].t.slice(0, 10) : null,
-    bars,
-    daily,
-    note: `${sessions} session(s) of 5-minute bars from IEX exchange; the most recent completed session is replayed, delayed end-of-day data. IEX represents ~2-3% of consolidated volume.`
-  };
-}
 
 async function commitFiles(ghToken, ghRepo, files, message) {
   const tmpDir = '/tmp/hfdata-update-' + Date.now();
@@ -195,6 +135,7 @@ exports.handler = async function(event, context) {
       const bars = await parseParquetToBars(parquet, sym);
       if (bars.length === 0) throw new Error('No bars parsed');
       const payload = buildPayload(sym, bars);
+      if (!payload.bars.length || !payload.daily.length) throw new Error('No completed regular-session bars to publish');
       files[`desk/hfdata/${sym}.json`] = JSON.stringify(payload, null, 2);
       success++;
     } catch (e) {
