@@ -957,10 +957,13 @@ function calRender(){
   const soon=calAlertSoon();
   const isToday=d=>d===new Date().toLocaleDateString('en-CA',{timeZone:'America/New_York'});
   const dow=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const weekStart=new Date(now);weekStart.setUTCHours(0,0,0,0);weekStart.setDate(weekStart.getDate()-weekStart.getUTCDay());
+  const baseStart=new Date(now);baseStart.setUTCHours(0,0,0,0);baseStart.setDate(baseStart.getDate()-baseStart.getUTCDay());
+  const offset=S.calWeekOffset||0;
+  const weekStart=new Date(baseStart);weekStart.setDate(baseStart.getDate()+offset*7);
   const weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);weekEnd.setUTCHours(23,59,59,999);
   const weekEvs=evs.filter(e=>{const t=new Date(e.date).getTime();return t>=weekStart.getTime()&&t<=weekEnd.getTime()});
-  const evsByDay=new Map();weekEvs.forEach(e=>{const k=dk(e.date);(evsByDay.get(k)||evsByDay.set(k,[]).get(k)).push(e)});
+  const evsByDay=new Map();evs.forEach(e=>{const k=dk(e.date);(evsByDay.get(k)||evsByDay.set(k,[]).get(k)).push(e)});
+  const soonSet=calAlertSoon();
   let html=`<div class="cal-nav"><button class="btn" id="cal-prev" aria-label="Previous week">← Prev week</button><span class="cal-title">${weekStart.toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric'})} - ${weekEnd.toLocaleDateString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric','year':'numeric'})}</span><button class="btn" id="cal-next" aria-label="Next week">Next week →</button></div>`;
   html+=`<div class="cal-grid"><div class="cal-headers">${dow.map(d=>`<div class="cal-header">${d}</div>`).join('')}</div><div class="cal-weeks">`;
   let dayCursor=new Date(weekStart);
