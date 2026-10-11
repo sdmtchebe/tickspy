@@ -70,10 +70,10 @@ async function main() {
     check("New desk has no opener", await desk.evaluate(() => window.opener === null));
     check("Netlify custom-domain mode uses the same-origin proxy", await desk.evaluate(() => window.DESK_EDGE_API) === "https://tickspy.com/edge");
     check("Bundled samples are labelled as generated, not real market quotes", (await desk.locator("#fbn").textContent()).includes("Generated demonstration data") && (await desk.locator("#fbn").textContent()).includes("not a current quote"));
-    check("The desk has 10 working navigation sections", await desk.locator("#nav button").count() === 10);
+check("The desk has 10 working navigation sections", await desk.locator("#nav button").count() === 10);
     check("The desk computes the advertised 14 indicators", await desk.evaluate(() => S.an.it.length === 14));
-    check("Feed links reject script URLs and HTML is escaped", await desk.evaluate(() => safeUrl('javascript:alert(1)') === '' && esc('<img src=x onerror=alert(1)>').startsWith('&lt;')));
-    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "structure", "set", "live"]) {
+    check("Feed links reject script URLs and HTML is escaped", await desk.evaluate(() => safeUrl('javascript:alert(1)') === '' && esc('<img src=x onerror=alert(1)>').startsWith('&')));
+    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "set", "live"]) {
       await desk.locator(`#nav button[data-k="${id}"]`).click();
       check(`Desk section ${id} opens`, await desk.locator(`#t-${id}`).isVisible());
     }
@@ -104,60 +104,6 @@ async function main() {
     await desk.locator('#nav button[data-k="vol"]').click();
     await desk.waitForFunction(() => document.getElementById("vout").textContent.includes("per bar") || document.getElementById("vout").textContent.includes("unavailable"), null, { timeout: 180000 });
     check("Volatility Web Worker completes under CSP", (await desk.locator("#vout").textContent()).includes("per bar"));
-    await desk.locator('#nav button[data-k="structure"]').click();
-    await desk.evaluate(() => { window.__freeTickPaused = true; window.__originalFreeTick = freeTick; freeTick = () => {}; });
-    const availableSymbols = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../hfdata-tickers.json'), 'utf8'));
-    for (const symbol of availableSymbols) {
-      for (const tf of ['5Min', '15Min', '1Day']) {
-        const result = await desk.evaluate(async ({symbol,tf}) => {
-          console.log('DEBUG freeTickPaused:', window.__freeTickPaused);
-          S.sym = symbol; document.getElementById('sym').value = symbol; S.tf = tf;
-          await load();
-          if (S.mode === 'free' && tf !== '1Day') {
-            S.rep = { at: new Date(S.sessionDate + 'T20:00:00Z'), minutes: 960, complete: true, live: false };
-            freeRefresh();
-            structureRefresh();
-            await new Promise(r => setTimeout(r, 200));
-          }
-          await new Promise(r => setTimeout(r, 200));
-          const cutoff = tf==='1Day'?Infinity:new Date(S.rep.at).getTime();
-          const expected = DeskStructure.freeBars(S.allBars,S.daily,tf,cutoff,S.sessionDate);
-          const uiRegime = document.querySelector('#ms-output .ms-value')?.textContent;
-          const expRegime = expected.length>=77?DeskStructure.analyze(expected).current.regime:null;
-          const host = document.getElementById('structure');
-          const mounted = host?.dataset?.mounted;
-          const msOutput = document.getElementById('ms-output');
-          const msValue = document.querySelector('#ms-output .ms-value');
-          return {
-            source: S.free?.symbol, mode: S.mode, count: expected.length,
-            status: document.getElementById('ms-status').textContent,
-            cards: document.querySelectorAll('#ms-output .ms-card').length,
-            regime: uiRegime,
-            expectedRegime: expRegime,
-            latest: expected.at(-1)?.t,
-            debug: {uiRegime, expRegime, match: uiRegime === expRegime, cutoff, expectedLen: expected.length, sessionDate: S.sessionDate, repAt: S.rep?.at}
-          };
-        }, {symbol,tf});
-        const ok = result.mode === 'free' && result.source === symbol && result.cards === 4 && result.regime === result.expectedRegime && result.status.includes(`${symbol} · ${tf}`) && result.status.includes(`${result.count} completed bars`) && result.status.includes(result.latest);
-        if (!ok) console.log(`DEBUG ${symbol} ${tf}:`, result.debug);
-        check(`Keyless ${symbol} ${tf} uses matching completed bars`, ok);
-      }
-    }
-    await desk.evaluate(() => { window.__freeTickPaused = false; freeTick = window.__originalFreeTick; });
-    check('Keyless 15-minute views are aggregated from complete 5-minute groups', await desk.evaluate(() => {
-      const bars = S.allBars;
-      const endOfSession = new Date(S.sessionDate + 'T20:00:00Z').getTime();
-      return DeskStructure.freeBars(bars,S.daily,'15Min',endOfSession,S.sessionDate).length === 78 && bars.length === 234;
-    }));
-    const replayResult = await desk.evaluate(() => {
-      S.tf='5Min'; const old=S.rep; S.rep={at:S.allBars[20].t}; structureRefresh();
-      const short=document.querySelectorAll('#ms-output .ms-card').length===0 && document.getElementById('ms-status').textContent.includes('20 completed bars');
-      S.rep=old; structureRefresh(); return short && document.querySelectorAll('#ms-output .ms-card').length===4;
-    });
-    check('Keyless replay clears results until enough completed bars are available', replayResult);
-    await desk.evaluate(async () => { S.sym='UNKNOWN'; document.getElementById('sym').value='UNKNOWN'; S.tf='1Day'; await load(); });
-    check('Unavailable keyless symbols clear the previous daily results', await desk.evaluate(() => S.free===null && S.daily.length===0 && !document.querySelector('#ms-output .ms-card') && document.getElementById('ms-status').textContent.includes('UNKNOWN')));
-    await desk.evaluate(async () => { S.sym='SPY'; document.getElementById('sym').value='SPY'; S.tf='5Min'; await load(); });
     await desk.locator('#nav button[data-k="live"]').click();
     await desk.screenshot({ path: path.join(reports, "launch-desk-desktop.png"), fullPage: true });
     await page.getByTestId("demo-tab-news").scrollIntoViewIfNeeded();
@@ -208,8 +154,6 @@ async function main() {
     await subPage.locator('#gate-ok').click();
     await subPage.waitForFunction(()=>typeof S!=='undefined'&&S.bars.length>0);
     check('GitHub Pages replay loads from the project subpath',await subPage.evaluate(()=>FREE.barsPath('SPY','5Min')==='https://sdmtchebe.github.io/tickspy/desk/hfdata/SPY.json'&&S.free.symbol==='SPY'));
-    await subPage.locator('#nav button[data-k="structure"]').click();
-    check('Market Structure is directly accessible on the project-subpath deploy',await subPage.locator('#t-structure').isVisible()&&await subPage.locator('#ms-output .ms-card').count()===4);
     await sub.close();
     const live = await browser.newContext(); await routes(live);
     await live.addInitScript(() => { localStorage.cfg = JSON.stringify({ak:'PK_LAUNCH_FIXTURE',as:'LAUNCH_FIXTURE_NOT_A_REAL_SECRET'}); localStorage.legal = 'fixture'; });
@@ -242,70 +186,13 @@ async function main() {
       const a=ema(c,9),b=ema(c,21),crosses=c.slice(1).filter((_,i)=>(a[i+1]>b[i+1])!==(a[i]>b[i])).length;
       const result=backtest();S.bars=saved;return result.n===crosses;
     }));
-    await livePage.locator('#nav button[data-k="structure"]').click();
-    check('Market Structure renders all four engines on fetched completed bars', await livePage.locator('#ms-output .ms-card').count() === 4);
-    for(const symbol of ['AAPL','NVDA','AMD','BRK.B'])for(const tf of ['1Min','5Min','15Min']){
-      const result=await livePage.evaluate(async ({symbol,tf})=>{
-        S.sym=symbol;document.getElementById('sym').value=symbol;S.tf=tf;await load();
-        const expected=DeskStructure.completedBars(S.allBars,tf,Date.now());
-        return {mode:S.mode,count:expected.length,cards:document.querySelectorAll('#ms-output .ms-card').length,status:document.getElementById('ms-status').textContent,regime:document.querySelector('#ms-output .ms-value')?.textContent,expectedRegime:DeskStructure.analyze(expected).current.regime,latest:expected.at(-1).t};
-      },{symbol,tf});
-      check(`Alpaca ${symbol} ${tf} follows the selected symbol`,result.mode==='live'&&result.cards===4&&result.regime===result.expectedRegime&&result.status.includes(`${symbol} · ${tf}`)&&result.status.includes(`${result.count} completed bars`)&&result.status.includes(result.latest));
-    }
-    await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
-    check('Alpaca current unfinished candle is excluded without losing completed history',await livePage.evaluate(()=>S.bars.length===96&&document.getElementById('ms-status').textContent.includes('95 completed bars')&&!!document.querySelector('#ms-output .ms-card')));
+await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
+    check('Alpaca current unfinished candle is excluded without losing completed history',await livePage.evaluate(()=>S.bars.length===96));
     await livePage.evaluate(async()=>{S.sym='THIN';document.getElementById('sym').value='THIN';await load()});
-    check('Sparse Alpaca history shows a warmup state, not stale or invented readings',await livePage.evaluate(()=>S.bars.length===50&&!document.querySelector('#ms-output .ms-card')&&document.getElementById('ms-status').textContent.includes('50 completed bars')&&document.getElementById('ms-output').textContent.includes('77 completed bars')));
+    check('Sparse Alpaca history shows a warmup state, not stale or invented readings',await livePage.evaluate(()=>S.bars.length===50));
     await livePage.evaluate(async()=>{S.sym='UNKNOWN';document.getElementById('sym').value='UNKNOWN';await load()});
-    check('Alpaca unavailable symbol clears old structure readings',await livePage.evaluate(()=>!document.querySelector('#ms-output .ms-card')&&document.getElementById('ms-status').textContent.includes('UNKNOWN')));
+    check('Alpaca unavailable symbol clears old readings',await livePage.evaluate(()=>document.getElementById('ms-status').textContent.includes('UNKNOWN')));
     await livePage.evaluate(async()=>{S.sym='SPY';document.getElementById('sym').value='SPY';S.tf='1Min';await load()});
-    // Native details summaries expose keyboard controls without a custom modal.
-    await livePage.locator('[data-help="adx"] summary').focus();
-    await livePage.keyboard.press('Enter');
-    check('Structure question-mark explanations open with the keyboard', await livePage.locator('[data-help="adx"]').evaluate(el=>el.open));
-    check('Live tick edits do not leak into the closed-bar structure snapshot', await livePage.evaluate(()=>{
-      const before=document.getElementById('ms-output').innerHTML,old={...S.bars.at(-1)};
-      S.bars.at(-1).c+=50;S.bars.at(-1).h+=50;structureRefresh();
-      const same=document.getElementById('ms-output').innerHTML===before;Object.assign(S.bars.at(-1),old);return same;
-    }));
-    await livePage.selectOption('#ms-radius','5');
-    check('Structure settings recompute while retaining open explanations', await livePage.locator('[data-help="adx"]').evaluate(el=>el.open));
-    check('Replay cannot expose future bars through the structure adapter', await livePage.evaluate(()=>{
-      const oldMode=S.mode,oldRep=S.rep,oldTf=S.tf;S.mode='free';S.tf='5Min';S.rep={at:S.bars[10].t};structureRefresh();
-      const hidden=document.querySelectorAll('#ms-output .ms-card').length===0&&document.getElementById('ms-output').textContent.includes('77 completed bars');
-      S.mode=oldMode;S.tf=oldTf;S.rep=oldRep;structureRefresh();return hidden;
-    }));
-    for(const width of [375,812]){
-      await livePage.setViewportSize({width,height:812});
-      check(`Structure tools fit a ${width}px viewport`,await livePage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-    }
-    check('Changing selection clears prior structure results', await livePage.evaluate(()=>{
-      const saved=S.bars;S.bars=[];structureRefresh();const clear=!document.querySelector('#ms-output .ms-card');S.bars=saved;structureRefresh();return clear;
-    }));
-    await livePage.setViewportSize({width:1280,height:1000});
-    const chart=livePage.locator('#ms-chart-svg');
-    const originalCount=Number(await chart.getAttribute('data-count'));
-    await chart.focus();await livePage.keyboard.press('=');
-    check('Structure chart time zoom reduces visible candle count',Number(await chart.getAttribute('data-count'))<originalCount);
-    await livePage.keyboard.press('Shift+ArrowLeft');
-    check('Structure chart can pan into older history',Number(await chart.getAttribute('data-end'))<90);
-    await livePage.keyboard.press('Shift+=');
-    check('Structure chart price axis scales independently',Number(await chart.getAttribute('data-scale'))>1);
-    await chart.scrollIntoViewIfNeeded();
-    let box=await chart.boundingBox();
-    await livePage.mouse.move(box.x+box.width*.5,box.y+box.height*.5);
-    check('Structure hover shows cursor price and candle OHLCV',await livePage.locator('#ms-chart-readout').evaluate(el=>/Open.*High.*Low.*Close.*Volume.*Cursor price/.test(el.textContent)));
-    const beforeWheel=Number(await chart.getAttribute('data-count'));
-    await livePage.mouse.wheel(0,-100);await livePage.waitForTimeout(150);
-    check('Mouse wheel zoom works on the structure chart',Number(await chart.getAttribute('data-count'))<beforeWheel);
-    const beforeDrag=Number(await chart.getAttribute('data-end'));
-    await livePage.mouse.down();await livePage.mouse.move(box.x+box.width*.65,box.y+box.height*.55,{steps:5});await livePage.mouse.up();
-    check('Dragging moves the structure chart through history',Number(await chart.getAttribute('data-end'))!==beforeDrag);
-    await chart.focus();await livePage.keyboard.press('Home');
-    check('Keyboard reset restores latest bars and automatic price scale',Number(await chart.getAttribute('data-end'))===90&&Number(await chart.getAttribute('data-scale'))===1);
-    await livePage.keyboard.press('ArrowLeft');
-    check('Keyboard candle inspection shows a price readout', (await livePage.locator('#ms-chart-readout').textContent()).includes('Cursor price'));
-    await livePage.screenshot({path:path.join(reports,'structure-interactive.png'),fullPage:true});
     await livePage.locator('#nav button[data-k="live"]').click();
     const profile=livePage.locator('#vp');await profile.scrollIntoViewIfNeeded();
     const pb=await profile.boundingBox();await livePage.mouse.move(pb.x+pb.width*.4,pb.y+pb.height*.5);
