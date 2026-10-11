@@ -1,12 +1,13 @@
 # Market Structure integration
 
-Open **Tools → Market Structure** in the desk. It follows the selected symbol/timeframe and the free replay cutoff. The separate `Desktop/TickSPY-Structure-Lab` remains a synthetic-data sandbox.
+Open the dedicated **Market Structure** tab in the desk (next to Overview). It follows the selected symbol/timeframe and the free replay cutoff. The separate `Desktop/TickSPY-Structure-Lab` remains a synthetic-data sandbox.
 
 ## Modules
 
 - `structure-engine.js`: pure calculations; browser global `DeskStructure` and CommonJS exports for tests.
 - `structure-view.js`: local UI, explanatory `?` disclosures, settings, chart and table. No network or credential access.
 - `structure.css`: styles scoped to `#structure`.
+- `structure-chart.js`: time zoom (wheel/buttons), horizontal/vertical dragging, independent price scaling, cursor crosshair with OHLCV/price, and keyboard/touch inspection. Buttons provide alternatives to dragging. Panning changes the visible chart only; the models and zones continue describing the latest completed bar. Reset follows the latest bars again. Changing symbol, timeframe or mode resets the view.
 - `index.html`: calls `structureRefresh()` on each existing desk refresh.
 
 The four engines are the prototype's ADX/efficiency regime rules, Bollinger/Keltner compression scan, delayed pivot clustering with anchored average price, and adaptive CUSUM. Full formulas, thresholds and examples are in the UI under **How to read this • examples and math**. Thresholds are not calibrated probabilities. No profitable strategy or statistical accuracy has been demonstrated.
@@ -24,7 +25,7 @@ The four engines are the prototype's ADX/efficiency regime rules, Bollinger/Kelt
 - Pivots wait for 3, 5 or 8 subsequent completed bars. Rank reference samples exclude the current observation. The chart shows at most 100 bars; level detection uses up to 240, and the anchored average uses up to 120.
 - Recomputations are skipped when bars, selection and parameters are unchanged. Open help disclosures survive recalculation.
 
-No additional subscriptions, APIs or server keys were added. No new navigation tab is needed; existing Tools and all other tabs remain available.
+No additional subscriptions, APIs or server keys were added. Market Structure has its own navigation tab; Tools retains the existing calculators and scanner. Replay JSON URLs are resolved relative to the loaded freesrc.js, supporting both root hosting and GitHub Pages subfolders.
 
 ## Checks
 

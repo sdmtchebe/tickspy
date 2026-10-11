@@ -15,7 +15,7 @@ const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // Only the static assets the page actually loads. Secrets (local-config.js) are
 // deliberately never copied. edge-config.js holds only a public Worker URL, so
 // it is safe to publish.
-const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js", "structure-engine.js", "structure-view.js", "structure.css"];
+const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js", "structure-engine.js", "structure-chart.js", "structure-view.js", "structure.css", "profile.js"];
 const HFDATA_DIR = path.join(SRC_DIR, "hfdata");
 
 // desk/index.html loads local-config.js unconditionally, because that is how a
@@ -68,6 +68,10 @@ function main() {
 
   // Copy HF Data Library price data (desk/hfdata/*.json) if present
   if (fs.existsSync(HFDATA_DIR)) {
+    const defaultReplay = path.join(HFDATA_DIR, 'SPY.json');
+    if (!fs.existsSync(defaultReplay)) throw new Error('Missing desk/hfdata/SPY.json: the default keyless desk would return 404.');
+    const replay = JSON.parse(fs.readFileSync(defaultReplay, 'utf8'));
+    if (replay.symbol !== 'SPY' || !Array.isArray(replay.bars) || !replay.bars.length) throw new Error('Default SPY replay is empty or invalid.');
     const outHfdata = path.join(OUT_DIR, "hfdata");
     fs.mkdirSync(outHfdata, { recursive: true });
     const hfFiles = fs.readdirSync(HFDATA_DIR).filter(f => f.endsWith('.json'));
@@ -76,7 +80,7 @@ function main() {
     }
     console.log(`[sync-desk] bundled HF data -> ${path.relative(process.cwd(), outHfdata)} (${hfFiles.length} files)`);
   } else {
-    console.log("[sync-desk] no HF data directory found at ../desk/hfdata (will be created by scheduled function)");
+    throw new Error('Missing desk/hfdata: refusing to publish a broken keyless desk.');
   }
 }
 

@@ -70,10 +70,10 @@ async function main() {
     check("New desk has no opener", await desk.evaluate(() => window.opener === null));
     check("Netlify custom-domain mode uses the same-origin proxy", await desk.evaluate(() => window.DESK_EDGE_API) === "https://tickspy.com/edge");
     check("Bundled samples are labelled as generated, not real market quotes", (await desk.locator("#fbn").textContent()).includes("Generated demonstration data") && (await desk.locator("#fbn").textContent()).includes("not a current quote"));
-    check("The desk has 9 working navigation sections", await desk.locator("#nav button").count() === 9);
+    check("The desk has 10 working navigation sections", await desk.locator("#nav button").count() === 10);
     check("The desk computes the advertised 14 indicators", await desk.evaluate(() => S.an.it.length === 14));
     check("Feed links reject script URLs and HTML is escaped", await desk.evaluate(() => safeUrl('javascript:alert(1)') === '' && esc('<img src=x onerror=alert(1)>').startsWith('&lt;')));
-    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "set", "live"]) {
+    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "structure", "set", "live"]) {
       await desk.locator(`#nav button[data-k="${id}"]`).click();
       check(`Desk section ${id} opens`, await desk.locator(`#t-${id}`).isVisible());
     }
@@ -104,29 +104,50 @@ async function main() {
     await desk.locator('#nav button[data-k="vol"]').click();
     await desk.waitForFunction(() => document.getElementById("vout").textContent.includes("per bar") || document.getElementById("vout").textContent.includes("unavailable"), null, { timeout: 180000 });
     check("Volatility Web Worker completes under CSP", (await desk.locator("#vout").textContent()).includes("per bar"));
-    await desk.locator('#nav button[data-k="tools"]').click();
+    await desk.locator('#nav button[data-k="structure"]').click();
+    await desk.evaluate(() => { window.__freeTickPaused = true; window.__originalFreeTick = freeTick; freeTick = () => {}; });
     const availableSymbols = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../hfdata-tickers.json'), 'utf8'));
     for (const symbol of availableSymbols) {
       for (const tf of ['5Min', '15Min', '1Day']) {
         const result = await desk.evaluate(async ({symbol,tf}) => {
+          console.log('DEBUG freeTickPaused:', window.__freeTickPaused);
           S.sym = symbol; document.getElementById('sym').value = symbol; S.tf = tf;
           await load();
-          const expected = DeskStructure.freeBars(S.bars,S.daily,tf,tf==='1Day'?Infinity:new Date(S.rep.at).getTime(),S.sessionDate);
+          if (S.mode === 'free' && tf !== '1Day') {
+            S.rep = { at: new Date(S.sessionDate + 'T20:00:00Z'), minutes: 960, complete: true, live: false };
+            freeRefresh();
+            structureRefresh();
+            await new Promise(r => setTimeout(r, 200));
+          }
+          await new Promise(r => setTimeout(r, 200));
+          const cutoff = tf==='1Day'?Infinity:new Date(S.rep.at).getTime();
+          const expected = DeskStructure.freeBars(S.allBars,S.daily,tf,cutoff,S.sessionDate);
+          const uiRegime = document.querySelector('#ms-output .ms-value')?.textContent;
+          const expRegime = expected.length>=77?DeskStructure.analyze(expected).current.regime:null;
+          const host = document.getElementById('structure');
+          const mounted = host?.dataset?.mounted;
+          const msOutput = document.getElementById('ms-output');
+          const msValue = document.querySelector('#ms-output .ms-value');
           return {
             source: S.free?.symbol, mode: S.mode, count: expected.length,
             status: document.getElementById('ms-status').textContent,
             cards: document.querySelectorAll('#ms-output .ms-card').length,
-            regime: document.querySelector('#ms-output .ms-value')?.textContent,
-            expectedRegime: expected.length>=77?DeskStructure.analyze(expected).current.regime:null,
+            regime: uiRegime,
+            expectedRegime: expRegime,
             latest: expected.at(-1)?.t,
+            debug: {uiRegime, expRegime, match: uiRegime === expRegime, cutoff, expectedLen: expected.length, sessionDate: S.sessionDate, repAt: S.rep?.at}
           };
         }, {symbol,tf});
-        check(`Keyless ${symbol} ${tf} uses matching completed bars`, result.mode === 'free' && result.source === symbol && result.cards === 4 && result.regime === result.expectedRegime && result.status.includes(`${symbol} · ${tf}`) && result.status.includes(`${result.count} completed bars`) && result.status.includes(result.latest));
+        const ok = result.mode === 'free' && result.source === symbol && result.cards === 4 && result.regime === result.expectedRegime && result.status.includes(`${symbol} · ${tf}`) && result.status.includes(`${result.count} completed bars`) && result.status.includes(result.latest);
+        if (!ok) console.log(`DEBUG ${symbol} ${tf}:`, result.debug);
+        check(`Keyless ${symbol} ${tf} uses matching completed bars`, ok);
       }
     }
+    await desk.evaluate(() => { window.__freeTickPaused = false; freeTick = window.__originalFreeTick; });
     check('Keyless 15-minute views are aggregated from complete 5-minute groups', await desk.evaluate(() => {
-      const bars = S.allBars, at = new Date(S.rep.at).getTime();
-      return DeskStructure.freeBars(bars,S.daily,'15Min',at,S.sessionDate).length === 78 && bars.length === 234;
+      const bars = S.allBars;
+      const endOfSession = new Date(S.sessionDate + 'T20:00:00Z').getTime();
+      return DeskStructure.freeBars(bars,S.daily,'15Min',endOfSession,S.sessionDate).length === 78 && bars.length === 234;
     }));
     const replayResult = await desk.evaluate(() => {
       S.tf='5Min'; const old=S.rep; S.rep={at:S.allBars[20].t}; structureRefresh();
@@ -183,6 +204,12 @@ async function main() {
     const sub = await browser.newContext({ reducedMotion: "reduce" }); await routes(sub, "/tickspy");
     const subPage = await sub.newPage(); await subPage.goto("https://sdmtchebe.github.io/tickspy/");
     check("GitHub Pages subpath keeps the native desk link correct", await subPage.getByTestId("nav-open-app-button").evaluate((el) => el.href) === "https://sdmtchebe.github.io/tickspy/desk/index.html");
+    await subPage.goto('https://sdmtchebe.github.io/tickspy/desk/');
+    await subPage.locator('#gate-ok').click();
+    await subPage.waitForFunction(()=>typeof S!=='undefined'&&S.bars.length>0);
+    check('GitHub Pages replay loads from the project subpath',await subPage.evaluate(()=>FREE.barsPath('SPY','5Min')==='https://sdmtchebe.github.io/tickspy/desk/hfdata/SPY.json'&&S.free.symbol==='SPY'));
+    await subPage.locator('#nav button[data-k="structure"]').click();
+    check('Market Structure is directly accessible on the project-subpath deploy',await subPage.locator('#t-structure').isVisible()&&await subPage.locator('#ms-output .ms-card').count()===4);
     await sub.close();
     const live = await browser.newContext(); await routes(live);
     await live.addInitScript(() => { localStorage.cfg = JSON.stringify({ak:'PK_LAUNCH_FIXTURE',as:'LAUNCH_FIXTURE_NOT_A_REAL_SECRET'}); localStorage.legal = 'fixture'; });
@@ -215,7 +242,7 @@ async function main() {
       const a=ema(c,9),b=ema(c,21),crosses=c.slice(1).filter((_,i)=>(a[i+1]>b[i+1])!==(a[i]>b[i])).length;
       const result=backtest();S.bars=saved;return result.n===crosses;
     }));
-    await livePage.locator('#nav button[data-k="tools"]').click();
+    await livePage.locator('#nav button[data-k="structure"]').click();
     check('Market Structure renders all four engines on fetched completed bars', await livePage.locator('#ms-output .ms-card').count() === 4);
     for(const symbol of ['AAPL','NVDA','AMD','BRK.B'])for(const tf of ['1Min','5Min','15Min']){
       const result=await livePage.evaluate(async ({symbol,tf})=>{
@@ -255,7 +282,63 @@ async function main() {
     check('Changing selection clears prior structure results', await livePage.evaluate(()=>{
       const saved=S.bars;S.bars=[];structureRefresh();const clear=!document.querySelector('#ms-output .ms-card');S.bars=saved;structureRefresh();return clear;
     }));
+    await livePage.setViewportSize({width:1280,height:1000});
+    const chart=livePage.locator('#ms-chart-svg');
+    const originalCount=Number(await chart.getAttribute('data-count'));
+    await chart.focus();await livePage.keyboard.press('=');
+    check('Structure chart time zoom reduces visible candle count',Number(await chart.getAttribute('data-count'))<originalCount);
+    await livePage.keyboard.press('Shift+ArrowLeft');
+    check('Structure chart can pan into older history',Number(await chart.getAttribute('data-end'))<90);
+    await livePage.keyboard.press('Shift+=');
+    check('Structure chart price axis scales independently',Number(await chart.getAttribute('data-scale'))>1);
+    await chart.scrollIntoViewIfNeeded();
+    let box=await chart.boundingBox();
+    await livePage.mouse.move(box.x+box.width*.5,box.y+box.height*.5);
+    check('Structure hover shows cursor price and candle OHLCV',await livePage.locator('#ms-chart-readout').evaluate(el=>/Open.*High.*Low.*Close.*Volume.*Cursor price/.test(el.textContent)));
+    const beforeWheel=Number(await chart.getAttribute('data-count'));
+    await livePage.mouse.wheel(0,-100);await livePage.waitForTimeout(150);
+    check('Mouse wheel zoom works on the structure chart',Number(await chart.getAttribute('data-count'))<beforeWheel);
+    const beforeDrag=Number(await chart.getAttribute('data-end'));
+    await livePage.mouse.down();await livePage.mouse.move(box.x+box.width*.65,box.y+box.height*.55,{steps:5});await livePage.mouse.up();
+    check('Dragging moves the structure chart through history',Number(await chart.getAttribute('data-end'))!==beforeDrag);
+    await chart.focus();await livePage.keyboard.press('Home');
+    check('Keyboard reset restores latest bars and automatic price scale',Number(await chart.getAttribute('data-end'))===90&&Number(await chart.getAttribute('data-scale'))===1);
+    await livePage.keyboard.press('ArrowLeft');
+    check('Keyboard candle inspection shows a price readout', (await livePage.locator('#ms-chart-readout').textContent()).includes('Cursor price'));
+    await livePage.screenshot({path:path.join(reports,'structure-interactive.png'),fullPage:true});
+    await livePage.locator('#nav button[data-k="live"]').click();
+    const profile=livePage.locator('#vp');await profile.scrollIntoViewIfNeeded();
+    const pb=await profile.boundingBox();await livePage.mouse.move(pb.x+pb.width*.4,pb.y+pb.height*.5);
+    check('Volume profile hover reports price bucket and estimated shares',(await livePage.locator('#vp-readout').textContent()).includes('Price ')&&(await livePage.locator('#vp-readout').textContent()).includes('Estimated volume'));
+    await livePage.mouse.wheel(0,-150);await livePage.waitForTimeout(100);
+    check('Volume profile supports price-scale zoom',Number(await profile.getAttribute('data-zoom'))>1);
+    await profile.focus();await livePage.keyboard.press('Home');await livePage.keyboard.press('ArrowUp');
+    check('Volume profile can be inspected using the keyboard',(await livePage.locator('#vp-readout').textContent()).includes('Price '));
     await live.close();
+    const touch = await browser.newContext({viewport:{width:375,height:812},hasTouch:true,reducedMotion:'reduce'});await routes(touch);
+    const touchPage=await touch.newPage();await touchPage.goto('https://tickspy.com/desk/');await touchPage.locator('#gate-ok').click();
+    await touchPage.waitForSelector('#ms-chart-svg',{state:'attached'});await touchPage.locator('#nav button[data-k="structure"]').click();
+    await touchPage.locator('#ms-chart-svg').tap();
+    check('Touching the chart reveals candle prices on mobile',(await touchPage.locator('#ms-chart-readout').textContent()).includes('Cursor price'));
+    check('Interactive structure tab fits mobile width',await touchPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    await touchPage.locator('#nav button[data-k="live"]').click();await touchPage.locator('#vp').tap();
+    check('Volume profile touch shows price and volume',(await touchPage.locator('#vp-readout').textContent()).includes('Estimated volume'));
+    await touch.close();
+    const guides=await browser.newContext();await routes(guides);const guidePage=await guides.newPage();
+    const {pages:guideDefinitions}=require('./build-desk-guides');
+    for(const guide of guideDefinitions){
+      await guidePage.goto(`https://tickspy.com/desk/${guide.slug}/`);
+      check(`Searchable ${guide.slug} page has content, canonical URL and working exercise`,await guidePage.locator('h1').isVisible()&&(await guidePage.locator('#answer').textContent()).length>15&&await guidePage.locator('link[rel="canonical"]').getAttribute('href')===`https://tickspy.com/desk/${guide.slug}/`&&await guidePage.locator('#illustration polyline').count()===1);
+      await guidePage.setViewportSize({width:375,height:812});
+      check(`${guide.slug} guide fits mobile`,await guidePage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    }
+    await guidePage.goto('https://tickspy.com/desk/tools/');
+    check('Position-size worked example gives 62 shares and 3:1 ratio',/Shares: 62/.test(await guidePage.locator('#answer').textContent())&&/Reward\/risk: 3 : 1/.test(await guidePage.locator('#answer').textContent()));
+    await guidePage.locator('#stop').fill('100');check('Guide rejects a zero stop distance',(await guidePage.locator('#answer').textContent()).includes('opposite sides'));
+    await guidePage.goto('https://tickspy.com/desk/overview/');check('VWAP example equals 11.5',(await guidePage.locator('#answer').textContent()).includes('$11.5'));
+    await guidePage.goto('https://tickspy.com/desk/index.html#tools');await guidePage.locator('#gate-ok').click();
+    check('Learning-page deep link opens the correct desk tab',await guidePage.locator('#t-tools').isVisible());
+    await guides.close();
     const bad = await browser.newContext(); await routes(bad, "", true);
     await bad.addInitScript(() => { localStorage.cfg = "broken"; localStorage.alerts = "null"; localStorage.wl = "{}"; localStorage.legal = "fixture"; });
     const badPage = await bad.newPage(); const badErrors = []; badPage.on("pageerror", (e) => badErrors.push(e.message));

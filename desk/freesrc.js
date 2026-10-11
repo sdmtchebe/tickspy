@@ -24,6 +24,9 @@
  */
 (function (root) {
   "use strict";
+  // Capture while the script is executing; currentScript is null during fetch.
+  var DATA_BASE = typeof document !== "undefined" && document.currentScript
+    ? new URL("hfdata/", document.currentScript.src).href : "/desk/hfdata/";
 
   var RTH_OPEN = 9 * 60 + 30; // 09:30 ET
   var RTH_CLOSE = 16 * 60; // 16:00 ET
@@ -210,7 +213,7 @@
   /* --------------------------------------------------------------- fetch -- */
 
   function hfdataUrl(symbol, tf) {
-    return "/desk/hfdata/" + encodeURIComponent(String(symbol || "").toUpperCase()) + ".json";
+    return DATA_BASE + encodeURIComponent(String(symbol || "").toUpperCase()) + ".json";
   }
 
   function barsPath(symbol, tf) {
@@ -223,7 +226,7 @@
 
   async function fetchHfdata(url) {
     const res = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + url);
+    if (!res.ok) throw new Error(res.status === 404 ? 'No bundled replay file for this symbol at ' + url + '. If this is SPY, redeploy the complete build folder, including desk/hfdata.' : 'HTTP ' + res.status + ' for ' + url);
     return res.json();
   }
 

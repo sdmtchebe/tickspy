@@ -57,6 +57,9 @@ export const Footer = () => {
             <a href="privacy.html" className="link-quiet">Privacy and cookies</a>
             <a href="terms.html" className="link-quiet">Terms and risk disclosure</a>
             <a href="mailto:tickspysupport@gmail.com" className="link-quiet">Support</a>
+            <a href="desk/overview/" className="link-quiet">Learn the desk</a>
+            <a href="desk/tools/" className="link-quiet">Risk calculators</a>
+            <a href="desk/volatility/" className="link-quiet">ATR and volatility</a>
             <p>No accounts, no server of ours holding your keys.</p>
           </div>
         </div>

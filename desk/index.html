@@ -199,7 +199,8 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div id="ro" class="ai">Enter entry and stop.</div><div class="disc">Illustrative arithmetic only. It is not tailored to your circumstances and is not investment advice.</div></div></div>
 <div class="panel"><h2>Backtester</h2><div class="pbody"><p class="x">Replays an EMA 9/21 crossover on the loaded bars, long above and short below. One short window and no costs: a sanity check, not proof.</p><details class="exp"><summary aria-label="Explain the backtest rule">?</summary><p class="iexp">The rule is fixed and simple: go long when the 9-period EMA crosses above the 21-period EMA, go short when it crosses below, and flip on the next opposite cross. It runs only on the bars currently loaded, with no costs, no slippage and no position sizing, so it says whether the rule was consistent in this window - not whether it makes money.</p></details><div class="row"><button class="btn" id="btb">Run backtest</button></div><div id="bto" class="ai">Not run yet.</div><div class="disc"><b>Hypothetical results.</b> Backtests are simulated on past data, exclude commissions, fees, slippage, taxes and borrow costs, and cover a single short window. They are a sanity check on a rule, not evidence of future performance, and not investment advice.</div></div></div>
 <div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><details class="exp"><summary aria-label="Explain the scanner">?</summary><p class="iexp">Shows which symbols are trading the most volume right now (most active) and which moved the most, up or down (top movers). Without Alpaca keys it instead ranks the largest moves among the symbols in your own watchlist, from the free daily feed, and says so on screen.</p></details><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
-</div><div class="panel" id="structure"><h2>Market Structure</h2><p class="x" style="padding:12px">Loading the learning tools…</p></div></section>
+</div></section>
+<section class="tab" id="t-structure"><div class="panel" id="structure"><h2>Market Structure</h2><p class="x" style="padding:12px">Loading the learning tools…</p></div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
 <p class="x" style="margin-top:0"><b>These keys are optional.</b> The desk already works with no account at all: it shows the previous completed session, replayed as if live, from a free public end-of-day source. Adding your own free Alpaca keys upgrades it to current prices, 1-minute bars, the live trade stream and the symbol's own news feed.</p>
@@ -236,6 +237,8 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <script src="volmodel2.js"></script>
 <script src="freesrc.js"></script>
 <script src="structure-engine.js"></script>
+<script src="structure-chart.js"></script>
+<script src="profile.js"></script>
 <script src="structure-view.js"></script>
 <script>
 const $=s=>document.querySelector(s);
@@ -270,7 +273,7 @@ const netErr=e=>{const m=String((e&&e.message)||e);
  return DESK_API!==null?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':'Could not reach the data source. Check your connection and try again.'};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
 const S={sym:'SPY',tf:'1Min',tfLive:'1Min',mode:null,bars:[],allBars:null,daily:[],sessionDate:null,free:null,rep:null,tz:null,tzCoverage:null,mtfRows:null,price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set(),mnews:null,mnewsAt:0};
-const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['set','Settings']];
+const TABS=[['live','Overview'],['structure','Market Structure'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['set','Settings']];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Which remote URL is safe to put in an href. esc() stops a value breaking out
    of the attribute, but it would happily pass "javascript:..." through, and a
@@ -281,6 +284,10 @@ const safeUrl=u=>{const s=String(u==null?'':u).trim();return /^https?:\/\//i.tes
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Positive':s<0?'Negative':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
+const guideSlugs={live:'overview',structure:'structure',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',set:'settings'};
+const guideNav=document.createElement('details');guideNav.style.cssText='margin:12px 0;padding:10px;border:1px solid var(--gb);border-radius:8px';
+guideNav.innerHTML='<summary>Learn each desk tab</summary>'+TABS.map(([k,n])=>`<p class="x"><a href="${guideSlugs[k]}/">${n}: guide and exercise ↗</a></p>`).join('');
+$('#nav').after(guideNav);
 /* Switching tabs used to leave the scroll exactly where it was, so on a short
    screen the panel just chosen was still below the fold and it looked like the
    click had done nothing. Bring it into view when it is not already there. */
@@ -385,11 +392,11 @@ function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayA
  S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
 function freeBanner(){if(S.mode!=='free'){banner('');return}
    if(S.free?.source==='mock'){
-     banner(`<b>Demonstration mode — generated candles.</b> ${esc(FREE.labelled(S.free))} <a href="#" id="fbn-go">Want current market prices? Add your own Alpaca keys</a>`);
+     banner(`<b>Free mode — no account, no key.</b> ${esc(FREE.labelled(S.free))} <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`);
      return;
    }
    const freeMsg=`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`;
-  const iexMsg='<span class="muted" style="margin-left:12px">⚠ Data sourced from IEX exchange only (~2–3% of consolidated volume; not NBBO).</span>';
+  const iexMsg=S.free?.source==='hfdatalibrary'?'<span class="muted" style="margin-left:12px">IEX-only data is not the NBBO.</span>':'';
   banner(freeMsg + iexMsg)}
 /* One tick a second, same as the clock: recompute where the replay should be and
    redraw only when it has actually moved. */
@@ -401,10 +408,12 @@ function freeTick(){if(S.mode!=='free'||!S.allBars||S.tf==='1Day')return;
 // array replaces this snapshot, including any provider corrections.
 let structureReference=null,structureSnapshot=[];
 function structureRefresh(){
- if(!window.StructureDesk)return;
- if(structureReference!==S.bars){structureReference=S.bars;structureSnapshot=S.bars.map(b=>({...b}))}
- const cutoff=S.mode==='live'?Date.now():S.tf==='1Day'?Infinity:S.rep?new Date(S.rep.at).getTime():0;
- window.StructureDesk.update({bars:S.mode==='live'?structureSnapshot:S.bars,daily:S.daily,sessionDate:S.sessionDate,source:S.free?.source,symbol:S.sym,tf:S.tf,mode:S.mode,cutoff});
+  if(!window.StructureDesk)return;
+  if(S.mode==='live'){
+    if(structureReference!==S.bars){structureReference=S.bars;structureSnapshot=S.bars.map(b=>({...b}))}
+  }
+  const cutoff=S.mode==='live'?Date.now():S.tf==='1Day'?Infinity:S.rep?new Date(S.rep.at).getTime():0;
+  window.StructureDesk.update({bars:S.mode==='live'?structureSnapshot:S.allBars,daily:S.daily,sessionDate:S.sessionDate,source:S.free?.source,symbol:S.sym,tf:S.tf,mode:S.mode,cutoff});
 }
 function refresh(){analyze();draw();head();render();structureRefresh()}
 /* In free mode the change is measured against the previous session's close, not
@@ -680,7 +689,7 @@ function draw(){const cv=$('#cv'),x=cv.getContext('2d'),d=devicePixelRatio||1,W=
   let bi=Math.round((cx-48)/step+frac-.5);bi=Math.max(0,Math.min(N-1,bi));const b=B[bi],ts=b.t.toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}),tw=x.measureText(ts).width+10,tx=Math.max(46,Math.min(W-tw,cx-tw/2));x.fillStyle='#D9A441';x.fillRect(tx,H-VB-20,tw,16);x.fillStyle='#0E1116';x.fillText(ts,tx+5,H-VB-8);
   if(inBand){const u=b.c>=b.o,lns=['Vol '+Math.round(b.v).toLocaleString()+'  ('+(u?'up':'down')+')',b.t.toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}),'O '+b.o.toFixed(2)+'  H '+b.h.toFixed(2)+'  L '+b.l.toFixed(2)+'  C '+b.c.toFixed(2)],bw3=Math.max(...lns.map(s=>x.measureText(s).width))+14,bx3=Math.max(4,Math.min(W-bw3-4,cx-bw3/2)),by3=H-VB-52;
    x.fillStyle='rgba(12,16,22,.95)';x.fillRect(bx3,by3,bw3,46);x.strokeStyle=u?'#3DBE8B':'#E5605F';x.strokeRect(bx3+.5,by3+.5,bw3-1,45);x.fillStyle='#E6EAF0';lns.forEach((s,k)=>x.fillText(s,bx3+7,by3+15+k*13))}}}
-function drawVP(){const cv=$('#vp');if(!cv||!S.bars.length||!cv.clientWidth)return;const x=cv.getContext('2d'),d=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*d;cv.height=H*d;x.scale(d,d);x.clearRect(0,0,W,H);
+function drawVP(){if(window.DeskProfile){window.DeskProfile.render(S.bars,`${S.sym}|${S.tf}|${S.mode}`);return}const cv=$('#vp');if(!cv||!S.bars.length||!cv.clientWidth)return;const x=cv.getContext('2d'),d=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*d;cv.height=H*d;x.scale(d,d);x.clearRect(0,0,W,H);
  const bars=S.bars.slice(-90);if(!bars.length)return;const V=volProfile(bars),mxv=Math.max(...V.arr)||1,tot=V.arr.reduce((a,b)=>a+b,0)||1;
  const top=22,bot=8,ph=H-top-bot,gut=60,plot=Math.max(20,W-gut),hi=V.lo+V.step*V.bins;
  const yb=i=>top+((V.bins-1-i)+.5)/V.bins*ph,pxAt=i=>V.lo+(i+.5)*V.step;
@@ -1095,7 +1104,9 @@ addEventListener('resize',()=>{fitScale();draw();if(S.vol)drawVolChart(S.vol.ser
 setInterval(news,12e4);setInterval(newsRender,3e4);
 // The clock still ticks once a second, but sessRender() now rewrites only the
 // seconds text unless the phase or the next event actually changed.
-setInterval(()=>{sessRender();freeTick()},1000);
+window.__freeTickPaused = false;
+function freeTickSafe(){if(window.__freeTickPaused)return;freeTick()}
+setInterval(()=>{sessRender();freeTickSafe()},1000);
 // Alerts get their own cadence, so they no longer depend on the chart redrawing.
 setInterval(alerCheck,5000);setInterval(calAlertTick,10000);
 // cal() guards itself: this only refetches when its cache is stale or the
@@ -1107,5 +1118,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)return;prim
 sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
 $('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();
-alertRender();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go('live',false);load();
+function requestedTab(){const id=location.hash.slice(1);return TABS.some(([k])=>k===id)?id:'live'}
+window.addEventListener('hashchange',()=>go(requestedTab()));
+alertRender();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go(requestedTab(),false);load();
 </script></body></html>
