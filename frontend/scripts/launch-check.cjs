@@ -105,8 +105,8 @@ check("The desk has 11 working navigation sections", await desk.locator("#nav bu
     await desk.waitForFunction(() => document.getElementById("vout").textContent.includes("per bar") || document.getElementById("vout").textContent.includes("unavailable"), null, { timeout: 180000 });
     check("Volatility Web Worker completes under CSP", (await desk.locator("#vout").textContent()).includes("per bar"));
     await desk.locator('#nav button[data-k="structure"]').click();
-    await desk.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 4, null, { timeout: 10000 });
-    check("Market Structure renders all four engines", await desk.locator('#ms-output .ms-card').count() === 4);
+    await desk.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 5, null, { timeout: 10000 });
+    check("Market Structure renders four engines plus research panel", await desk.locator('#ms-output .ms-card').count() === 5);
     await desk.locator('#nav button[data-k="live"]').click();
     await desk.screenshot({ path: path.join(reports, "launch-desk-desktop.png"), fullPage: true });
     await page.getByTestId("demo-tab-news").scrollIntoViewIfNeeded();
@@ -190,8 +190,8 @@ check("The desk has 11 working navigation sections", await desk.locator("#nav bu
       const result=backtest();S.bars=saved;return result.n===crosses;
     }));
 await livePage.locator('#nav button[data-k="structure"]').click();
-    await livePage.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 4, null, { timeout: 10000 });
-    check('Market Structure renders all four engines on fetched completed bars', await livePage.locator('#ms-output .ms-card').count() === 4);
+    await livePage.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 5, null, { timeout: 10000 });
+    check('Market Structure renders four engines plus research panel', await livePage.locator('#ms-output .ms-card').count() === 5);
     await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
     check('Alpaca current unfinished candle is excluded without losing completed history',await livePage.evaluate(()=>S.bars.length===96));
     await livePage.evaluate(async()=>{S.sym='THIN';document.getElementById('sym').value='THIN';await load()});

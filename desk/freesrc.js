@@ -238,7 +238,7 @@
     const urls = symbolsPath(symbols, tf);
     const results = await Promise.all(urls.map(u => fetchHfdata(u).catch(() => null)));
     const bars = {};
-    results.forEach((r, i) => { if (r && r.bars) bars[symbols[i]] = r.bars; });
+    results.forEach((r, i) => { if (r) bars[symbols[i]] = (tf === '1Day' ? r.daily : r.bars) || []; });
     return { bars };
   }
 

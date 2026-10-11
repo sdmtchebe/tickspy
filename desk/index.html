@@ -287,8 +287,8 @@ const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'-
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
 const guideSlugs={live:'overview',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',structure:'structure',learn:'learn',set:'settings'};
-const learnTabs=TABS.filter(([k])=>k!=='learn'&&k!=='set');
-document.getElementById('learn-links').innerHTML='<nav><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">'+learnTabs.map(([k,n])=>`<li><a href="../${guideSlugs[k]}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')+'</ul></nav>';
+const learnTabs=TABS.filter(([k])=>k!=='learn');
+document.getElementById('learn-links').innerHTML='<nav aria-label="Learning guides"><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">'+learnTabs.map(([k,n])=>`<li><a href="./${guideSlugs[k]}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')+'</ul></nav>';
 /* Switching tabs used to leave the scroll exactly where it was, so on a short
    screen the panel just chosen was still below the fold and it looked like the
    click had done nothing. Bring it into view when it is not already there. */
@@ -389,7 +389,7 @@ async function loadFree(version){
 /* The revealed slice of the previous session. Everything downstream reads S.bars,
    so the replay only has to move this one line. */
 function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayAt(Date.now(),S.sessionDate);S.rep=rep;
- S.bars=S.tf==='1Day'?S.allBars.slice():FREE.reveal(S.allBars,rep.at);
+ S.bars=DeskStructure.freeBars(S.allBars,S.daily,S.tf,new Date(rep.at).getTime(),S.sessionDate).map(b=>({...b,t:new Date(b.t)}));
  S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
 function freeBanner(){if(S.mode!=='free'){banner('');return}
    if(S.free?.source==='mock'){
@@ -434,7 +434,7 @@ function stream(){if(S.mode!=='live')return;S.ws?.close();const c=cfg(),w=S.ws=n
   w.onmessage=m=>{if(S.ws!==w||S.mode!=='live'||sym!==S.sym)return;let data;try{data=JSON.parse(m.data)}catch(_){return}for(const d of [].concat(data)){
   if(d.T=='success'&&d.msg=='authenticated'){w.send(JSON.stringify({action:'subscribe',trades:[sym],bars:[sym]}));$('#st').textContent='Live (IEX real-time)'}
   else if(d.T=='error')$('#st').textContent='Stream: '+d.msg;
-  else if(d.T=='t'&&sym==S.sym){S.price=d.p;const b=S.bars.at(-1);if(b){b.c=d.p;b.h=Math.max(b.h,d.p);b.l=Math.min(b.l,d.p)}if(Date.now()-lastRef>1500){lastRef=Date.now();refresh()}}
+   else if(d.T=='t'&&sym==S.sym){S.price=d.p;if(Date.now()-lastRef>1500){lastRef=Date.now();refresh()}}
   else if(d.T=='b'&&sym==S.sym)load2()}};
  w.onclose=()=>{if(S.ws==w)$('#st').textContent='Disconnected'}}
  let l2=0;function load2(){if(S.mode!=='live'||Date.now()-l2<20000)return;l2=Date.now();const version=loadVersion,k=S.sym,st=new Date(Date.now()-6*864e5).toISOString();alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`).then(j=>{if(version!==loadVersion||k!=S.sym)return;S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}).catch(()=>{})}
@@ -445,17 +445,17 @@ const tfAlign=(closes,n=9,m=21)=>{const c=closes||[];if(c.length<Math.max(n,m)+2
 function mtfSet(rows,err){S.mtfRows=rows;S.mtf=err?{err}:{score:(rows||[]).reduce((a,x)=>a+x.v,0)};mtfRender()}
 async function mtf(){if(S.mode!=='live')return mtfFree();if(!cfg().ak)return;const version=loadVersion,sym=S.sym;
  try{const out=[];for(const tf of ['5Min','15Min']){const st=new Date(Date.now()-10*864e5).toISOString();const j=await alp(`/v2/stocks/${sym}/bars?timeframe=${tf}&start=${st}&limit=200&sort=desc&feed=iex&adjustment=raw`);if(version!==loadVersion)return;out.push({n:tf.replace('Min',' min'),v:tfAlign((j.bars||[]).reverse().map(b=>b.c))})}
- out.unshift({n:'1 min',v:S.an?tfAlign(S.bars.map(b=>b.c)):0});mtfSet(out)}catch(e){if(version===loadVersion)mtfSet(null,e.message)}}
+  if(!out.some(r=>r.n===S.tf.replace('Min',' min')))out.unshift({n:S.tf.replace('Min',' min'),v:S.an?tfAlign(S.bars.map(b=>b.c)):0});mtfSet(out)}catch(e){if(version===loadVersion)mtfSet(null,e.message)}}
 /* Free mode replaces 1-minute alignment with the daily one the source can
    actually supply, and reveals only the part of the session that has been
    replayed so far - reading the whole session here would be look-ahead. */
 async function mtfFree(){const version=loadVersion;try{
-  const [a,b]=await Promise.all([FREE.fetchBars(S.sym,'5Min'),FREE.fetchBars(S.sym,'15Min')]);
+   const a=await FREE.fetchBars(S.sym,'5Min');
   if(version!==loadVersion)return;
   const cut=S.rep?S.rep.at:new Date();
   mtfSet([
-   {n:'5 min',v:tfAlign(FREE.reveal((a.bars||[]).map(x=>({t:x.t,c:x.c})),cut).map(x=>x.c))},
-   {n:'15 min',v:tfAlign(FREE.reveal((b.bars||[]).map(x=>({t:x.t,c:x.c})),cut).map(x=>x.c))},
+    {n:'5 min',v:tfAlign(DeskStructure.freeBars(a.bars,a.daily,'5Min',new Date(cut).getTime(),a.sessionDate).map(x=>x.c))},
+    {n:'15 min',v:tfAlign(DeskStructure.freeBars(a.bars,a.daily,'15Min',new Date(cut).getTime(),a.sessionDate).map(x=>x.c))},
    {n:'1 day',v:tfAlign(S.daily.map(x=>x.c))},
    ])}catch(e){if(version===loadVersion)mtfSet(null,e.message)}}
 /* ---------- watchlist ---------- */
@@ -473,7 +473,7 @@ $('#waddb').onclick=()=>{wlAdd($('#wadd').value);$('#wadd').value='';wlRender()}
 $('#wadd').onkeydown=e=>{if(e.key=='Enter'){$('#waddb').click()}};
 /* ---------- math ---------- */
 const ema=(a,n)=>{const k=2/(n+1);let e=a[0];return a.map((x,i)=>i?e=x*k+e*(1-k):e)};
-function rsi(c,n=14){let g=0,l=0;for(let i=1;i<=n;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=n;l/=n;for(let i=n+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n}return 100-100/(1+g/(l||1e-9))}
+function rsi(c,n=14){let g=0,l=0;for(let i=1;i<=n;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=n;l/=n;for(let i=n+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n}return g+l===0?50:l===0?100:100-100/(1+g/l)}
 function bbw(c,i){const a=c.slice(i-19,i+1),m=avg(a),sd=Math.sqrt(avg(a.map(x=>(x-m)**2)));return{m,sd,w:4*sd/m*100}}
 const tpOf=b=>(b.h+b.l+b.c)/3;
 const etMin=b=>{const[h,m]=b.t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour12:false,hour:'2-digit',minute:'2-digit'}).split(':').map(Number);return h*60+m};
@@ -585,9 +585,12 @@ async function rsq(){if(S.mode==='free')return rsqFree();if(!cfg().ak)return;con
 /* Relative strength is measured on daily closes in free mode: it is a
    multi-session question, and the free feed has years of daily bars. */
 async function rsqFree(){const version=loadVersion,sym=S.sym;try{
-  const j=await edgeGet(FREE.symbolsPath([S.sym,'QQQ'],'1Day'),25000),m=j.bars||{};
+   const j=await FREE.fetchSymbols([sym,'QQQ'],'1Day'),m=j.bars||{};
   if(version!==loadVersion)return;
- const ch=k=>{const x=(m[k]||[]).map(v=>v.c);return x.length>1?(x.at(-1)/x[0]-1)*100:0};
+  const benchmark=new Map((m.QQQ||[]).map(b=>[b.t.slice(0,10),b.c]));
+  const common=(m[sym]||[]).filter(b=>benchmark.has(b.t.slice(0,10)));
+  if(common.length<2)throw Error('Not enough matching daily dates for a comparison.');
+  const ch=k=>{const x=common.map(b=>k===sym?b.c:benchmark.get(b.t.slice(0,10)));return(x.at(-1)/x[0]-1)*100};
   const s=ch(sym),q=ch('QQQ');S.rs={s,q,d:s-q};rsRender()}catch(e){if(version!==loadVersion)return;S.rs={err:e.message};rsRender()}}
 function rsRender(){const R=S.rs;if(!R){$('#rsx').innerHTML='<p class="x">Loading relative strength against QQQ...</p>';return}if(R.err){$('#rsx').innerHTML='<p class="x">RS error: '+esc(R.err)+'</p>';return}
   $('#rsx').innerHTML=`<div class="hrow"><span class="num ${cls(R.d)}" style="font-size:18px">${R.d>=0?'+':''}${f2(R.d)}%</span> <span class="${cls(R.d)}">${R.d>=0?'outperforming':'underperforming'} QQQ</span>${exp('Relative strength','How the symbol\u2019s percentage change compares with QQQ (a broad Nasdaq-100 fund) over the same window. Above zero means it beat the index, below means it lagged. In live mode the window is the loaded bars; with no keys it is the loaded daily bars.')}</div><p class="x">${esc(S.sym)} ${R.s>=0?'+':''}${f2(R.s)}% against QQQ ${R.q>=0?'+':''}${f2(R.q)}% over the loaded window.</p>`}
@@ -1105,9 +1108,7 @@ addEventListener('resize',()=>{fitScale();draw();if(S.vol)drawVolChart(S.vol.ser
 setInterval(news,12e4);setInterval(newsRender,3e4);
 // The clock still ticks once a second, but sessRender() now rewrites only the
 // seconds text unless the phase or the next event actually changed.
-window.__freeTickPaused = false;
-function freeTickSafe(){if(window.__freeTickPaused)return;freeTick()}
-setInterval(()=>{sessRender();freeTickSafe()},1000);
+setInterval(()=>{sessRender();freeTick()},1000);
 // Alerts get their own cadence, so they no longer depend on the chart redrawing.
 setInterval(alerCheck,5000);setInterval(calAlertTick,10000);
 // cal() guards itself: this only refetches when its cache is stale or the

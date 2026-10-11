@@ -95,6 +95,17 @@
    const vwap=volume?window.reduce((a,b)=>a+(b.h+b.l+b.c)/3*b.v,0)/volume:null;
    return{zones,bandwidth,radius,anchor,vwap,points};
  }
- function analyze(bars,options){validate(bars);const series=indicators(bars);return{series,current:series.at(-1),levels:keyLevels(bars,series.at(-1).atr,options)}}
-  return{analyze,indicators,keyLevels,percentile,completedBars,freeBars,validate};
+  function study(bars,series,horizon=5){
+    if(![1,5,10,20].includes(horizon))throw Error('Unsupported study horizon.');
+    const observations=[];
+    // Shared, non-overlapping time grid across regimes. Each label uses only
+    // its prefix; an outcome is included only when the full horizon is present.
+    for(let i=76;i+horizon<bars.length;i+=horizon){if(!series[i].ready)continue;
+      observations.push({index:i,end:i+horizon,regime:series[i].regime,ret:100*(bars[i+horizon].c/bars[i].c-1)});
+    }
+    const describe=xs=>{const sorted=xs.map(x=>x.ret).sort((a,b)=>a-b),n=sorted.length;return{n,mean:n?mean(sorted):null,median:n?(sorted[Math.floor((n-1)/2)]+sorted[Math.floor(n/2)])/2:null,positive:n?100*sorted.filter(x=>x>0).length/n:null}};
+    return{horizon,observations,baseline:describe(observations),groups:[...new Set(observations.map(x=>x.regime))].map(regime=>({regime,...describe(observations.filter(x=>x.regime===regime))}))};
+  }
+  function analyze(bars,options){validate(bars);const series=indicators(bars);return{series,current:series.at(-1),levels:keyLevels(bars,series.at(-1).atr,options)}}
+   return{analyze,indicators,keyLevels,percentile,completedBars,freeBars,validate,study};
 });

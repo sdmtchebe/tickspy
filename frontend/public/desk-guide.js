@@ -3,9 +3,9 @@
  const form=document.getElementById('exercise'),answer=document.getElementById('answer'),svg=document.getElementById('illustration');
  const f=x=>Number.isFinite(x)?x.toLocaleString('en-US',{maximumFractionDigits:4}):'not defined';
  const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
- const value=id=>{const raw=form.elements.namedItem(id).value;if(!raw.trim()||!Number.isFinite(Number(raw)))throw Error('Enter a finite number in every field.');return Number(raw)};
+ const value=id=>{const raw=form.elements.namedItem(id).value;if(!raw.trim()||!Number.isFinite(Number(raw))||Math.abs(Number(raw))>1e12)throw Error('Enter a finite number between −1 trillion and 1 trillion in every field.');return Number(raw)};
  const positive=id=>{const x=value(id);if(x<=0)throw Error('Prices, account values, risk percentages and intervals must be greater than zero.');return x};
- const list=id=>{const raw=form.elements.namedItem(id).value.split(',');if(raw.length>1000||raw.some(x=>!x.trim()))throw Error('Enter up to 1,000 comma-separated numbers without empty fields.');const a=raw.map(Number);if(a.some(x=>!Number.isFinite(x)||x<0))throw Error('List values must be finite and nonnegative.');return a};
+ const list=id=>{const raw=form.elements.namedItem(id).value.split(',');if(raw.length>1000||raw.some(x=>!x.trim()))throw Error('Enter up to 1,000 comma-separated numbers without empty fields.');const a=raw.map(Number);if(a.some(x=>!Number.isFinite(x)||x<0||x>1e12))throw Error('List values must be between zero and 1 trillion.');return a};
  const prices=id=>{const a=list(id);if(a.some(x=>x<=0))throw Error('Prices must be positive.');return a};
  function render(e){if(e)e.preventDefault();try{
   let text='',points=[],label='';const kind=form.dataset.kind;
@@ -18,9 +18,15 @@
   if(kind==='event'){const before=positive('before'),after=positive('after');text=`Window return: ${f(100*(after/before-1))}% · Price change: $${f(after-before)}\nThis does not establish what caused the move.`;points=[before,after];label='Before → after the selected event window';}
   if(kind==='alert'){const current=positive('current'),target=positive('target');text=`Distance: $${f(target-current)} (${f(100*(target/current-1))}%)\nThe threshold is ${target>=current?'at or above':'below'} your reference price.`;points=[current,target];label='Reference price → alert threshold';}
   if(kind==='history'){const bars=positive('bars'),minutes=positive('minutes');if(!Number.isInteger(bars))throw Error('Completed bar count must be an integer.');text=`${f(bars*minutes)} trading minutes · ${f(bars*minutes/390)} full-session equivalents\nActual calendar time is longer; missing bars may require more history.`;points=[0,bars*minutes];label='Required trading minutes (not calendar time)';}
-  if(!points.every(Number.isFinite)||!text)throw Error('Inputs exceed the supported numeric range.');answer.textContent=text;answer.style.color='';
+  if(!points.every(Number.isFinite)||!text||/not defined|NaN|Infinity/.test(text))throw Error('Inputs exceed the supported numeric range.');answer.textContent=text;answer.style.color='';
   const lo=Math.min(...points),hi=Math.max(...points),span=hi-lo||1,x=i=>40+i/Math.max(1,points.length-1)*550,y=v=>110-(v-lo)/span*80;
-  svg.innerHTML=`<text x="20" y="18" fill="#bac4d4" font-size="12">${label}</text><polyline fill="none" stroke="#72ddbb" stroke-width="2" points="${points.map((p,i)=>`${x(i)},${y(p)}`).join(' ')}"/><text x="20" y="145" fill="#bac4d4" font-size="12">Min ${f(lo)} · Max ${f(hi)} · Schematic, not market data</text>`;svg.setAttribute('aria-label',`${label}. Minimum ${f(lo)}, maximum ${f(hi)}.`);
- }catch(err){answer.textContent=err.message;answer.style.color='#ffaab7';svg.innerHTML=''}}
+  svg.innerHTML=`<text x="20" y="18" fill="#bac4d4" font-size="12">${label}</text><polyline fill="none" stroke="#72ddbb" stroke-width="2" points="${points.map((p,i)=>`${x(i)},${y(p)}`).join(' ')}"/><text x="20" y="145" fill="#bac4d4" font-size="12">Min ${f(lo)} · Max ${f(hi)} · Schematic, not market data</text><circle id="practice-cursor" r="4" fill="#a9cdff" visibility="hidden"/>`;svg.setAttribute('aria-label',`${label}. Minimum ${f(lo)}, maximum ${f(hi)}. Arrow keys inspect points.`);
+  let selected=0;const inspect=i=>{selected=Math.max(0,Math.min(points.length-1,i));const dot=document.getElementById('practice-cursor');dot.setAttribute('cx',x(selected));dot.setAttribute('cy',y(points[selected]));dot.setAttribute('visibility','visible');document.getElementById('practice-readout').textContent=`${label} · Point ${selected+1} of ${points.length}: ${f(points[selected])}`};
+  svg.onpointermove=svg.onpointerdown=e=>{const point=svg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;const p=point.matrixTransform(svg.getScreenCTM().inverse());inspect(Math.round((p.x-40)/550*(points.length-1)))};
+  svg.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();inspect(selected+(e.key==='ArrowLeft'?-1:1))}};
+  document.getElementById('practice-readout').textContent='Hover or touch the chart, or focus it and use arrow keys to inspect the values.';
+ }catch(err){answer.textContent=err.message;answer.style.color='#ffaab7';svg.innerHTML='';svg.onpointermove=svg.onpointerdown=svg.onkeydown=null;document.getElementById('practice-readout').textContent='Correct the inputs to restore the chart.'}}
+ svg.tabIndex=0;svg.insertAdjacentHTML('afterend','<p id="practice-readout" aria-live="polite"></p>');
+ const reset=document.createElement('button');reset.type='button';reset.textContent='Reset example';reset.onclick=()=>{form.reset();render()};form.append(reset);
  form.addEventListener('submit',render);form.addEventListener('input',render);render();
 })();
