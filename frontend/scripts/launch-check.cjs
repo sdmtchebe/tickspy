@@ -70,10 +70,10 @@ async function main() {
     check("New desk has no opener", await desk.evaluate(() => window.opener === null));
     check("Netlify custom-domain mode uses the same-origin proxy", await desk.evaluate(() => window.DESK_EDGE_API) === "https://tickspy.com/edge");
     check("Bundled samples are labelled as generated, not real market quotes", (await desk.locator("#fbn").textContent()).includes("Generated demonstration data") && (await desk.locator("#fbn").textContent()).includes("not a current quote"));
-check("The desk has 10 working navigation sections", await desk.locator("#nav button").count() === 10);
+check("The desk has 11 working navigation sections", await desk.locator("#nav button").count() === 11);
     check("The desk computes the advertised 14 indicators", await desk.evaluate(() => S.an.it.length === 14));
     check("Feed links reject script URLs and HTML is escaped", await desk.evaluate(() => safeUrl('javascript:alert(1)') === '' && esc('<img src=x onerror=alert(1)>').startsWith('&')));
-    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "set", "live"]) {
+    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "structure", "learn", "set", "live"]) {
       await desk.locator(`#nav button[data-k="${id}"]`).click();
       check(`Desk section ${id} opens`, await desk.locator(`#t-${id}`).isVisible());
     }
@@ -104,6 +104,9 @@ check("The desk has 10 working navigation sections", await desk.locator("#nav bu
     await desk.locator('#nav button[data-k="vol"]').click();
     await desk.waitForFunction(() => document.getElementById("vout").textContent.includes("per bar") || document.getElementById("vout").textContent.includes("unavailable"), null, { timeout: 180000 });
     check("Volatility Web Worker completes under CSP", (await desk.locator("#vout").textContent()).includes("per bar"));
+    await desk.locator('#nav button[data-k="structure"]').click();
+    await desk.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 4, null, { timeout: 10000 });
+    check("Market Structure renders all four engines", await desk.locator('#ms-output .ms-card').count() === 4);
     await desk.locator('#nav button[data-k="live"]').click();
     await desk.screenshot({ path: path.join(reports, "launch-desk-desktop.png"), fullPage: true });
     await page.getByTestId("demo-tab-news").scrollIntoViewIfNeeded();
@@ -186,7 +189,10 @@ check("The desk has 10 working navigation sections", await desk.locator("#nav bu
       const a=ema(c,9),b=ema(c,21),crosses=c.slice(1).filter((_,i)=>(a[i+1]>b[i+1])!==(a[i]>b[i])).length;
       const result=backtest();S.bars=saved;return result.n===crosses;
     }));
-await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
+await livePage.locator('#nav button[data-k="structure"]').click();
+    await livePage.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 4, null, { timeout: 10000 });
+    check('Market Structure renders all four engines on fetched completed bars', await livePage.locator('#ms-output .ms-card').count() === 4);
+    await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
     check('Alpaca current unfinished candle is excluded without losing completed history',await livePage.evaluate(()=>S.bars.length===96));
     await livePage.evaluate(async()=>{S.sym='THIN';document.getElementById('sym').value='THIN';await load()});
     check('Sparse Alpaca history shows a warmup state, not stale or invented readings',await livePage.evaluate(()=>S.bars.length===50));

@@ -200,7 +200,8 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="panel"><h2>Backtester</h2><div class="pbody"><p class="x">Replays an EMA 9/21 crossover on the loaded bars, long above and short below. One short window and no costs: a sanity check, not proof.</p><details class="exp"><summary aria-label="Explain the backtest rule">?</summary><p class="iexp">The rule is fixed and simple: go long when the 9-period EMA crosses above the 21-period EMA, go short when it crosses below, and flip on the next opposite cross. It runs only on the bars currently loaded, with no costs, no slippage and no position sizing, so it says whether the rule was consistent in this window - not whether it makes money.</p></details><div class="row"><button class="btn" id="btb">Run backtest</button></div><div id="bto" class="ai">Not run yet.</div><div class="disc"><b>Hypothetical results.</b> Backtests are simulated on past data, exclude commissions, fees, slippage, taxes and borrow costs, and cover a single short window. They are a sanity check on a rule, not evidence of future performance, and not investment advice.</div></div></div>
 <div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><details class="exp"><summary aria-label="Explain the scanner">?</summary><p class="iexp">Shows which symbols are trading the most volume right now (most active) and which moved the most, up or down (top movers). Without Alpaca keys it instead ranks the largest moves among the symbols in your own watchlist, from the free daily feed, and says so on screen.</p></details><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
 </div></section>
-<section class="tab" id="t-learn"><div class="panel"><h2>Learn each desk tab</h2><div class="pbody"><p class="x">Plain-English guides with interactive exercises for every desk tab. No jargon, no hype, nothing uploaded.</p><nav><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">${TABS.filter(([k])=>k!=='learn'&&k!=='set').map(([k,n])=>`<li><a href="../${k}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')}</ul></nav><p class="x" style="margin-top:12px">Each page has a plain-English explanation, an interactive calculator/chart, a worked example, and the math behind it. Open any page, try your own numbers, then open the matching desk tab to apply it.</p></div></div></section>
+<section class="tab" id="t-structure"><div class="panel" id="structure"><h2>Market Structure</h2><p class="x" style="padding:12px">Loading the learning tools…</p></div></section>
+<section class="tab" id="t-learn"><div class="panel"><h2>Learn each desk tab</h2><div class="pbody"><p class="x">Plain-English guides with interactive exercises for every desk tab. No jargon, no hype, nothing uploaded.</p><div id="learn-links"></div><p class="x" style="margin-top:12px">Each page has a plain-English explanation, an interactive calculator/chart, a worked example, and the math behind it. Open any page, try your own numbers, then open the matching desk tab to apply it.</p></div></div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
 <p class="x" style="margin-top:0"><b>These keys are optional.</b> The desk already works with no account at all: it shows the previous completed session, replayed as if live, from a free public end-of-day source. Adding your own free Alpaca keys upgrades it to current prices, 1-minute bars, the live trade stream and the symbol's own news feed.</p>
@@ -236,6 +237,10 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <script src="volmodel.js"></script>
 <script src="volmodel2.js"></script>
 <script src="freesrc.js"></script>
+<script src="structure-engine.js"></script>
+<script src="structure-chart.js"></script>
+<script src="profile.js"></script>
+<script src="structure-view.js"></script>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -270,7 +275,7 @@ const netErr=e=>{const m=String((e&&e.message)||e);
  return DESK_API!==null?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':'Could not reach the data source. Check your connection and try again.'};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
 const S={sym:'SPY',tf:'1Min',tfLive:'1Min',mode:null,bars:[],allBars:null,daily:[],sessionDate:null,free:null,rep:null,tz:null,tzCoverage:null,mtfRows:null,price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set(),mnews:null,mnewsAt:0};
-const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['learn','Learn'],['set','Settings']];
+const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['structure','Market Structure'],['learn','Learn'],['set','Settings']];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Which remote URL is safe to put in an href. esc() stops a value breaking out
    of the attribute, but it would happily pass "javascript:..." through, and a
@@ -281,7 +286,9 @@ const safeUrl=u=>{const s=String(u==null?'':u).trim();return /^https?:\/\//i.tes
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Positive':s<0?'Negative':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
 $('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
-const guideSlugs={live:'overview',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',learn:'learn',set:'settings'};
+const guideSlugs={live:'overview',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',structure:'structure',learn:'learn',set:'settings'};
+const learnTabs=TABS.filter(([k])=>k!=='learn'&&k!=='set');
+document.getElementById('learn-links').innerHTML='<nav><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">'+learnTabs.map(([k,n])=>`<li><a href="../${guideSlugs[k]}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')+'</ul></nav>';
 /* Switching tabs used to leave the scroll exactly where it was, so on a short
    screen the panel just chosen was still below the fold and it looked like the
    click had done nothing. Bring it into view when it is not already there. */
