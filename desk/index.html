@@ -110,19 +110,18 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 #toast{position:fixed;right:14px;bottom:14px;z-index:20;display:flex;flex-direction:column;gap:8px;max-width:340px}
 #toast .t{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:9px 12px;font-size:12.5px;box-shadow:0 16px 40px rgba(0,0,0,.55),var(--rim);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.banner{display:block;background:rgba(79,125,255,.10);border-bottom:1px solid rgba(79,125,255,.42);color:var(--cobalt)!important;-webkit-text-fill-color:var(--cobalt);padding:9px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2)}
-.banner a{color:var(--cobalt)!important;-webkit-text-fill-color:var(--cobalt);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-.banner a#fbn-go{color:var(--amber)!important;-webkit-text-fill-color:var(--amber)}
+.banner{display:block;background:rgba(79,125,255,.10);border-bottom:1px solid rgba(79,125,255,.42);color:var(--amber)!important;-webkit-text-fill-color:var(--amber);padding:9px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2)}
+.banner a{color:var(--amber)!important;-webkit-text-fill-color:var(--amber);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 
 /* Recommendation banner - yellow highlighted */
-.banner-recommend{display:block;background:rgba(255,219,88,.15);border-bottom:1px solid rgba(255,219,88,.5);color:var(--amber)!important;-webkit-text-fill-color:var(--amber);padding:10px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);cursor:pointer;transition:background 150ms ease}
-.banner-recommend:hover{background:rgba(255,219,88,.25)}
-.banner-recommend a{color:var(--amber)!important;-webkit-text-fill-color:var(--amber);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.banner-recommend{display:block;background:rgba(79,125,255,.16);border-bottom:1px solid rgba(79,125,255,.5);color:var(--text)!important;-webkit-text-fill-color:var(--text);padding:10px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);cursor:pointer;transition:background 150ms ease}
+.banner-recommend:hover{background:rgba(79,125,255,.26)}
+.banner-recommend a{color:var(--text)!important;-webkit-text-fill-color:var(--text);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .banner-recommend.collapsed .read-more{display:inline}
 .banner-recommend.collapsed .read-less{display:none}
 .banner-recommend:not(.collapsed) .read-more{display:none}
 .banner-recommend:not(.collapsed) .read-less{display:inline}
-.banner-recommend .expand-content{display:none;padding-top:8px;border-top:1px solid rgba(255,219,88,.3);margin-top:8px;font-size:12px;line-height:1.6;color:var(--text)}
+.banner-recommend .expand-content{display:none;padding-top:8px;border-top:1px solid rgba(79,125,255,.35);margin-top:8px;font-size:12px;line-height:1.6;color:var(--text)}
 .banner-recommend:not(.collapsed) .expand-content{display:block}
 .ask{font:inherit;font-size:11.5px;color:var(--muted);background:var(--glass-2);border:1px solid var(--gb);border-radius:var(--r);padding:2px 9px;cursor:pointer;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim);transition:color 150ms ease,border-color 150ms ease,background-color 150ms ease}
 .ask:hover{color:var(--text);border-color:rgba(255,255,255,.30);background:var(--glass-3)}
