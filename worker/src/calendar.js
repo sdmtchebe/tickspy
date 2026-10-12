@@ -146,7 +146,9 @@ export function nasdaqDay(payload, date) {
     });
   }
   return out;
-}  /** `YYYY-MM-DD` plus a day offset, as a plain date with no clock attached. */
+}
+
+/** `YYYY-MM-DD` plus a day offset, as a plain date with no clock attached. */
 export function addDays(date, days) {
   const [y, m, d] = String(date).split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d) + days * DAY_MS).toISOString().slice(0, 10);
