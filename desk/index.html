@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{color-scheme:dark;--bg:#12161D;--surface:#1A1F29;--raised:#212734;--border:#333B49;--text:#E6EAF0;--muted:#98A1B0;--up:#3DBE8B;--dn:#E5605F;--accent:#D9A441;--cobalt:#4F7DFF;--r:10px;--glass:rgba(26,30,37,.40);--glass-2:rgba(34,39,47,.34);--glass-3:rgba(44,50,59,.30);--gb:rgba(255,255,255,.11);--ghi:rgba(255,255,255,.16);--blur:blur(34px) saturate(135%);--blur-2:blur(20px) saturate(125%);--rim:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(255,255,255,.045),inset 1px 0 0 rgba(255,255,255,.05),inset -1px 0 0 rgba(255,255,255,.05);--shadow:0 18px 48px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.32)}
+:root{color-scheme:dark;--bg:#12161D;--surface:#1A1F29;--raised:#212734;--border:#333B49;--text:#E6EAF0;--muted:#98A1B0;--up:#3DBE8B;--dn:#E5605F;--accent:#D9A441;--amber:#FFDB58;--cobalt:#4F7DFF;--r:10px;--glass:rgba(26,30,37,.40);--glass-2:rgba(34,39,47,.34);--glass-3:rgba(44,50,59,.30);--gb:rgba(255,255,255,.11);--ghi:rgba(255,255,255,.16);--blur:blur(34px) saturate(135%);--blur-2:blur(20px) saturate(125%);--rim:inset 0 1px 0 rgba(255,255,255,.20),inset 0 -1px 0 rgba(255,255,255,.045),inset 1px 0 0 rgba(255,255,255,.05),inset -1px 0 0 rgba(255,255,255,.05);--shadow:0 18px 48px rgba(0,0,0,.5),0 2px 10px rgba(0,0,0,.32)}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background-color:#12161D;background-image:radial-gradient(54vw 42vw at 4% -12%,rgba(226,232,240,.10),transparent 62%),radial-gradient(46vw 38vw at 100% -4%,rgba(198,206,218,.075),transparent 64%),radial-gradient(74vw 60vw at 52% 118%,rgba(148,158,172,.11),transparent 68%),linear-gradient(180deg,rgba(255,255,255,.035),rgba(0,0,0,.22));background-attachment:fixed;background-repeat:no-repeat;color:var(--text);font:13px/1.45 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%;zoom:var(--desk-scale,1)}
@@ -35,6 +35,7 @@ label{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 #px{font-size:24px;font-weight:600;padding:1px 5px;border-radius:4px;transition:background-color 150ms linear}
 #px.tfu{background:rgba(61,190,139,.16)}#px.tfd{background:rgba(229,96,95,.16)}
 #st{color:var(--muted);font-size:12px;margin-left:auto}
+.coffee{font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--gb);border-radius:6px;padding:3px 8px;white-space:nowrap}.coffee:hover{color:var(--text);border-color:var(--ghi)}
 @media(max-width:640px){.header{gap:8px;padding:8px 10px}#st{flex:1 0 100%;margin-left:0;min-width:0;overflow-wrap:anywhere}}
 .watchbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--gb);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);position:relative;z-index:3}
 .chip{display:inline-flex;align-items:center;border:1px solid var(--gb);border-radius:var(--r);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim);transition:border-color 150ms ease,background-color 150ms ease}
@@ -109,8 +110,19 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 #toast{position:fixed;right:14px;bottom:14px;z-index:20;display:flex;flex-direction:column;gap:8px;max-width:340px}
 #toast .t{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:9px 12px;font-size:12.5px;box-shadow:0 16px 40px rgba(0,0,0,.55),var(--rim);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.banner{display:block;background:rgba(79,125,255,.10);border-bottom:1px solid rgba(79,125,255,.42);color:var(--cobalt)!important;-webkit-text-fill-color:var(--cobalt);padding:9px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2)}
-.banner a{color:var(--cobalt)!important;-webkit-text-fill-color:var(--cobalt);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.banner{display:block;background:rgba(255,219,88,.10);border-bottom:1px solid rgba(255,219,88,.42);color:var(--amber)!important;-webkit-text-fill-color:var(--amber);padding:9px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2)}
+.banner a{color:var(--amber)!important;-webkit-text-fill-color:var(--amber);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+
+/* Recommendation banner - yellow highlighted */
+.banner-recommend{display:block;background:rgba(255,219,88,.15);border-bottom:1px solid rgba(255,219,88,.5);color:var(--amber)!important;-webkit-text-fill-color:var(--amber);padding:10px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);cursor:pointer;transition:background 150ms ease}
+.banner-recommend:hover{background:rgba(255,219,88,.25)}
+.banner-recommend a{color:var(--amber)!important;-webkit-text-fill-color:var(--amber);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.banner-recommend.collapsed .read-more{display:inline}
+.banner-recommend.collapsed .read-less{display:none}
+.banner-recommend:not(.collapsed) .read-more{display:none}
+.banner-recommend:not(.collapsed) .read-less{display:inline}
+.banner-recommend .expand-content{display:none;padding-top:8px;border-top:1px solid rgba(255,219,88,.3);margin-top:8px;font-size:12px;line-height:1.6;color:var(--text)}
+.banner-recommend:not(.collapsed) .expand-content{display:block}
 .ask{font:inherit;font-size:11.5px;color:var(--muted);background:var(--glass-2);border:1px solid var(--gb);border-radius:var(--r);padding:2px 9px;cursor:pointer;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim);transition:color 150ms ease,border-color 150ms ease,background-color 150ms ease}
 .ask:hover{color:var(--text);border-color:rgba(255,255,255,.30);background:var(--glass-3)}
 /* news feed + economic calendar */
@@ -133,12 +145,27 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 .evtmore .x{margin:4px 0}
 </style></head><body>
 <div class="banner" id="fbn" role="status" aria-live="polite"></div>
+<div class="banner-recommend collapsed" id="fbr" role="status" aria-live="polite" aria-expanded="false">
+  <span class="recommend-text"><b>Strongly recommended:</b> add free Alpaca keys for current prices. Read more to see what you are missing.</span>
+  <span class="read-more">Read more</span>
+  <span class="read-less">Show less</span>
+  <div class="expand-content">
+    <p><strong>What you're missing without API keys:</strong></p>
+    <ul style="margin:6px 0 0 18px;line-height:1.7">
+      <li><strong>Live prices & streaming candles</strong> — real-time quotes and 1-minute bars instead of delayed replay</li>
+      <li><strong>Per-symbol news feed</strong> — headlines filtered for your symbol, not just market-wide headlines</li>
+      <li><strong>Real-time alerts</strong> — price, VWAP, and pattern alerts that fire instantly while the desk is open</li>
+      <li><strong>Current quotes & live trade stream</strong> — see trades as they happen, not delayed replay</li>
+    </ul>
+    <p style="margin-top:8px"><a href="#" id="fbr-go">Connect Alpaca keys in Settings →</a> (free paper-trading account, about 2 minutes; the desk never places trades)</p>
+  </div>
 <header class="header">
 <a class="brand" href="../index.html" aria-label="TickSPY home">TickSPY</a>
 <input id="sym" value="SPY" aria-label="Symbol">
 <select id="tf" aria-label="Timeframe"><option value="1Min">1 min</option><option value="5Min">5 min</option><option value="15Min">15 min</option></select>
 <span id="px" class="num">--</span><span id="chg" class="num"></span>
 <span id="st">Not connected</span>
+<a class="coffee" href="https://buymeacoffee.com/tickspy" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
 </header>
 <div class="watchbar">
 <span class="tagline">Watchlist</span>
@@ -335,9 +362,12 @@ const freeMode=()=>FREE?FREE.modeFor(cfg(),{edgeApi:EDGE_API}):'none';
 const freeTf=id=>FREE&&FREE.TIMEFRAMES.some(t=>t.id===id)?id:(/^1[Hh]our$/.test(id)?'15Min':'5Min');
 const dkOf=t=>new Date(t).toLocaleDateString('en-CA',{timeZone:'America/New_York'});
 const bannerEl=document.getElementById('fbn');
+const recommendEl=document.getElementById('fbr');
 function banner(html){
   bannerEl.innerHTML=html||'';bannerEl.style.display=html?'block':'none';
   const go2=document.getElementById('fbn-go');if(go2)go2.onclick=e=>{e.preventDefault();go('set')}}
+const fbrGo=document.getElementById('fbr-go');if(fbrGo)fbrGo.onclick=e=>{e.preventDefault();go('set')}
+if(recommendEl)recommendEl.onclick=()=>{recommendEl.classList.toggle('collapsed');recommendEl.setAttribute('aria-expanded',!recommendEl.classList.contains('collapsed'))}
 function tfOptions(){const ids=S.mode==='free'?FREE.TIMEFRAMES.map(t=>t.id):['1Min','5Min','15Min'];
  const label=id=>id==='1Day'?'1 day':id==='1Hour'?'1 hour':id.replace('Min',' min');
  $('#tf').innerHTML=ids.map(id=>`<option value="${id}">${label(id)}</option>`).join('')}
@@ -361,18 +391,20 @@ async function load(){
   if(mode==='free')return loadFree(version);
  return loadNone()}
 async function loadLive(version){
- try{$('#st').textContent='Loading...';banner('<b>Live mode — Alpaca connected.</b> Current market data is loading with the keys saved in this browser.');
- const st=new Date(Date.now()-6*864e5).toISOString();
+  try{$('#st').textContent='Loading...';banner('<b>Live mode — Alpaca connected.</b> Current market data is loading with the keys saved in this browser.');
+  if(recommendEl)recommendEl.style.display='none';
+  const st=new Date(Date.now()-6*864e5).toISOString();
   const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);
   if(version!==loadVersion)return;
   S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;banner('<b>Live mode — Alpaca connected.</b> Current market data is supplied by Alpaca/IEX using keys saved only in this browser.');refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
-  }catch(e){if(version!==loadVersion)return;$('#st').textContent='Error: '+netErr(e);banner(`<b>Live mode could not connect.</b> ${esc(netErr(e))} Remove the saved keys with <a href="#" id="fbn-go">Use free mode in Settings</a>.`)}}
+  }catch(e){if(version!==loadVersion)return;$('#st').textContent='Error: '+netErr(e);banner(`<b>Live mode could not connect.</b> ${esc(netErr(e))} Remove the saved keys with <a href="#" id="fbn-go">Use free mode in Settings</a>.`);if(recommendEl)recommendEl.style.display='none';}}
 function loadNone(){S.bars=[];S.allBars=null;S.price=null;S.an=null;S.rep=null;refresh();
- $('#st').textContent='No data source';
- banner('No price source is configured, so there is nothing to show. Either deploy the edge API (<b>worker/</b>, see its README) or paste your own free Alpaca keys in <a href="#" id="fbn-go">Settings</a>.');
- // This is the only case where the desk pushes the setup wizard at someone:
- // there is genuinely nothing on screen without it.
- wizMaybe();go('set')}
+  $('#st').textContent='No data source';
+  banner('No price source is configured, so there is nothing to show. Either deploy the edge API (<b>worker/</b>, see its README) or paste your own free Alpaca keys in <a href="#" id="fbn-go">Settings</a>.');
+  if(recommendEl)recommendEl.style.display='none';
+  // This is the only case where the desk pushes the setup wizard at someone:
+  // there is genuinely nothing on screen without it.
+  wizMaybe();go('set')}
 async function loadFree(version){
   const tf=freeTf(S.tf);S.tf=tf;$('#tf').value=tf;
   S.rep=null;S.allBars=null;
@@ -391,14 +423,17 @@ async function loadFree(version){
 function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayAt(Date.now(),S.sessionDate);S.rep=rep;
  S.bars=DeskStructure.freeBars(S.allBars,S.daily,S.tf,new Date(rep.at).getTime(),S.sessionDate).map(b=>({...b,t:new Date(b.t)}));
  S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
-function freeBanner(){if(S.mode!=='free'){banner('');return}
+function freeBanner(){if(S.mode!=='free'){banner('');recommendEl.style.display='none';return}
+   const fbr=recommendEl;
    if(S.free?.source==='mock'){
      banner(`<b>Free mode — no account, no key.</b> ${esc(FREE.labelled(S.free))} <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`);
-     return;
+   }else{
+     const freeMsg=`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`;
+     const iexMsg=S.free?.source==='hfdatalibrary'?'<br><span>⚠ Data sourced from IEX exchange only (~2–3% of consolidated volume; not NBBO).</span>':'';
+     banner(freeMsg + iexMsg);
    }
-   const freeMsg=`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`;
-  const iexMsg=S.free?.source==='hfdatalibrary'?'<span class="muted" style="margin-left:12px">IEX-only data is not the NBBO.</span>':'';
-  banner(freeMsg + iexMsg)}
+   if(fbr){fbr.style.display='block';fbr.classList.add('collapsed');fbr.setAttribute('aria-expanded','false')}
+}
 /* One tick a second, same as the clock: recompute where the replay should be and
    redraw only when it has actually moved. */
 function freeTick(){if(S.mode!=='free'||!S.allBars||S.tf==='1Day')return;

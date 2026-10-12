@@ -12,7 +12,8 @@ export const Footer = () => {
         <Logo testId="footer-logo" />
         <p className="mt-4 max-w-[380px] text-[13.5px] leading-relaxed text-steel">
           A free trading desk for people who want the number and the sentence that explains it. The charts on this page are drawn
-          from a simulated series; the desk runs on real market data.
+          from a simulated series. The desk shows delayed previous-session data with no account, or live data once you add your own
+          free Alpaca keys.
         </p>
       </div>
 
@@ -40,6 +41,11 @@ export const Footer = () => {
           <li>
             <a href="https://alpaca.markets" target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
               Alpaca (free market data keys)
+            </a>
+          </li>
+          <li>
+            <a href="https://buymeacoffee.com/tickspy" target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]" data-testid="footer-coffee">
+              Buy me a coffee
             </a>
           </li>
         </ul>
