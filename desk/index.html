@@ -424,14 +424,9 @@ function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayA
  S.bars=DeskStructure.freeBars(S.allBars,S.daily,S.tf,new Date(rep.at).getTime(),S.sessionDate).map(b=>({...b,t:new Date(b.t)}));
  S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
 function freeBanner(){if(S.mode!=='free'){banner('');recommendEl.style.display='none';return}
-   const fbr=recommendEl;
-   if(S.free?.source==='mock'){
-     banner(`<b>Free mode — no account, no key.</b> ${esc(FREE.labelled(S.free))} <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`);
-   }else{
-     const freeMsg=`<b>Free mode \u2014 no account, no key.</b> ${esc(FREE.labelled(S.free||{}))} The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a>`;
-     const iexMsg=S.free?.source==='hfdatalibrary'?'<br><span>⚠ Data sourced from IEX exchange only (~2–3% of consolidated volume; not NBBO).</span>':'';
-     banner(freeMsg + iexMsg);
-   }
+   const fbr=recommendEl;    /* Exact copy requested for the keyless banner. The date comes from the replay's session. */
+    const when=S.free?.sessionDate?new Date(S.free.sessionDate+'T12:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}):'the last session';
+    banner(`<b>Free mode \u2014 no account, no key.</b> Previous session (${esc(when)}), delayed end-of-day data from HF Data Library (IEX). Replayed as if live; not a current quote. Data sourced from IEX exchange only (~2-3% of consolidated volume). The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a><br><span>⚠ Data sourced from IEX exchange only (~2–3% of consolidated volume; not NBBO).</span>`);
    if(fbr){fbr.style.display='block';fbr.classList.add('collapsed');fbr.setAttribute('aria-expanded','false')}
 }
 /* One tick a second, same as the clock: recompute where the replay should be and
