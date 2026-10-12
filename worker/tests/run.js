@@ -1345,6 +1345,31 @@ console.log("\nbars.js");
     }
   });
 
+  await test("an empty provider week is a failure, not a quiet week", async () => {
+    const realFetch = globalThis.fetch;
+    let asked = 0;
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      // The provider's file rolls over between weeks and can answer 200 with an
+      // empty list. That must not be published as "this week is empty".
+      if (u.includes("faireconomy")) return new Response("[]", { status: 200 });
+      if (u.includes("nasdaq")) {
+        asked++;
+        return new Response("nope", { status: 503 });
+      }
+      throw new Error(`unexpected fetch ${u}`);
+    };
+    try {
+      // Nothing usable from either leg: the caller has to be told, so the cache
+      // keeps serving the calendar it already had rather than an empty one.
+      await assert.rejects(() => produceCalendar({ now: new Date("2026-10-11T18:00:00Z") }), /no events/);
+      // The retry means the provider is asked for twice before giving up.
+      assert.ok(asked > 0, "the forward leg is still attempted");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
   await test("produceCalendar rides out a dead provider leg and a rate-limited Nasdaq", async () => {
     const realFetch = globalThis.fetch;
     let nasdaqCalls = 0;

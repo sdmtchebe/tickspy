@@ -215,14 +215,37 @@ function etToday(now) {
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
-/** The provider's week. Throws when the upstream itself is unavailable. */
-async function fetchProvider() {
+/** One attempt at the provider's week, in the shape the rest of this file uses. */
+async function fetchProviderOnce() {
   const res = await fetch(CALENDAR_UPSTREAM, {
     headers: { "User-Agent": CALENDAR_UA },
     cf: { cacheTtl: 1800, cacheEverything: true },
   });
   if (!res.ok) throw new Error(`calendar upstream ${res.status}`);
-  return normaliseCalendar(await res.json());
+  const list = normaliseCalendar(await res.json());
+  // An empty week is a failure, not an answer. The file carries around a hundred
+  // releases; an empty array means the host was mid-rollover, or answered with
+  // something that was not the calendar at all, and either way it must not be
+  // merged as though the week genuinely had nothing in it.
+  if (!list.length) throw new Error("calendar upstream returned no events");
+  return list;
+}
+
+/**
+ * The provider's week, with one retry. Without it a single refused request cost
+ * the whole week its impact ratings, because the unrated Nasdaq weeks still add
+ * up to a full-looking calendar - the ratings are what the desk's "high impact
+ * only" switch and its alerts read, so losing them quietly is worse than being
+ * a minute late.
+ */
+async function fetchProvider() {
+  try {
+    return await fetchProviderOnce();
+  } catch (e) {
+    console.log(`calendar: provider week failed (${(e && e.message) || e}); retrying once`);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return fetchProviderOnce();
+  }
 }
 
 /**
@@ -259,9 +282,13 @@ export async function produceCalendar({ now = new Date(), days = FORWARD_DAYS } 
     rated = await fetchProvider();
   } catch (e) {
     providerError = e;
+    console.log(`calendar: serving Nasdaq weeks without ratings (${(e && e.message) || e})`);
   }
   const forward = await fetchForward(forwardDates(rated, etToday(now), days));
   const merged = mergeCalendar(rated, forward);
+  if (rated.length && !rated.some((e) => e.impact)) {
+    console.log("calendar: the provider week carried no ratings this run");
+  }
   if (!merged.length && providerError) throw providerError;
   return merged;
 }
