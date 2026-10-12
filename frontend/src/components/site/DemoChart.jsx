@@ -2,6 +2,35 @@ import { useState } from "react";
 import { CandleChart } from "@/components/site/CandleChart";
 import { Num, Info, scoreTone, TONE } from "@/components/site/bits";
 import { TICKERS, fmt } from "@/lib/market";
+import { DESK_PATH } from "@/lib/site";
+
+/*
+ * A persistent notice above the sample chart. Every figure below is generated in
+ * the browser from a simulated series, and the only way a visitor stops the
+ * confusion between "this is what the desk does" and "this is today's price" is
+ * to say so, once, in the same place every time. It also carries the one honest
+ * upgrade path: your own free Alpaca keys, entered in the desk's Settings tab.
+ */
+const DemoDataNotice = () => (
+  <div
+    role="note"
+    data-testid="demo-data-notice"
+    className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[10px] border border-amber/35 bg-amber/[0.07] px-4 py-3"
+  >
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-amber/45 bg-amber/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-amber">
+      <span className="h-1.5 w-1.5 rounded-full bg-amber" aria-hidden="true" />
+      Demo data
+    </span>
+    <p className="min-w-0 flex-1 text-[13.5px] leading-snug text-steel">
+      <strong className="font-medium text-ink">Currently showing simulated demo data</strong> — a generated sample session, not real
+      or current market prices.{" "}
+      <a href={DESK_PATH} target="_blank" rel="noopener noreferrer" className="font-medium text-mint underline underline-offset-2">
+        Open the desk
+      </a>{" "}
+      and add a free Alpaca key in <strong className="font-medium text-ink">Settings</strong> for live market feeds.
+    </p>
+  </div>
+);
 
 const readouts = (s) => [
   { id: "atr", k: "ATR 14", v: `$${fmt(s.atr)}`, tip: `ATR 14: Average true range across the last 14 bars, the usual measure of how far price travels in one bar. $${fmt(s.atr)} is a typical single-bar swing at this interval, not a prediction.` },
@@ -15,6 +44,8 @@ export const DemoChart = () => {
   const [s, setS] = useState(null);
   const tone = TONE[scoreTone(s?.score ?? 50)];
   return (
+    <>
+    <DemoDataNotice />
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <div className="min-w-0 lg:col-span-8">
         <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -65,5 +96,6 @@ export const DemoChart = () => {
           ))}
       </div>
     </div>
+    </>
   );
 };

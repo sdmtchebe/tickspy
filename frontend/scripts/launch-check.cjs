@@ -141,7 +141,7 @@ check("The desk has 11 working navigation sections", await desk.locator("#nav bu
     await page.setViewportSize({ width: 375, height: 812 });
     await page.getByTestId("nav-menu-toggle").click(); await page.getByTestId("nav-mobile-link-contact").click();
     check("Mobile menu navigates and dismisses", await page.getByTestId("nav-menu-toggle").getAttribute("aria-expanded") === "false");
-    for (const file of ["privacy.html", "terms.html", "privacy-fr.html", "terms-fr.html"]) {
+    for (const file of ["privacy.html", "terms.html", "risk.html", "privacy-fr.html", "terms-fr.html", "risk-fr.html"]) {
       await page.goto(`https://tickspy.com/${file}`); check(`${file} is available`, await page.locator("h1").isVisible());
     }
     if(errors.length || violations.length) console.log(JSON.stringify({errors,violations},null,2));
@@ -189,7 +189,8 @@ check("The desk has 11 working navigation sections", await desk.locator("#nav bu
       const a=ema(c,9),b=ema(c,21),crosses=c.slice(1).filter((_,i)=>(a[i+1]>b[i+1])!==(a[i]>b[i])).length;
       const result=backtest();S.bars=saved;return result.n===crosses;
     }));
-await livePage.locator('#nav button[data-k="structure"]').click();
+await livePage.waitForSelector('#nav button[data-k="structure"]', {state: 'visible', timeout: 30000});
+    await livePage.locator('#nav button[data-k="structure"]').click();
     await livePage.waitForFunction(() => document.querySelectorAll('#ms-output .ms-card').length === 5, null, { timeout: 10000 });
     check('Market Structure renders four engines plus research panel', await livePage.locator('#ms-output .ms-card').count() === 5);
     await livePage.evaluate(async()=>{S.sym='MSFT';document.getElementById('sym').value='MSFT';S.tf='1Min';await load()});
@@ -210,7 +211,8 @@ await livePage.locator('#nav button[data-k="structure"]').click();
     await live.close();
     const touch = await browser.newContext({viewport:{width:375,height:812},hasTouch:true,reducedMotion:'reduce'});await routes(touch);
     const touchPage=await touch.newPage();await touchPage.goto('https://tickspy.com/desk/');await touchPage.locator('#gate-ok').click();
-    await touchPage.waitForSelector('#ms-chart-svg',{state:'attached'});await touchPage.locator('#nav button[data-k="structure"]').click();
+    await touchPage.waitForSelector('#ms-chart-svg',{state:'attached'});await touchPage.locator('#nav button[data-k="structure"]').waitFor({state: 'visible', timeout: 10000});
+    await touchPage.locator('#nav button[data-k="structure"]').click();
     await touchPage.locator('#ms-chart-svg').tap();
     check('Touching the chart reveals candle prices on mobile',(await touchPage.locator('#ms-chart-readout').textContent()).includes('Cursor price'));
     check('Interactive structure tab fits mobile width',await touchPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

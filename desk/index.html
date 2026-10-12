@@ -1234,7 +1234,7 @@ CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
    on the server, cached, and read by everyone (see loadOverview above). */
 /* ---------- legal & disclosures ---------- */
 const LEGAL={title:'Important - please read before using this dashboard',
-  short:'Pure information to help you do your own research. Not advice, not a recommendation. Trading risks loss of capital. With no account the desk replays a small bundled sample whose prices are generated demonstration data, labelled as such on screen; current market data requires your own free Alpaca keys. Provided "as is" without warranty.',
+  short:'An educational and research tool, provided for information only \u2014 not advice, not a recommendation. Trading risks loss of capital. With no account the desk replays a small bundled sample whose prices are generated demonstration data, labelled as such on screen; current market data requires your own free Alpaca keys. Provided "as is" without warranty.',
  points:[
   ['Information only','This dashboard is a reference tool. It displays market data and mathematical summaries of it so that you can do your own research. It does not tell you what to do. We give no view on whether any security is suitable for you, and we accept no responsibility for any decision you make or for any outcome. You use it entirely at your own risk.'],
   ['Not investment advice','Nothing on this dashboard is investment, financial, legal or tax advice, and nothing is a recommendation, solicitation or offer to buy or sell any security. It is impersonal commentary of general circulation, not advice tailored to your situation.'],
@@ -1257,7 +1257,7 @@ const LEGAL={title:'Important - please read before using this dashboard',
 function legalBody(withAccept){const pts=LEGAL.points.map(p=>`<p class="x"><b>${esc(p[0])}.</b> ${esc(p[1])}</p>`).join('');
  const short=`<p style="line-height:1.6">${esc(LEGAL.short)}</p>`;
  const more=`<details><summary style="cursor:pointer;font-weight:600;font-size:13px;padding:4px 0">Read the full disclosures (${LEGAL.points.length} points)</summary><div style="border-top:1px solid var(--gb);margin-top:8px;padding-top:8px">${pts}</div></details>`;
- return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+short+more+'<p class="x"><a href="../terms.html" target="_blank" rel="noopener noreferrer">Terms and risk disclosure</a> · <a href="../privacy.html" target="_blank" rel="noopener noreferrer">Privacy policy</a></p>'+`<div class="legal-actions">${withAccept?'<button class="btn primary" id="gate-ok" type="button">I am 18+ and accept the terms</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline and return home':'Close'}</button></div>`}
+ return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+short+more+'<p class="x"><a href="../terms.html" target="_blank" rel="noopener noreferrer">Terms of service</a> · <a href="../risk.html" target="_blank" rel="noopener noreferrer">Risk disclosure</a> · <a href="../privacy.html" target="_blank" rel="noopener noreferrer">Privacy policy</a></p>'+`<div class="legal-actions">${withAccept?'<button class="btn primary" id="gate-ok" type="button">I am 18+ and accept the terms</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline and return home':'Close'}</button></div>`}
 let modalReturn=null;
 function modalShow(id){if(!document.querySelector('.gate.on'))modalReturn=document.activeElement;$(id).classList.add('on');document.body.style.overflow='hidden';$(id).querySelector('button,input,a')?.focus()}
 function modalClose(id){$(id).classList.remove('on');if(!document.querySelector('.gate.on')){document.body.style.overflow='';modalReturn?.focus()}}
@@ -1304,7 +1304,7 @@ function wizRender(){const s=WIZ[wizI],last=wizI===WIZ.length-1,c=cfg();
    free mode the visitor already has data and is left alone. */
 function wizMaybe(){if(!cfg().ak&&LS.wiz!=='done'&&LS.wiz!=='skipped'&&S.mode==='none')setTimeout(()=>wizOpen(0),400)}
 $('#wizbtn').onclick=()=>wizOpen(0);
-$('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><a href="../terms.html">Terms</a><a href="../privacy.html">Privacy</a><a href="mailto:tickspysupport@gmail.com">Support</a><a href="https://buymeacoffee.com/tickspy" target="_blank" rel="noopener noreferrer">Buy me a coffee</a><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
+$('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><a href="../terms.html">Terms</a><a href="../privacy.html">Privacy</a><a href="../risk.html">Risk disclosure</a><a href="mailto:tickspysupport@gmail.com">Support</a><a href="https://buymeacoffee.com/tickspy" target="_blank" rel="noopener noreferrer">Buy me a coffee</a><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
 function fill(){const c=cfg();['ak','as'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]))}

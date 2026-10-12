@@ -14,19 +14,70 @@
       a { color: var(--mint); } h1, h2 { line-height: 1.18; } h1 { font-size: clamp(2rem, 6vw, 3.25rem); margin: 0; } h2 { margin-top: 2.7rem; font-size: 1.25rem; }
       p, li { color: var(--steel); } strong { color: var(--ink); } .eyebrow { color: var(--mint); font-size: .78rem; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
       .notice { margin-top: 2rem; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); } button { appearance: none; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: transparent; color: var(--ink); cursor: pointer; font: inherit; } button:hover, button:focus-visible { border-color: var(--mint); } .back { display: inline-block; margin-bottom: 2.5rem; }
+      .notice + .notice { margin-top: .9rem; }
     </style>
   </head>
   <body>
     <main>
-      <nav><a class="back" href="./">Back to TickSPY</a> · <a href="terms.html">Terms</a> · <a href="privacy-fr.html" lang="fr" hreflang="fr">Français</a></nav>
-      <p class="eyebrow">Last updated October 11, 2026</p>
+      <nav><a class="back" href="./">Back to TickSPY</a> · <a href="terms.html">Terms</a> · <a href="risk.html">Risk disclosure</a> · <a href="privacy-fr.html" lang="fr" hreflang="fr">Français</a></nav>
+      <p class="eyebrow">Last updated October 12, 2026</p>
       <h1>Privacy and Cookie Policy</h1>
-      <div class="notice"><strong>In short:</strong> TickSPY is operated by <strong>Tickspycorp, Québec, Canada</strong>. No account is required. Preferences and optional Alpaca keys remain in your browser. Support messages reach our inbox. Hosting and resource providers receive normal web-request information. <strong>Advertising is disabled in this release.</strong></div>
+      <div class="notice"><strong>In short:</strong> TickSPY is operated by <strong>Tickspycorp, Québec, Canada</strong>. No account is required. Preferences and optional Alpaca keys remain in your browser. Support messages reach our inbox through <strong>FormSubmit</strong>. Hosting and resource providers receive normal web-request information. <strong>Advertising is disabled in this release.</strong></div>
+      <div class="notice"><strong>What TickSPY is:</strong> a free, <strong>educational and research tool</strong>. It is <strong>not a financial adviser, broker, dealer or data vendor</strong>, it does not execute trades, and nothing on it is investment, financial, legal or tax advice. See the <a href="risk.html">Risk Disclosure</a> and <a href="terms.html">Terms of Use</a>.</div>
 
-      <h2>Information this site handles</h2>
+      <h2>Personal information we collect</h2>
+      <p>The only personal information Tickspycorp itself receives is what you choose to send us through the contact and feedback forms. There is no account, no sign-up, no visitor-analytics beacon and no per-visitor profile. Concretely, we collect:</p>
+      <ul>
+        <li><strong>Contact form:</strong> your <strong>name</strong>, your <strong>email address</strong>, and the <strong>message</strong> you write. A subject line is generated from what you entered.</li>
+        <li><strong>Feedback / bug form:</strong> your <strong>name</strong>, your <strong>email address</strong>, the <strong>category</strong> you select (Feedback, Bug Report or Feature Request), the <strong>message</strong> you write, and an <strong>optional screenshot</strong> (PNG, JPEG, WebP or GIF, up to 5&nbsp;MB).</li>
+        <li><strong>Technical information</strong> carried by any web request, including a form submission: IP address, browser and device details, and a timestamp. This is processed by our delivery and mail providers, not stored by us in any database of our own.</li>
+      </ul>
+      <p>Please do not send API keys, passwords, account numbers, brokerage statements or other sensitive financial information. There is no field that needs them, and we do not want them.</p>
+
+      <h2>How the forms work: FormSubmit and Gmail</h2>
+      <p>This site has no server of its own that stores messages. Both forms post directly from your browser to the relay service <strong>FormSubmit</strong> (<a href="https://formsubmit.co" target="_blank" rel="noopener noreferrer">formsubmit.co</a>), which forwards your submission as an email to <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a>, an inbox hosted by <strong>Google Gmail</strong>. We read it there and reply from there.</p>
+      <p>What happens, step by step: your browser sends the fields you filled in (and any screenshot) to FormSubmit; FormSubmit relays them to the Gmail inbox; the message then sits in that mailbox until we action and delete it. FormSubmit and Google process the contents of the message and ordinary request data such as your IP address under their own privacy policies. Sending a message is entirely optional — you can simply email us, or not contact us at all, and still use every part of the desk.</p>
+
+      <h2>Why we use it, and our legal basis</h2>
+      <p>We use the information from the forms for exactly one purpose: to <strong>read, answer and resolve your request</strong>, and to investigate anything you report. We do not sell it, rent it, trade it, use it for advertising, build profiles from it, or use it to make automated decisions about you.</p>
+      <p>Our basis for handling it is your <strong>consent</strong>, given by actively submitting the form, plus our <strong>legitimate interest</strong> in answering support requests and keeping the service working. You may withdraw consent at any time by asking us to delete your message; withdrawal does not affect processing already carried out lawfully.</p>
+
+      <h2>Legal framework: PIPEDA and Québec Law 25</h2>
+      <p>Tickspycorp is based in Québec, Canada, and handles personal information in line with the federal <strong>Personal Information Protection and Electronic Documents Act (PIPEDA)</strong> and Québec's <strong>Act respecting the protection of personal information in the private sector, as modernized by Law&nbsp;25 (2021, c.&nbsp;25)</strong>. In practice this means:</p>
+      <ul>
+        <li><strong>Identified purposes and plain language.</strong> This policy states, in plain terms, what we collect and why, before or at the time of collection.</li>
+        <li><strong>Consent.</strong> We collect support messages only from you, only when you submit them, and only for answering them and fixing what you report.</li>
+        <li><strong>Minimal collection.</strong> We ask for the least information needed to reply. Optional fields and screenshots are just that: optional.</li>
+        <li><strong>Accountability.</strong> One person at Tickspycorp is responsible for personal-information protection (see below), and we can answer for our providers' handling.</li>
+        <li><strong>Safeguards.</strong> Messages travel over HTTPS and live in a provider mailbox with its own access controls. No system is perfectly secure, but we do not operate our own database of visitors to lose.</li>
+        <li><strong>Rights.</strong> You can ask to see the information we hold about you, correct it, delete it, or receive it in a structured electronic form — see <a href="#rights">Your rights</a>.</li>
+        <li><strong>Privacy impact.</strong> Because our only collection is a form you choose to submit, and any processing outside Québec is limited to delivery providers under contract, we assess the risk to your privacy as low and proportionate to the purpose.</li>
+      </ul>
+
+      <h2>Where your information is handled</h2>
+      <p>Tickspycorp holds support correspondence in Canada, but some of the services used to deliver it may process and store information <strong>outside Québec and Canada, including in the United States</strong> — in particular FormSubmit and Google Gmail. Providers outside Canada are subject to the laws of their own jurisdictions, and their authorities may be able to obtain disclosure of information held there. Where we rely on such a provider, we choose one that offers contractual privacy commitments, and we do not send more than the message needs.</p>
+
+      <h2 id="retention">Retention</h2>
+      <p>Support messages are kept only as long as needed to answer your request, resolve the reported issue, and meet any applicable legal or accounting obligation. When that is done, we delete them. You can ask us to delete a message sooner (see below). Hosting logs and the calendar/news providers keep their own operational or security records for their own periods, which we neither control nor read as a profile of you.</p>
+
+      <h2 id="rights">Your rights</h2>
+      <p>Under PIPEDA and Québec Law&nbsp;25 you may contact us to:</p>
+      <ul>
+        <li><strong>Access</strong> the personal information we hold about you, and be told how it has been used and to whom it has been communicated.</li>
+        <li><strong>Correct</strong> information that is inaccurate, incomplete or ambiguous.</li>
+        <li><strong>Delete</strong> information where the law allows, including a support message you no longer want us to keep, and to have a copy of it first.</li>
+        <li><strong>Withdraw consent</strong> to optional processing, and to object to processing you consider excessive.</li>
+        <li><strong>Portability</strong> — receive the computerized information you provided to us in a structured, commonly used format.</li>
+        <li><strong>De-indexing / cease dissemination</strong> of information in defined circumstances, subject to the conditions and exceptions in the law.</li>
+      </ul>
+      <p>Send any request to <a href="mailto:tickspysupport@gmail.com?subject=Privacy%20request">tickspysupport@gmail.com</a>. We may ask for enough information to verify your identity before acting, so that we do not disclose someone else's correspondence to you. We answer within the time the applicable law requires and, where we refuse a request, we explain why and tell you how to challenge it.</p>
+
+      <h2>Privacy officer and complaints</h2>
+      <p>The person with the highest authority at Tickspycorp is responsible for the protection of personal information, unless that responsibility is delegated in writing. That person is the privacy contact for this site, reachable at <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a>. If you are not satisfied with our response, you may contact the <a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Commission d'accès à l'information du Québec</a>, and for matters within federal jurisdiction, the <a href="https://www.priv.gc.ca/" target="_blank" rel="noopener noreferrer">Office of the Privacy Commissioner of Canada</a>.</p>
+
+      <h2>Information this site handles without collecting it</h2>
       <p><strong>Learning exercises and Market Structure:</strong> practice inputs, chart gestures, recalculations and historical studies run in your browser. These features do not transmit your entered numbers or record your cursor movements. Practice values are not saved by the application; browser form-restoration behavior may retain them. Opening a page or following a reference link still makes ordinary web requests to its host. Market Structure uses the bars already loaded for the selected symbol; its research controls do not submit those bars to an AI service.</p>
       <p>The landing page saves your language choice as <code>tickspy-locale</code>. Remove it by clearing this site's browser data. Translated navigation and introductory text do not mean all desk or legal content has been translated or professionally reviewed.</p>
-      <p>When you contact us, FormSubmit relays your name, email address, message, and optional screenshot to <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a>, hosted by Google Gmail. We use this information to respond to your request and investigate reported issues. Sending a message is optional; please exclude API keys, account numbers, and sensitive financial information.</p>
       <p>The desk stores your watchlist, alerts, preferences, and any optional Alpaca API keys in your browser's local storage. Those values are not stored by TickSPY. Alpaca keys are sent only to Alpaca when you choose to connect live data.</p>
 
       <h2>Google AdSense and cookies</h2>
@@ -39,16 +90,11 @@
       <p><strong>Netlify</strong> hosts the website and proxies public edge requests to <strong>Cloudflare</strong>. Both process request information such as IP addresses, requested paths, timestamps, and browser details and may retain operational or security logs according to their own policies. Tickspycorp does not operate an account database or independent analytics system.</p>
       <p><strong>Google Fonts</strong> receives your IP address and browser details when typefaces load. <strong>jsDelivr</strong> provides TensorFlow.js when the volatility model runs. The model trains in your browser; your credentials and watchlist are not sent to jsDelivr.</p>
       <p>With your own credentials, your browser contacts <strong>Alpaca</strong> directly for data and streams; Tickspycorp's edge proxy does not receive those credentials. Without credentials, your browser loads a replay file from this site's hosting. The currently bundled files contain <strong>generated demonstration data, not real market prices</strong>. If replaced with verified HF Data Library files, the price source is IEX exchange data. Headlines from public feeds and calendar entries from FairEconomy are requested by our edge server, not your browser. <strong>Google Gemini</strong> receives public headlines and calendar information from the edge server to produce a shared overview; no user-entered prompts or credentials are sent.</p>
-      <p>FormSubmit and Gmail process submitted messages. Providers can process and store information outside Québec and Canada, including in the United States. Their privacy practices and lawful access rules may differ from those in Québec.</p>
+      <p><strong>FormSubmit</strong> and <strong>Gmail</strong> process submitted messages as described above. Providers can process and store information outside Québec and Canada, including in the United States. Their privacy practices and lawful access rules may differ from those in Québec.</p>
 
-      <h2>Retention and choices</h2>
+      <h2>Choices and browser storage</h2>
       <p>The calendar normally uses the site's edge service or bundled file. A fallback can request calendar data directly from FairEconomy, in which case that provider receives your browser's normal request information. This release does not include session recordings or a client-side visitor-analytics beacon. Hosting-provider traffic statistics and server logs are separate from those browser features.</p>
       <p>Your advertising choice, if made, is saved under <code>tickspy-ad-consent</code>. Desk storage includes <code>cfg</code> (optional Alpaca keys), <code>wl</code> (watchlist), <code>alerts</code>, <code>calalert</code>, <code>calfired</code>, <code>calc</code> (calendar cache), <code>legal</code> (disclosure acceptance), and <code>wiz</code> (setup preference). Storage remains until you clear this site's browser data or remove the relevant item in the desk. Browser-stored keys are not encrypted by TickSPY. Use Paper-account keys and avoid shared devices. If storage is unavailable, preferences are held only for the current page session.</p>
-      <p>Support messages are kept only as needed to answer the request, resolve the issue, and meet applicable legal obligations. Request deletion through the support address. Third-party log and backup retention follows each provider's own practices.</p>
-
-      <h2>Your rights and privacy contact</h2>
-      <p>You may request access to or correction of personal information held by Tickspycorp, request deletion where applicable, withdraw consent to optional processing, or raise a privacy complaint at <a href="mailto:tickspysupport@gmail.com?subject=Privacy%20request">tickspysupport@gmail.com</a>. Withdrawing consent does not undo processing already lawfully completed. We may need proportionate verification before providing private correspondence.</p>
-      <p>Privacy requests are directed to the person exercising the highest authority at Tickspycorp, responsible for personal-information protection unless that responsibility is delegated. The same email is the published privacy contact. You can also contact the <a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noopener noreferrer">Commission d'accès à l'information du Québec</a>.</p>
 
       <h2>Eligibility and security</h2>
       <p>The desk is intended for people aged 18 or older. We do not knowingly solicit children's personal information. If such information was submitted, contact us to request its removal. HTTPS and browser security controls reduce risks, but no website or browser storage can be guaranteed completely secure.</p>

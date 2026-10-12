@@ -50,8 +50,10 @@ export const Footer = () => {
           </li>
         </ul>
         <p className="mt-6 text-[12.5px] leading-relaxed text-faint">
-          TickSPY is not a broker and places no trades. It publishes analysis, not advice, and its volatility model estimates how
-          large a move may be rather than which way it will go. Full disclosures sit inside the desk.
+          TickSPY is provided for <strong className="font-medium text-steel">educational and informational purposes only</strong>. It is
+          not a broker or an adviser, it places no trades, and nothing here is financial, investment, trading or tax advice. It
+          publishes analysis, not advice, and its volatility model estimates how large a move may be rather than which way it will
+          go. See the <a href="risk.html" className="link-quiet underline underline-offset-2">Risk Disclosure</a> before making any decision.
         </p>
       </div>
     </div>
@@ -59,15 +61,17 @@ export const Footer = () => {
       <div className="border-t border-line">
         <div className="shell flex flex-col gap-2 py-6 text-[12.5px] text-faint sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 Tickspycorp · Québec, Canada</p>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <a href="privacy.html" className="link-quiet">Privacy and cookies</a>
-            <a href="terms.html" className="link-quiet">Terms and risk disclosure</a>
+          <nav aria-label="Legal" className="flex flex-wrap gap-x-4 gap-y-1">
+            <a href="privacy.html" className="link-quiet">Privacy policy</a>
+            <a href="terms.html" className="link-quiet">Terms of service</a>
+            <a href="risk.html" className="link-quiet">Risk disclosure</a>
+            <a href="privacy-fr.html" lang="fr" hreflang="fr" className="link-quiet">Confidentialité&nbsp;(FR)</a>
             <a href="mailto:tickspysupport@gmail.com" className="link-quiet">Support</a>
             <a href="desk/overview/" className="link-quiet">Learn the desk</a>
             <a href="desk/tools/" className="link-quiet">Risk calculators</a>
             <a href="desk/volatility/" className="link-quiet">ATR and volatility</a>
             <p>No accounts, no server of ours holding your keys.</p>
-          </div>
+          </nav>
         </div>
       </div>
     </footer>
