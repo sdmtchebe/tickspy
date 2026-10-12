@@ -1,13 +1,14 @@
 # Privacy Policy
 
-**Last updated:** 2026-10-10
+**Last updated:** 2026-10-12
 
 **Public service:** Tickspycorp, Québec, Canada, contact tickspysupport@gmail.com.
-The complete policy for the hosted website and desk is at
+The complete, authoritative policy for the hosted website and desk is at
 <https://tickspy.com/privacy.html> (French: <https://tickspy.com/privacy-fr.html>).
 It covers Netlify/Cloudflare request logs, Google Fonts, jsDelivr, and messages
-received through FormSubmit and Gmail. The description below concerns local
-desk preferences; it does not override the public-service policy.
+received through FormSubmit and Gmail, and it sets out the PIPEDA and Québec
+Law 25 commitments described below. This file summarises the same position for
+the local desk; where the two differ, the public-service policy governs.
 
 This is a summary of what this dashboard does and does not do with your
 information. It is written to be read, not to be skimmed past. **This template
@@ -43,6 +44,24 @@ to a provider you chose.
 You can erase all of it at any time by clearing site data for this page in your
 browser. Nothing is backed up anywhere else.
 
+## What we collect through the contact forms, and why
+
+The only personal information Tickspycorp itself receives is what you choose to
+send through the landing page's contact and feedback forms:
+
+- **Contact form:** your **name**, your **email address**, and the **message**.
+- **Feedback / bug form:** your **name**, your **email address**, the **category**
+  you select, the **message**, and an **optional screenshot** (image, up to 5 MB).
+- **Request metadata:** the ordinary information any web request carries, such as
+  an IP address, browser details and a timestamp, handled by the delivery and mail
+  providers rather than stored by us.
+
+We use it for one purpose only — to **read, answer and resolve your request** and
+to investigate anything you report. We do not sell, rent, trade or profile it, and
+we do not use it for advertising. Our basis is your **consent**, given by
+submitting the form, plus our legitimate interest in answering support requests.
+Do not send API keys, passwords, account numbers or sensitive financial details.
+
 ## What gets sent, and to whom
 
 The dashboard contacts third parties only when the relevant feature is used, with
@@ -76,13 +95,63 @@ one exception: the web fonts load with the page itself.
   the model can train in your browser. jsDelivr sees your IP address and user
   agent; nothing else about you is sent.
 - **FormSubmit** (`formsubmit.co`) — only if you use the optional contact or
-  feedback form on the landing page. It relays what you type, and any screenshot
-  you attach, to the project's support inbox. If you never submit that form, it
-  is never contacted.
+  feedback form on the landing page. It relays the fields above, and any
+  screenshot you attach, to the project's support inbox at
+  **tickspysupport@gmail.com**, hosted by **Google Gmail**. FormSubmit and Google
+  process the message and ordinary request data under their own policies. If you
+  never submit that form, neither is contacted.
 
 Each provider has its own privacy policy, and your use of them is governed by
 your own agreements with them. We have no control over, and take no
 responsibility for, how they handle data.
+
+## Legal framework: PIPEDA and Québec Law 25
+
+Tickspycorp handles personal information in line with Canada's **Personal
+Information Protection and Electronic Documents Act (PIPEDA)** and Québec's
+**Act respecting the protection of personal information in the private sector, as
+modernized by Law 25 (2021, c. 25)**. In practice that means purposes are
+identified in plain language before collection; we collect only what a support
+reply needs, and only from you; one person is accountable for the information
+(see below); we apply proportionate safeguards (HTTPS, provider access controls,
+and no database of visitors of our own); and you can exercise the rights below.
+
+## Where your information is handled
+
+Tickspycorp holds support correspondence in Canada, but FormSubmit and Gmail — the
+services that deliver it — may process and store it **outside Québec and Canada,
+including in the United States**, where the laws and lawful-access rules differ
+from Québec's. We rely on providers offering contractual privacy commitments, and
+we send only what the message needs.
+
+## Retention
+
+Support messages are kept only as long as needed to answer the request, resolve
+the reported issue and meet any applicable legal obligation, then deleted. You
+can ask for earlier deletion. Provider logs and the calendar/news sources keep
+their own records for their own periods.
+
+## Your rights
+
+Under PIPEDA and Québec Law 25 you may ask Tickspycorp to **access** the personal
+information we hold about you and be told how it has been used; **correct** it if
+inaccurate, incomplete or ambiguous; **delete** it where the law allows;
+**withdraw consent** to optional processing; receive the computerized information
+you provided in a **structured, portable** form; and **de-index / cease
+dissemination** in defined circumstances. Contact tickspysupport@gmail.com; we may
+ask for proportionate identity verification, and we answer within the time the
+law requires or explain why we refuse. For information held independently by
+providers, contact the relevant provider. Clear browser site data to delete local
+preferences.
+
+## Privacy officer and complaints
+
+The person with the highest authority at Tickspycorp is responsible for personal
+information protection unless delegated in writing, and is the published privacy
+contact: tickspysupport@gmail.com. If unsatisfied, you may complain to the
+**Commission d'accès à l'information du Québec** (<https://www.cai.gouv.qc.ca/>)
+or, for federal matters, the **Office of the Privacy Commissioner of Canada**
+(<https://www.priv.gc.ca/>).
 
 ## The bundled local server
 
@@ -98,15 +167,11 @@ for public use, and doing so would redistribute third-party market data.
 
 ## Eligibility
 
-You must be 18 or older to use this software.
-
-## Your rights
-
-For access, correction, deletion where applicable, withdrawal of optional consent,
-or privacy complaints concerning support correspondence held by Tickspycorp,
-contact tickspysupport@gmail.com. For information held independently by providers,
-contact the relevant provider. Clear browser site data to delete local preferences.
+You must be 18 or older to use this software. We do not knowingly solicit
+children's personal information; if any was submitted, contact us to have it
+removed.
 
 ## Changes
 
-If this policy changes, the updated version will appear here with a new date.
+If this policy changes, the updated version will appear here with a new date, and
+the authoritative copy at <https://tickspy.com/privacy.html> will be updated too.

@@ -187,6 +187,19 @@ your behalf; it does not retain your keys. The `local-config.js` file, if
 present, contains keys in plain text and is excluded from version control — keep
 it that way.
 
+The **public TickSPY service** (Tickspycorp, Québec, Canada) collects one class of
+personal information: what you choose to send through its contact and feedback
+forms. Those forms post to **FormSubmit** (`formsubmit.co`), which relays your
+name, email address, message, selected category and any optional screenshot to the
+operator's **Gmail** inbox; the operator uses it only to answer your request and
+does not sell, profile or advertise with it. That handling follows Canada's
+**PIPEDA** and Québec's **Law 25** (2021, c. 25): identified purposes, minimal
+collection, a named accountable person, cross-border disclosure to the United
+States through those providers, limited retention, and rights of access,
+correction, deletion, portability, de-indexing and withdrawal of consent. The
+authoritative policy, the privacy contact, and the regulator to escalate to are at
+<https://tickspy.com/privacy.html> (French: <https://tickspy.com/privacy-fr.html>).
+
 ## 13. No legal advice
 
 This document is provided for information only and does **not** constitute legal
