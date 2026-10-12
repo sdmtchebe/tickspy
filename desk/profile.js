@@ -27,9 +27,9 @@
   last={hi,span,ph,height:h,base,step};cv.dataset.zoom=view.zoom;
   ctx.font='11px monospace';ctx.textBaseline='middle';ctx.fillStyle='#aeb7c6';ctx.fillText(`${data.length} candles · estimated volume`,2,10);
   ctx.save();ctx.beginPath();ctx.rect(0,24,w,ph);ctx.clip();
-  bins.forEach((v,i)=>{const top=y(base+(i+1)*step),height=step/span*ph-1;ctx.fillStyle=i===poc?'#D9A441':i>=a&&i<=b?'#8698af':'#4e5d72';ctx.fillRect(0,top,v/max*plot,Math.max(1,height))});
+  bins.forEach((v,i)=>{const top=y(base+(i+1)*step),height=step/span*ph-1;ctx.fillStyle=i===poc?'#FFB347':i>=a&&i<=b?'#aeb7c6':'#3a4453';ctx.fillRect(0,top,v/max*plot,Math.max(1,height))});
   for(let j=0;j<=4;j++){const p=hi-span*j/4,py=y(p);ctx.fillStyle='#aeb7c6';ctx.fillText(fmt(p),plot+8,clamp(py,30,h-18))}
-  if(view.index!=null){const i=view.index,p=base+(i+.5)*step,py=y(p);ctx.strokeStyle='#eef1f6';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(w,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#212734';ctx.fillRect(plot+3,py-10,w-plot,20);ctx.fillStyle='#eef1f6';ctx.fillText(fmt(p),plot+8,py);
+  if(view.index!=null){const i=view.index,p=base+(i+.5)*step,py=y(p);ctx.strokeStyle='#eef1f6';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(w,py);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#0e1324';ctx.fillRect(plot+3,py-10,w-plot,20);ctx.fillStyle='#eef1f6';ctx.fillText(fmt(p),plot+8,py);
    document.getElementById('vp-readout').textContent=`Price ${fmt(base+i*step)}–${fmt(base+(i+1)*step)} · Estimated volume ${Math.round(bins[i]).toLocaleString()} shares · ${total?(bins[i]/total*100).toFixed(1):'0.0'}% of total${i===poc?' · POC (largest bucket)':''}${i>=a&&i<=b?' · Inside estimated value area':''}`;
   }else document.getElementById('vp-readout').textContent=`POC ${fmt(base+(poc+.5)*step)} · Total ${Math.round(total).toLocaleString()} shares. Hover or touch a row for its price and estimated volume.`;
   ctx.restore();

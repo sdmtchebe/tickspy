@@ -107,21 +107,42 @@ same-origin server, or a full URL.
   Gemini key never reaches the browser and 10,000 visitors cost one API call.
   Without that URL the News tab still shows the per-symbol Alpaca feed, and the
   calendar falls back to the baked file below.
-- **The calendar is served same-origin.** Its upstream host
-  (`nfs.faireconomy.media`) sends no CORS headers, so a browser cannot call it
-  from a static page. The Pages workflow fetches it on a six-hour schedule and
-  ships it as `calendar.json`, both beside the desk and at the site root; when a
-  local server is present, the existing proxy is used instead. The desk looks
-  beside itself first and falls back one directory up, so it works from any mount
-  point — reading it relative to the page alone is what made the tab report
-  "Calendar unavailable: 404". Events are filtered to USD medium/high impact and
-  grouped by day, with a countdown to the next release and forecast vs previous
-  values.
+- **The calendar is served same-origin, in two legs.** Neither calendar host
+  sends CORS headers, so a browser cannot call either from a static page, and the
+  two publish different things:
+  - `nfs.faireconomy.media` — the provider's rated week. Every release carries an
+    impact rating, but only one week is ever published; the `nextweek` and
+    `lastweek` files answer 404.
+  - `api.nasdaq.com/api/calendar/economicevents?date=YYYY-MM-DD` — any date, and
+    the only reason a "next week" button can do anything. It sends no impact
+    rating, so those rows are shown as **not rated** and cannot fire
+    impact-based alerts. Their clock column is GMT and is converted as such.
+
+  `worker/src/calendar.js` fetches both, merges them on time plus title (a rated
+  row always wins) and reaches three weeks past the published week. The Pages
+  workflow runs the same module through `worker/scripts/write-calendar.mjs` on a
+  six-hour schedule and ships the result as `calendar.json`, both beside the desk
+  and at the site root; with a local server the provider is reachable through the
+  proxy instead. The desk reads **both** the edge API and the baked file and
+  merges them, so the near week keeps its ratings without the later weeks
+  disappearing. It looks beside itself first and falls back one directory up, so it
+  works from any mount point — reading it relative to the page alone is what made
+  the tab report "Calendar unavailable: 404".
+- **One week is open, the rest is one press away.** The list opens on a whole
+  week, Sunday to Saturday in New York time — the same week the providers publish,
+  so the first thing on screen is never the tail end of a week that is already
+  over. `Show Oct 18 – Oct 24 (12 events)` appends the next week, `Back to this
+  week` closes it again, and the foot of the list says when no further week has
+  been published yet. Events are filtered to USD, grouped by week and day, with a
+  countdown to the next release and forecast vs previous values. Days with no
+  release are left out rather than padded with placeholders, so a quiet week
+  reads as quiet instead of broken.
 - **It keeps itself current.** The Worker refreshes the calendar hourly and the
   Pages workflow every six hours, and the desk no longer waits for you to open
   the tab: it loads the calendar on start, reloads it when the US/Eastern date
   changes (so a page left open overnight picks up the new week), and reloads it
-  when the tab becomes visible again after its cached copy has gone stale.
+  when the tab becomes visible again after its cached copy has gone stale. A week
+  that is not published yet fills itself in on the next of those passes.
 
 ## Alerts
 

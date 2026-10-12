@@ -19,6 +19,7 @@ import { cached, createMemory, warm } from "./cache.js";
 import { collectNews } from "./news.js";
 import { fetchSeries, knownInterval } from "./bars.js";
 import { generateOverview, DEFAULT_MODEL } from "./gemini.js";
+import { produceCalendar } from "./calendar.js";
 
 // Per-isolate, survives between requests handled by the same instance.
 const MEM = createMemory();
@@ -26,8 +27,6 @@ const MEM = createMemory();
 // Exposed so tests can reset the per-isolate cache between cases; production
 // code only ever goes through the routes above.
 export const _memory = MEM;
-
-const CALENDAR_UPSTREAM = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
 
 const KEYS = {
   overview: "overview:v1",
@@ -173,22 +172,12 @@ function json(body, { status = 200, request, env, cache = "no-store", extra = {}
   });
 }
 
-/* ---------------------------------------------------------------- calendar -- */
-function normaliseCalendar(raw) {
-  const list = Array.isArray(raw) ? raw : [];
-  return list
-    .filter((e) => e && e.title && e.date)
-    .map((e) => ({
-      title: String(e.title),
-      country: String(e.country || ""),
-      date: String(e.date),
-      impact: String(e.impact || ""),
-      forecast: e.forecast == null ? "" : String(e.forecast),
-      previous: e.previous == null ? "" : String(e.previous),
-      actual: e.actual == null ? "" : String(e.actual),
-    }))
-    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
-}
+/* ---------------------------------------------------------------- calendar --
+ * The calendar is assembled in calendar.js: the provider's rated week plus the
+ * forward weeks Nasdaq publishes, which is what lets the desk open the week
+ * after this one. Unrated Nasdaq rows are deliberately labelled "not rated"
+ * rather than guessed at.
+ */
 
 /** The next few high-impact USD events, used both for the AI prompt and the UI. */
 export function upcomingEvents(events, { limit = 8, from = Date.now() } = {}) {
@@ -206,15 +195,6 @@ export function upcomingEvents(events, { limit = 8, from = Date.now() } = {}) {
       forecast: e.forecast,
       previous: e.previous,
     }));
-}
-
-async function produceCalendar() {
-  const res = await fetch(CALENDAR_UPSTREAM, {
-    headers: { "User-Agent": "TickSPY/1.0 (+https://github.com/sdmtchebe/tickspy)" },
-    cf: { cacheTtl: 1800, cacheEverything: true },
-  });
-  if (!res.ok) throw new Error(`calendar upstream ${res.status}`);
-  return normaliseCalendar(await res.json());
 }
 
 async function getCalendar(request, env, ctx) {

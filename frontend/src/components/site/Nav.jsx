@@ -58,6 +58,25 @@ export const Nav = () => {
         </ul>
 
         <div className="flex items-center gap-2">
+           {/* Support is in the header rather than only in the footer: the footer
+               needs a scroll to the bottom of the page to be seen at all, and this
+               is the one thing on the page that asks for money. It stays a quiet
+               outline button so it never competes with "Open the desk". */}
+           {/* The wrapper carries the breakpoint rather than the link itself:
+               `.btn` sets its own display, and a base Tailwind `hidden` loses to
+               it, so `hidden lg:inline-flex` on the anchor would leave the link
+               on a phone's header as well as in its menu. */}
+           <span className="hidden lg:block">
+             <a
+               className="btn btn-ghost btn-sm"
+               href="https://buymeacoffee.com/tickspy"
+               target="_blank"
+               rel="noopener noreferrer"
+               data-testid="nav-coffee"
+             >
+               Buy me a coffee
+             </a>
+           </span>
            <label className="sr-only" htmlFor="language-selector">{copy.language}</label>
            <select id="language-selector" className="language-select" value={locale} onChange={(event) => setLocale(event.target.value)} data-testid="language-selector">
              {LANGUAGES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
@@ -100,6 +119,18 @@ export const Nav = () => {
                    {copy.nav[l.index]}
                 </button>
               ))}
+              {/* The desktop header hides this below lg, so the menu carries it:
+                  one tap instead of a scroll to the footer. */}
+              <a
+                href="https://buymeacoffee.com/tickspy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                data-testid="nav-mobile-coffee"
+                className="mt-2 block w-full rounded-lg border-t border-line px-3 py-3 text-left text-[15px] text-steel transition-colors hover:text-ink"
+              >
+                Buy me a coffee
+              </a>
             </div>
           </motion.div>
         )}

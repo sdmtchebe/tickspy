@@ -66,28 +66,24 @@ jobs:
           REACT_APP_SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
         run: npm run build
 
-      - name: Add the same-origin economic calendar
+      - name: Check the same-origin economic calendar
         run: |
-          # Written beside the desk as well as at the site root: the desk looks in
-          # its own folder first, so this avoids a wasted 404 round-trip, and the
-          # root copy stays for anyone linking to it directly.
+          # The build bakes this itself (frontend postbuild ->
+          # worker/scripts/write-calendar.mjs), so every host gets it, not just
+          # this workflow. Neither calendar host sends CORS headers, so a browser
+          # on the static site cannot call them directly; the weeks ship with the
+          # site instead. The merge lives in worker/src/calendar.js, shared with
+          # the edge API, because there are two upstreams and only one of them
+          # publishes a rating or more than one week:
+          #   - the provider's "this week" file: rated, one week only
+          #   - Nasdaq's per-day calendar: any date, never rated
+          # Without the second leg the desk's "show me the next week" button
+          # would have nothing to open. It is written beside the desk as well as
+          # at the site root: the desk looks in its own folder first, so this
+          # avoids a wasted 404 round-trip, and the root copy stays for anyone
+          # linking to it directly.
           OUT=frontend/build/calendar.json
-          if curl -fsS --max-time 30 \
-              https://nfs.faireconomy.media/ff_calendar_thisweek.json \
-              -o "$OUT.tmp"; then
-            # The calendar host sends no CORS headers, so a browser cannot fetch
-            # it directly; ship it with the site instead.
-            if python3 -c "import json; json.load(open('$OUT.tmp'))" 2>/dev/null; then
-              mv "$OUT.tmp" "$OUT"
-            else
-              echo "::warning::calendar payload was not valid JSON; ignoring this run"
-              rm -f "$OUT.tmp"
-            fi
-          else
-            echo "::warning::could not fetch the economic calendar this run"
-          fi
-          test -s "$OUT" || echo "[]" > "$OUT"
-          cp "$OUT" frontend/build/desk/calendar.json
+          test -s "$OUT" || { echo "::error::the build did not bake calendar.json"; exit 1; }
           echo "calendar bytes: $(wc -c < "$OUT")"
 
       - name: Sanity-check the artifact

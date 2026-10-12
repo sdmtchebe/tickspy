@@ -32,6 +32,13 @@ import {
 } from "../src/bars.js";
 import worker, { upcomingEvents, _memory, BARS_CRON, budgetAllows, _fetchBudget, BARS_KEY_PREFIX } from "../src/index.js";
 import {
+  produceCalendar,
+  mergeCalendar,
+  nasdaqDay,
+  forwardDates,
+  FORWARD_DAYS,
+} from "../src/calendar.js";
+import {
   yahooSymbol,
   chartUrl,
   parseChart,
@@ -1221,6 +1228,143 @@ console.log("\nbars.js");
       await worker.scheduled({ cron: "*/20 * * * *" }, env, {});
       assert.equal(barCalls, before, "the 20-minute run must not re-fetch prices");
     });
+  });
+
+  /* ---------------------------------------------------------------- calendar -- */
+  await test("forwardDates asks for the days the provider's file does not cover", () => {
+    const week = [
+      { date: "2026-10-12T08:30:00-04:00", title: "a" },
+      { date: "2026-10-14T08:30:00-04:00", title: "b" },
+    ];
+    // Starts the day after the last published one, so nothing is asked for twice.
+    assert.deepEqual(forwardDates(week, "2026-10-11", 3), ["2026-10-15", "2026-10-16", "2026-10-17"]);
+    assert.ok(
+      !forwardDates(week, "2026-10-11", 21).some((d) => ["2026-10-12", "2026-10-14"].includes(d)),
+      "a day the provider covers is never asked of the second source"
+    );
+    // A stale week - the Monday after a refresh that never happened - moves the
+    // window up to today, so the desk still has a calendar to show.
+    assert.deepEqual(forwardDates([{ date: "2026-10-16T08:30:00-04:00", title: "a" }], "2026-10-19", 3), [
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21",
+    ]);
+    // With no provider leg at all the window starts today for the same reason.
+    assert.deepEqual(forwardDates([], "2026-10-30", 3), ["2026-10-30", "2026-10-31", "2026-11-01"]);
+  });
+
+  await test("nasdaqDay converts the GMT clock and drops rows with no time", () => {
+    const payload = {
+      data: {
+        rows: [
+          { gmt: "08:30", country: "United States", eventName: "Building Permits", consensus: "&nbsp;", previous: " 1.403M ", actual: "&nbsp;" },
+          { gmt: "All Day", country: "Brazil", eventName: "Independence Day", consensus: "", previous: "", actual: "" },
+          { gmt: "", country: "China", eventName: "No clock at all", consensus: "", previous: "", actual: "" },
+        ],
+      },
+    };
+    const events = nasdaqDay(payload, "2026-10-21");
+    assert.equal(events.length, 1, "rows without a clock time cannot be ordered, so they are dropped");
+    assert.deepEqual(events[0], {
+      title: "Building Permits",
+      country: "USD",
+      date: "2026-10-21T08:30:00Z",
+      impact: "",
+      forecast: "",
+      previous: "1.403M",
+      actual: "",
+    });
+    // A country outside the map keeps its own name rather than losing the row.
+    assert.equal(nasdaqDay({ data: { rows: [{ gmt: "09:00", country: "Jan Mayen", eventName: "x" }] } }, "2026-10-21")[0].country, "Jan Mayen");
+    assert.deepEqual(nasdaqDay(null, "2026-10-21"), []);
+  });
+
+  await test("mergeCalendar keeps one row per time and title, rated beats unrated", () => {
+    const rated = { title: "CPI m/m", country: "USD", date: "2026-10-14T08:30:00-04:00", impact: "High" };
+    const unrated = { title: "CPI m/m", country: "USD", date: "2026-10-14T08:30:00-04:00", impact: "" };
+    for (const order of [[rated, unrated], [unrated, rated]]) {
+      const merged = mergeCalendar([order[0]], [order[1]]);
+      assert.equal(merged.length, 1, "the same release from two sources is one row");
+      assert.equal(merged[0].impact, "High", "a rating is never downgraded by a second source");
+    }
+    // Distinct times and distinct titles both stay.
+    assert.equal(mergeCalendar([], [unrated, { ...unrated, date: "2026-10-14T09:00:00Z" }, { ...unrated, title: "Core CPI" }]).length, 3);
+    assert.deepEqual(mergeCalendar(), []);
+  });
+
+  await test("produceCalendar extends the provider's week with Nasdaq's unrated forward days", async () => {
+    const realFetch = globalThis.fetch;
+    const asked = [];
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      if (u.includes("faireconomy")) {
+        return new Response(
+          JSON.stringify([
+            { title: "CPI m/m", country: "USD", date: "2026-10-14T08:30:00-04:00", impact: "High", forecast: "0.3%", previous: "0.2%" },
+          ]),
+          { status: 200 }
+        );
+      }
+      if (u.includes("nasdaq")) {
+        const date = new URL(u).searchParams.get("date");
+        asked.push(date);
+        return new Response(
+          JSON.stringify({
+            data: {
+              rows: [
+                { gmt: "12:30", country: "United States", eventName: "Building Permits", consensus: "&nbsp;", previous: "1.403M", actual: "&nbsp;" },
+                { gmt: "15:00", country: "Germany", eventName: "ZEW Sentiment", consensus: "&nbsp;", previous: "-1.2", actual: "&nbsp;" },
+              ],
+            },
+          }),
+          { status: 200 }
+        );
+      }
+      throw new Error(`unexpected fetch ${u}`);
+    };
+    try {
+      const events = await produceCalendar({ now: new Date("2026-10-11T18:00:00Z") });
+      // The provider's day is not asked of Nasdaq, so its one rated row cannot be
+      // duplicated by the second source.
+      assert.ok(!asked.includes("2026-10-14"), JSON.stringify(asked.slice(0, 3)));
+      assert.equal(asked[0], "2026-10-15", "the window opens the day after the published week");
+      assert.equal(asked.length, FORWARD_DAYS);
+      const cpi = events.filter((e) => e.title === "CPI m/m");
+      assert.equal(cpi.length, 1, "the provider's own row is served once, unchanged");
+      assert.equal(cpi[0].impact, "High");
+      assert.equal(cpi[0].date, "2026-10-14T08:30:00-04:00");
+      const zew = events.filter((e) => e.title === "ZEW Sentiment");
+      assert.equal(zew.length, FORWARD_DAYS, "every forward day answered, so every row is kept");
+      assert.ok(zew.every((e) => e.impact === ""), "Nasdaq does not rate releases, and nothing invents a rating");
+      assert.equal(zew[0].country, "EUR");
+      assert.equal(events.filter((e) => e.title === "Building Permits").length, FORWARD_DAYS);
+      // Sorted through, not appended in source order.
+      assert.deepEqual([...events].sort((a, b) => Date.parse(a.date) - Date.parse(b.date)), events);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  await test("produceCalendar rides out a dead provider leg and a rate-limited Nasdaq", async () => {
+    const realFetch = globalThis.fetch;
+    let nasdaqCalls = 0;
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      if (u.includes("faireconomy")) return new Response("down", { status: 503 });
+      if (u.includes("nasdaq")) {
+        nasdaqCalls++;
+        return new Response("forbidden", { status: 403 });
+      }
+      throw new Error(`unexpected fetch ${u}`);
+    };
+    try {
+      // Everything is down: the caller is told, rather than being handed an empty
+      // calendar that reads as "no events this month".
+      await assert.rejects(() => produceCalendar({ now: new Date("2026-10-11T18:00:00Z") }), /503/);
+      assert.ok(nasdaqCalls > 0, "the forward leg is still attempted");
+    } finally {
+      globalThis.fetch = realFetch;
+    }
   });
 
   /* ------------------------------------------------------------------ report */

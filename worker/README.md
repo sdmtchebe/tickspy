@@ -6,7 +6,7 @@ A small Cloudflare Worker that does the things a static site cannot:
 |---|---|
 | `GET /api/overview` | A Gemini-written market overview, cached globally |
 | `GET /api/news` | Market headlines aggregated from six free feeds |
-| `GET /api/calendar` | The economic calendar, relayed past its CORS block |
+| `GET /api/calendar` | The economic calendar: the provider's rated week plus three weeks beyond it |
 | `GET /api/bars` | The previous completed session's prices, with no API key |
 | `GET /api/health` | Cache ages and per-source status |
 
@@ -49,6 +49,39 @@ error because of it.
 
 Intervals: overview 25 min TTL / 20 min cron, news 3 min, calendar 1 h, price
 bars 20 h.
+
+## The calendar, and why it has two upstreams (`/api/calendar`)
+
+`worker/src/calendar.js` is the only place that knows where calendar weeks come
+from, and the Pages build runs the same module (`scripts/write-calendar.mjs`) so
+the static site and this API can never disagree about which weeks exist.
+
+| Upstream | Covers | Ratings |
+|---|---|---|
+| `nfs.faireconomy.media/ff_calendar_thisweek.json` | one week, exactly | yes: High / Medium / Low / Holiday |
+| `api.nasdaq.com/api/calendar/economicevents?date=…` | any date asked for | no |
+
+The provider file is the good one and the limited one: its `nextweek` and
+`lastweek` siblings answer 404, so on its own the desk could never answer "what
+is happening the week after this one". Nasdaq's per-day endpoint covers the gap
+and is keyless; it rejects non-browser agents with a 403, so the request carries
+a browser user agent — the endpoint is public and answers with
+`access-control-allow-origin: *`, so it is meant to be called from a page.
+
+Rules the merge follows:
+
+- The Nasdaq window starts the day after the provider's last published day; a day
+the provider already covers is never asked for twice.
+- A stale or empty provider week moves the window up to today, so a failed
+refresh still leaves the desk a week.
+- Rows are deduplicated on timestamp plus title, and a rated row always wins, so a
+release the provider rated is never downgraded to unrated.
+- Nasdaq rows have no rating and are served with an empty `impact`. The desk labels
+them "not rated" and they cannot fire impact-based alerts. A rating is never
+invented.
+- Nasdaq's clock column is GMT and is converted as such; rows with no clock time
+("All Day", "Tentative") are dropped rather than placed at an arbitrary hour.
+- One day failing is not a failure: the rest of the window is still served.
 
 ## Price data, with no key (`/api/bars`)
 

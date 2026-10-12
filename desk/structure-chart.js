@@ -3,7 +3,7 @@
  'use strict';
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const fmt=n=>n.toFixed(n<1?4:2),clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
- const colors={'Bullish trend':'#3DBE8B','Bearish trend':'#E5605F','Compression':'#82afff','Volatile chop':'#D9A441','Mixed / range':'#98A1B0','Warming up':'#546175'};
+ const colors={'Bullish trend':'#00E5A0','Bearish trend':'#FF4D6A','Compression':'#82A9FF','Volatile chop':'#FFB347','Mixed / range':'#8A93A6','Warming up':'#868fa0'};
  let state={key:'',count:100,end:0,scale:1,shift:0,length:0};
  function mount(host,bars,result,key){
    if(!host)return;
@@ -25,11 +25,11 @@
      const center=(high+low)/2+state.shift,span=natural/state.scale,lo=center-span/2,hi=center+span/2;
      const dx=686/slice.length,x=i=>12+(i+.5)*dx,y=p=>290-(p-lo)/span*278;
      map={start,end:state.end,x,y,dx,lo,hi,span,natural};let s='';
-     for(let i=0;i<=4;i++){const p=lo+span*i/4;s+=line(12,y(p),698,y(p),'#333B49')+`<text x="706" y="${y(p)+4}">${fmt(p)}</text>`}
-     let plot='';for(const z of result.levels.zones){const c=z.side==='Support candidate'?'#3DBE8B':z.side==='Inside zone'?'#D9A441':'#E5605F';plot+=`<rect x="12" y="${y(z.high)}" width="686" height="${Math.max(1,y(z.low)-y(z.high))}" fill="${c}" opacity=".13"/>`+line(12,y(z.price),698,y(z.price),c,'3 5')}
-     for(const k of ['upper','lower'])plot+=`<polyline fill="none" stroke="#82afff" opacity=".65" points="${series.map((v,i)=>`${x(i)},${y(v[k])}`).join(' ')}"/>`;
-     slice.forEach((b,i)=>{const c=b.c>=b.o?'#3DBE8B':'#E5605F';plot+=line(x(i),y(b.h),x(i),y(b.l),c)+`<rect x="${x(i)-dx*.3}" y="${Math.min(y(b.o),y(b.c))}" width="${dx*.6}" height="${Math.max(1,Math.abs(y(b.o)-y(b.c)))}" fill="${c}"/>`});
-     if(result.levels.vwap!=null)plot+=line(12,y(result.levels.vwap),698,y(result.levels.vwap),'#D9A441','6 4');
+     for(let i=0;i<=4;i++){const p=lo+span*i/4;s+=line(12,y(p),698,y(p),'#222a36')+`<text x="706" y="${y(p)+4}">${fmt(p)}</text>`}
+     let plot='';for(const z of result.levels.zones){const c=z.side==='Support candidate'?'#00E5A0':z.side==='Inside zone'?'#FFB347':'#FF4D6A';plot+=`<rect x="12" y="${y(z.high)}" width="686" height="${Math.max(1,y(z.low)-y(z.high))}" fill="${c}" opacity=".13"/>`+line(12,y(z.price),698,y(z.price),c,'3 5')}
+     for(const k of ['upper','lower'])plot+=`<polyline fill="none" stroke="#82A9FF" opacity=".65" points="${series.map((v,i)=>`${x(i)},${y(v[k])}`).join(' ')}"/>`;
+     slice.forEach((b,i)=>{const c=b.c>=b.o?'#00E5A0':'#FF4D6A';plot+=line(x(i),y(b.h),x(i),y(b.l),c)+`<rect x="${x(i)-dx*.3}" y="${Math.min(y(b.o),y(b.c))}" width="${dx*.6}" height="${Math.max(1,Math.abs(y(b.o)-y(b.c)))}" fill="${c}"/>`});
+     if(result.levels.vwap!=null)plot+=line(12,y(result.levels.vwap),698,y(result.levels.vwap),'#FFB347','6 4');
      s+=`<g clip-path="url(#ms-plot-clip)">${plot}</g><text x="12" y="312">${esc(bars[start].t.slice(0,16))} UTC</text><text x="480" y="312">${esc(bars[state.end-1].t.slice(0,16))} UTC</text>`;
      base.innerHTML=s;cross.innerHTML='';
      host.querySelector('#ms-chart-range').textContent=`Viewing bars ${start+1}–${state.end} of ${bars.length}. Price scale ${state.scale.toFixed(1)}×. Keyboard: ←/→ inspect, +/− zoom, Home reset.`;
@@ -38,7 +38,7 @@
    }
    function inspect(index,price){
      selected=clamp(index,map.start,map.end-1);const b=bars[selected],px=map.x(selected-map.start),py=clamp(map.y(price==null?b.c:price),12,290),value=price==null?b.c:price;
-     cross.innerHTML=line(px,12,px,290,'#c7d0df','3 3')+line(12,py,698,py,'#c7d0df','3 3')+`<rect x="700" y="${py-10}" width="98" height="20" fill="#212734"/><text x="705" y="${py+4}">${fmt(value)}</text>`;
+     cross.innerHTML=line(px,12,px,290,'#E8ECF4','3 3')+line(12,py,698,py,'#E8ECF4','3 3')+`<rect x="700" y="${py-10}" width="98" height="20" fill="#0e1324"/><text x="705" y="${py+4}">${fmt(value)}</text>`;
      readout.textContent=`${b.t} · Open ${fmt(b.o)} · High ${fmt(b.h)} · Low ${fmt(b.l)} · Close ${fmt(b.c)} · Volume ${b.v.toLocaleString('en-US')} · Cursor price ${fmt(value)}`;
    }
    function pos(e){const r=svg.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*800,y:(e.clientY-r.top)/r.height*330}}
