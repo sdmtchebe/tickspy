@@ -12,8 +12,8 @@ export const Footer = () => {
         <Logo testId="footer-logo" />
         <p className="mt-4 max-w-[380px] text-[13.5px] leading-relaxed text-steel">
           A free trading desk for people who want the number and the sentence that explains it. The charts on this page are drawn
-          from a simulated series. The desk shows delayed previous-session data with no account, or live data once you add your own
-          free Alpaca keys.
+          from a simulated series. With no account the desk replays a bundled sample session, labelled on screen as generated
+          demonstration data rather than real market prices; add your own free Alpaca keys for current data.
         </p>
       </div>
 

@@ -16,7 +16,7 @@ const LEAD = {
   title: "Live prices and the chart",
   body: [
     "Type any US ticker and the desk draws the candles, with ATR 14, VWAP, Bollinger %B and a volume strip beside them. Every reading has a question mark next to it that explains, in one sentence, what the number is actually measuring.",
-    "With no account at all you get a cached end-of-day session, which is enough to see the shape of the day. Add free read-only Alpaca keys that you generate yourself and the same panels switch to live intraday quotes that move as the bars arrive. The keys stay in your browser — there is no server of ours for them to be sent to.",
+    "With no account at all you get a bundled sample session, which the page labels as generated demonstration data rather than real market prices — enough to see how the desk reads a day. Add free read-only Alpaca keys that you generate yourself and the same panels switch to live intraday quotes that move as the bars arrive. The keys stay in your browser — there is no server of ours for them to be sent to.",
   ],
 };
 

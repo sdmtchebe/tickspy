@@ -7,7 +7,7 @@ import { useLocale } from "@/lib/i18n";
 /* Four facts, all of them checkable in the desk. */
 const STATS = [
   ["$0", "no card, no account"],
-  ["10", "desk sections"],
+  ["11", "desk sections"],
   ["14", "indicators scored"],
   ["1m – 1d", "timeframes"],
 ];

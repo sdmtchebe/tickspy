@@ -5,15 +5,16 @@ import { Reveal } from "@/components/site/motion";
  * else: do I have to sign up to see anything?
  *
  * The three claims here describe what the desk actually does with no keys at
- * all — the no-account path serves cached end-of-day bars, news, the calendar
- * and one shared overview from the edge — and what adding free Alpaca keys
- * changes. Both halves were checked against the running API.
+ * all — the no-account path replays a bundled sample session, which it labels on
+ * screen as generated demonstration data, alongside news, the calendar and one
+ * shared overview from the edge — and what adding free Alpaca keys changes. Both
+ * halves were checked against the running build.
  */
 
 const FACTS = [
   {
     k: "Opens with no account",
-    v: "The desk loads a chart, the indicators, the news and the calendar the moment you open it. Nothing is gated behind a sign-up.",
+    v: "The chart, the indicators, the news and the calendar are there the moment you open it, reading a bundled sample session that the desk labels as generated demonstration data. Nothing is gated behind a sign-up.",
   },
   {
     k: "Free keys make it live",

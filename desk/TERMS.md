@@ -60,17 +60,19 @@ is not indicative of future results.**
 ## 5. Market data — your responsibility, not ours
 
 Market data is **licensed, not owned**, and is supplied by third parties: with
-your own credentials, Alpaca and exchange feeds such as IEX; with none, the
-previous completed session from **HF Data Library (IEX exchange data, CC BY 4.0)**.
-Their terms generally restrict use to **personal, non-commercial purposes** and
-**prohibit redistribution**. HF Data Library data is redistributable under
-CC BY 4.0 with attribution; IEX exchange represents ~2–3% of consolidated volume
-and is not the NBBO.
+your own credentials, Alpaca and exchange feeds such as IEX, whose terms generally
+restrict use to **personal, non-commercial purposes** and **prohibit
+redistribution**. With no credentials the Dashboard serves a small **bundled
+sample file** whose prices are **generated demonstration data** — not real market
+prices and not a current quote. Should you swap in real free data (the repository
+includes a build script for **HF Data Library (IEX exchange data, CC BY 4.0)**),
+attribution is required, IEX represents ~2–3% of consolidated volume and is not
+the NBBO.
 
-With no credentials the Dashboard serves **one shared, cached copy of the most
-recent completed session** per symbol from HF Data Library. It is delayed,
-end-of-day, one session old, and replayed rather than streamed; it is explicitly
-not a current quote, and the Dashboard labels it that way.
+With no credentials the Dashboard replays **the bundled sample session** per
+symbol: generated demonstration data, one session old, replayed rather than
+streamed. It is explicitly not a current quote, and the Dashboard labels it that
+way in the status line at the top of the page.
 
 You must not publish, host, sublicense, resell or otherwise expose the Dashboard
 in a way that distributes market data to anyone but you. Obtaining any required
@@ -92,8 +94,9 @@ input from you reaches the model. Verify anything important at its source.
 ## 7. Third-party services
 
 The Dashboard depends on services the authors do not control: **Alpaca** and
-**IEX** for current market data when you connect your own keys; **HF Data Library
-(IEX exchange data, CC BY 4.0)** for the free keyless previous-session prices;
+**IEX** for current market data when you connect your own keys; the **bundled
+sample price file** for the keyless session (generated demonstration data, shipped
+inside the build, so no price provider is contacted while you browse);
 **Cloudflare** which hosts the edge API, **Google Gemini** which writes the
 single shared market overview, the **FairEconomy** economic-calendar feed, and
 the public news feeds whose headlines are aggregated. The page also loads its

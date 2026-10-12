@@ -50,18 +50,20 @@ one exception: the web fonts load with the page itself.
 
 - **Alpaca** (`data.alpaca.markets`) — market data, news and screener requests,
   authenticated with the key you supply. Used **only if you connect your own
-  keys**, which is an optional upgrade: with no keys the desk still works, on a
-  replayed previous session from the free source below.
+  keys**, which is an optional upgrade: with no keys the desk still works, on the
+  replayed sample session described below.
 - **The edge API** — a small Cloudflare Worker run by this project. It serves the
   aggregated market headlines, the economic calendar, and the shared AI market
   overview. It is an ordinary public web request: it stores no accounts, keeps no
   per-visitor records beyond response caches, and receives only what any HTTP
   request carries — your IP address and user agent, which Cloudflare handles in
   order to answer it.
-- **HF Data Library** (`api.hfdatalibrary.com`) — the previous completed session
-  of IEX exchange data (CC BY 4.0). The build process fetches this data at
-  compile time and bundles it with the desk; the browser loads it from the same
-  origin. No visitor request reaches HF Data Library directly.
+- **The bundled sample price file** — the keyless session ships inside the build
+  itself, so your browser loads it from the same origin as the page. Those prices
+  are generated demonstration data. No visitor request reaches any price provider,
+  and using the desk keyless sends nothing anywhere. (If you regenerate the sample
+  with the repository's script, it is your build machine that contacts the
+  provider; that happens before publishing, not while a visitor browses.)
 - **Google Gemini** — used only by the edge API, with the project's own key, to
   write one market overview that is then shared by every visitor. You cannot
   supply a key of your own, and your browser never talks to Gemini.

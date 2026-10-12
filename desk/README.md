@@ -2,8 +2,9 @@
 
 A self-contained trading dashboard: 14 indicators, candlestick and chart
 patterns, alerts, a risk calculator, a backtester, a scanner, and a volatility
-forecast. It works with **no account at all** (a free previous session, replayed)
-and upgrades to live Alpaca data if you connect your own keys.
+forecast. It works with **no account at all** (a bundled sample session, replayed, labelled
+as generated demonstration data) and upgrades to live Alpaca data if you connect
+your own keys.
 Everything is a market-data view for your own research. **It is not investment
 advice** — see [DISCLAIMER.md](DISCLAIMER.md).
 
@@ -15,13 +16,21 @@ is open it walks through the same time of day in the previous session, so the
 chart, VWAP, opening range, timeframe alignment and volume profile fill in the
 way that day did. Outside the session the whole of it is on screen.
 
-The data comes from `freesrc.js` plus the edge API's `GET /api/bars` (see
-`../worker/`), which fetches a keyless, publicly available end-of-day price
-series server-side (Yahoo Finance, with Stooq as a fallback) and caches it for a
-day. It is one session old, delayed and
-end-of-day, and every surface that shows it says so — it is a replay, never a
-current quote. The timeframe selector therefore offers only what that source can
-honestly supply: 5 minutes, 15 minutes and 1 day.
+The bars come from `hfdata/*.json`, a small sample bundled into the build and
+fetched same-origin (see `freesrc.js`). Those files carry `source: "mock"`, so
+their prices are **generated demonstration data** — not any real market session.
+Every surface that shows them says so: the status line at the top of the desk
+states it in one line, and the Structure tab labels its own panels the same way.
+It is a replay, never a current quote. The timeframe selector offers only what the
+sample can supply: 5 minutes, 15 minutes and 1 day.
+
+Swapping in real keyless data is a build step, not a code change.
+`frontend/scripts/download-hfdata.js` regenerates these files from HF Data Library
+(IEX, CC BY 4.0) with your own key, and `frontend/scripts/hfdata-bars.js` writes
+the same shape. The desk reads the payload's `source` field, so once the files are
+real the status line names the real source instead of claiming a sample. The edge
+API's `GET /api/bars` (Yahoo Finance with a Stooq fallback, see `../worker/`) is
+the other route, and `freesrc.js` labels that one the same way.
 
 Alpaca keys are an **optional upgrade**: current prices, 1-minute bars, the live
 trade stream and the symbol's own news feed. Nothing in the desk requires them.
@@ -188,10 +197,10 @@ harness above still passes.
 
 ## Market data
 
-With no keys, market data is the keyless end-of-day series served by the edge
-API, fetched from **Yahoo Finance** (with **Stooq** as a fallback); it is the
-most recent completed session, one session old and replayed. With your own keys
-it is **Alpaca/IEX** under their terms. Either
-way it is for personal, non-commercial use. Do not host this dashboard in a way
-that serves or redistributes that data to others. `server.py` refuses to bind to
+With no keys, market data is the bundled sample file: generated demonstration
+data, one session old and replayed, carrying no third-party rights. With your own
+keys it is **Alpaca/IEX** under their terms, which are personal, non-commercial
+use and no redistribution. If you regenerate the sample from a real free source,
+keep that source's attribution, and do not host this dashboard in a way that
+serves or redistributes third-party data to others. `server.py` refuses to bind to
 a non-local address unless `ALLOW_PUBLIC=1`.

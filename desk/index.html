@@ -35,7 +35,9 @@ label{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 #px{font-size:24px;font-weight:600;padding:1px 5px;border-radius:4px;transition:background-color 150ms linear}
 #px.tfu{background:rgba(61,190,139,.16)}#px.tfd{background:rgba(229,96,95,.16)}
 #st{color:var(--muted);font-size:12px;margin-left:auto}
-.coffee{font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--gb);border-radius:6px;padding:3px 8px;white-space:nowrap}.coffee:hover{color:var(--text);border-color:var(--ghi)}
+.gear{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;padding:0;background:var(--glass-2);border:1px solid var(--gb);border-radius:8px;color:var(--muted);cursor:pointer;box-shadow:var(--rim)}
+.gear:hover{color:var(--text);border-color:var(--ghi)}
+.gear.on{color:var(--text);border-color:var(--accent)}
 @media(max-width:640px){.header{gap:8px;padding:8px 10px}#st{flex:1 0 100%;margin-left:0;min-width:0;overflow-wrap:anywhere}}
 .watchbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--gb);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);position:relative;z-index:3}
 .chip{display:inline-flex;align-items:center;border:1px solid var(--gb);border-radius:var(--r);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim);transition:border-color 150ms ease,background-color 150ms ease}
@@ -50,6 +52,8 @@ label{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 nav.tabs{display:flex;flex-direction:column;gap:2px;position:sticky;top:12px;align-self:start;padding:6px;background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);box-shadow:var(--shadow),var(--rim)}nav.tabs button{background:none;border:0;border-left:2px solid transparent;color:var(--muted);padding:8px 10px;cursor:pointer;text-align:left;border-radius:8px;font:inherit;transition:color 150ms ease,background-color 150ms ease}
 nav.tabs button:hover{color:var(--text);background:var(--glass-2)}
 nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:var(--glass-2);font-weight:600;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim)}
+nav.tabs .grp{color:#7c8698;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;margin:0;padding:10px 10px 3px}
+nav.tabs .grp:first-child{padding-top:3px}
 /* Squeeze the rail and the tab strip before dropping the three-column layout,
    so the desk stays a desk on a laptop. The old single breakpoint at 1100px sat
    just above the ~1093px a 1366px screen reports at Windows' default 125%
@@ -110,19 +114,38 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 #toast{position:fixed;right:14px;bottom:14px;z-index:20;display:flex;flex-direction:column;gap:8px;max-width:340px}
 #toast .t{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:9px 12px;font-size:12.5px;box-shadow:0 16px 40px rgba(0,0,0,.55),var(--rim);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.banner{display:block;background:rgba(79,125,255,.10);border-bottom:1px solid rgba(79,125,255,.42);color:var(--amber)!important;-webkit-text-fill-color:var(--amber);padding:9px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2)}
-.banner a{color:var(--amber)!important;-webkit-text-fill-color:var(--amber);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-
-/* Recommendation banner - yellow highlighted */
-.banner-recommend{display:block;background:rgba(79,125,255,.16);border-bottom:1px solid rgba(79,125,255,.5);color:var(--text)!important;-webkit-text-fill-color:var(--text);padding:10px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);cursor:pointer;transition:background 150ms ease}
-.banner-recommend:hover{background:rgba(79,125,255,.26)}
-.banner-recommend a{color:var(--text)!important;-webkit-text-fill-color:var(--text);font-weight:600;text-decoration:underline;text-underline-offset:2px}
-.banner-recommend.collapsed .read-more{display:inline}
-.banner-recommend.collapsed .read-less{display:none}
-.banner-recommend:not(.collapsed) .read-more{display:none}
-.banner-recommend:not(.collapsed) .read-less{display:inline}
-.banner-recommend .expand-content{display:none;padding-top:8px;border-top:1px solid rgba(79,125,255,.35);margin-top:8px;font-size:12px;line-height:1.6;color:var(--text)}
-.banner-recommend:not(.collapsed) .expand-content{display:block}
+/* One status strip, not two.
+   It used to be three things at once, stacked above the chart: a yellow paragraph
+   stating the data mode, a blue "strongly recommended" box repeating the same
+   call to action, and the expandable list inside it. A visitor met all of that
+   before seeing a single price. Now a single line states the mode, the mode is
+   carried by a small chip rather than by colouring every word, and everything
+   else - what the sample is, what live keys would add - sits behind the summary. */
+.banner{display:block;background:rgba(79,125,255,.10);border-bottom:1px solid rgba(79,125,255,.42);color:var(--text);padding:8px 14px;font-size:12.5px;font-weight:500;line-height:1.5;overflow-wrap:anywhere}
+.banner a{color:var(--amber);font-weight:600;text-underline-offset:2px}
+.banner .fbn-warn{color:var(--amber)}
+.banner .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:5px;border:1px solid;margin-right:7px;vertical-align:1px}
+.banner .pill.demo{background:rgba(255,219,88,.13);border-color:rgba(255,219,88,.45);color:var(--amber)}
+.banner .pill.replay{background:rgba(79,125,255,.16);border-color:rgba(79,125,255,.5);color:#a9c3ff}
+.banner .pill.live{background:rgba(61,190,139,.14);border-color:rgba(61,190,139,.45);color:var(--up)}
+.banner .pill.off{background:rgba(229,96,95,.13);border-color:rgba(229,96,95,.45);color:var(--dn)}
+.banner summary{cursor:pointer;color:var(--text);font-weight:600;font-size:12px;margin-top:7px}
+.banner summary:hover{text-decoration:underline;text-underline-offset:2px}
+.banner .fbn-body{border-top:1px solid rgba(79,125,255,.35);margin-top:7px;padding-top:8px;font-size:12px;line-height:1.6;color:var(--text);max-width:80ch}
+.banner .fbn-body p{margin:0 0 6px}.banner .fbn-body p:last-child{margin-bottom:0}
+.banner .fbn-body ul{margin:4px 0 6px 18px;padding:0;line-height:1.65}
+/* The on-ramp on the Overview tab: what this is, what it says, where to go next. */
+.start{background:rgba(79,125,255,.07);border-color:rgba(79,125,255,.32);margin-bottom:12px}
+.start h2{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.start ol{margin:4px 0 0;padding-left:19px;line-height:1.65}
+.start li+li{margin-top:5px}
+.sdismiss{background:none;border:0;color:var(--muted);cursor:pointer;font:inherit;font-size:11.5px;padding:0}
+.sdismiss:hover{color:var(--text)}
+/* Long lists (indicators, patterns, session levels, calendar) show the rows that
+   matter and keep the rest one click away, so no tab opens as a wall of text. */
+.morelevels summary{cursor:pointer;padding:9px 12px;color:var(--muted);font-size:12px;border-bottom:1px solid var(--gb)}
+.morelevels summary:hover{color:var(--text)}
+.morelevels[open] summary{color:var(--text)}
 .ask{font:inherit;font-size:11.5px;color:var(--muted);background:var(--glass-2);border:1px solid var(--gb);border-radius:var(--r);padding:2px 9px;cursor:pointer;backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);box-shadow:var(--rim);transition:color 150ms ease,border-color 150ms ease,background-color 150ms ease}
 .ask:hover{color:var(--text);border-color:rgba(255,255,255,.30);background:var(--glass-3)}
 /* news feed + economic calendar */
@@ -145,27 +168,13 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 .evtmore .x{margin:4px 0}
 </style></head><body>
 <div class="banner" id="fbn" role="status" aria-live="polite"></div>
-<div class="banner-recommend collapsed" id="fbr" role="status" aria-live="polite" aria-expanded="false">
-  <span class="recommend-text"><b>Strongly recommended:</b> add free Alpaca keys for current prices. Read more to see what you are missing.</span>
-  <span class="read-more">Read more</span>
-  <span class="read-less">Show less</span>
-  <div class="expand-content">
-    <p><strong>What you're missing without API keys:</strong></p>
-    <ul style="margin:6px 0 0 18px;line-height:1.7">
-      <li><strong>Live prices & streaming candles</strong> — real-time quotes and 1-minute bars instead of delayed replay</li>
-      <li><strong>Per-symbol news feed</strong> — headlines filtered for your symbol, not just market-wide headlines</li>
-      <li><strong>Real-time alerts</strong> — price, VWAP, and pattern alerts that fire instantly while the desk is open</li>
-      <li><strong>Current quotes & live trade stream</strong> — see trades as they happen, not delayed replay</li>
-    </ul>
-    <p style="margin-top:8px"><a href="#" id="fbr-go">Connect Alpaca keys in Settings →</a> (free paper-trading account, about 2 minutes; the desk never places trades)</p>
-  </div>
 <header class="header">
 <a class="brand" href="../index.html" aria-label="TickSPY home">TickSPY</a>
 <input id="sym" value="SPY" aria-label="Symbol">
 <select id="tf" aria-label="Timeframe"><option value="1Min">1 min</option><option value="5Min">5 min</option><option value="15Min">15 min</option></select>
 <span id="px" class="num">--</span><span id="chg" class="num"></span>
 <span id="st">Not connected</span>
-<a class="coffee" href="https://buymeacoffee.com/tickspy" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
+<button class="gear" id="gear" type="button" aria-label="Settings" title="Settings"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 5h7M12.4 5H14M2 11h2.6M8 11h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="10.7" cy="5" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5.3" cy="11" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
 </header>
 <div class="watchbar">
 <span class="tagline">Watchlist</span>
@@ -178,8 +187,8 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="left">
 <div class="panel"><canvas id="cv" aria-label="Price chart. Drag to pan, scroll to zoom."></canvas><p class="legend">EMA 9 (amber), EMA 21 (grey), VWAP (white), Fibonacci (dim amber), volume bands (green up, red down). Drag to pan, scroll to zoom, Shift+scroll to pan only. Hover a bar for price and time, or hover a volume band for that bar's exact volume, time and OHLC.<button class="btn" id="cvlatest" style="padding:2px 8px;margin-left:8px">Latest</button><button class="btn" id="cvclear" style="padding:2px 8px;margin-left:6px">Clear highlight</button></p></div>
 <main>
-<section class="tab on" id="t-live"><div class="cols">
-<div class="panel"><h2>Estimated volume profile</h2><div class="pbody"><canvas id="vp" aria-label="Estimated volume profile" style="width:100%;height:210px;display:block"></canvas><p class="x">Approximate volume distribution from the last 90 candles. Amber marks the largest estimated bucket (POC); brighter buckets form the 70% estimated value area. The dashed line marks the last price.</p><details class="exp"><summary aria-label="Explain the volume profile">?</summary><p class="iexp">This chart groups volume by an estimated price instead of by time. Each candle's entire volume is assigned to its typical price: (high + low + close) / 3. POC means point of control, the bucket receiving the most volume under that approximation. The value area collects about 70% of the assigned volume. Candle data cannot tell us the actual volume traded at every price, so this is not an order-flow or tick-by-tick profile. IEX-only data also excludes trading on other exchanges.</p></details></div></div>
+<section class="tab on" id="t-live"><div class="panel start" id="start" hidden></div><div class="cols">
+<div class="panel"><h2>Estimated volume profile</h2><div class="pbody"><canvas id="vp" aria-label="Estimated volume profile" style="width:100%;height:210px;display:block"></canvas><p class="x">Approximate volume distribution from the last 90 candles. Amber marks the largest estimated bucket (POC); brighter buckets form the 70% estimated value area. The dashed line marks the last price.</p><details class="exp"><summary aria-label="Explain the volume profile">?</summary><p class="iexp">This chart groups volume by an estimated price instead of by time. Each candle's entire volume is assigned to its typical price: (high + low + close) / 3. POC means point of control, the bucket receiving the most volume under that approximation. The value area collects about 70% of the assigned volume. Candle data cannot tell us the actual volume traded at every price, so this is not an order-flow or tick-by-tick profile. Nor is any one feed a complete consolidated tape: in live mode the source covers IEX only, which excludes trading on other exchanges.</p></details></div></div>
 <div class="panel"><h2>Key levels</h2><div id="lv" class="stack"></div></div>
 <div class="panel"><h2>Timeframe alignment</h2><div id="mtf" class="pbody"></div></div>
 <div class="panel"><h2>Relative strength</h2><div id="rsx" class="pbody"></div></div>
@@ -225,13 +234,13 @@ nav.tabs button.on{color:var(--text);border-left-color:var(--accent);background:
 <div class="row"><label>Entry <input id="re" type="number" step="0.01" style="width:110px"></label><details class="exp"><summary aria-label="Explain Entry">?</summary><p class="iexp">The price you expect to enter the trade at. The distance from here to the stop is the per-share risk the position size is built from.</p></details><label>Stop <input id="stop" type="number" step="0.01" style="width:110px"></label><details class="exp"><summary aria-label="Explain Stop">?</summary><p class="iexp">The price at which you would exit to cap the loss. It must differ from the entry: a wider stop means fewer shares for the same dollar risk.</p></details></div>
 <div id="ro" class="ai">Enter entry and stop.</div><div class="disc">Illustrative arithmetic only. It is not tailored to your circumstances and is not investment advice.</div></div></div>
 <div class="panel"><h2>Backtester</h2><div class="pbody"><p class="x">Replays an EMA 9/21 crossover on the loaded bars, long above and short below. One short window and no costs: a sanity check, not proof.</p><details class="exp"><summary aria-label="Explain the backtest rule">?</summary><p class="iexp">The rule is fixed and simple: go long when the 9-period EMA crosses above the 21-period EMA, go short when it crosses below, and flip on the next opposite cross. It runs only on the bars currently loaded, with no costs, no slippage and no position sizing, so it says whether the rule was consistent in this window - not whether it makes money.</p></details><div class="row"><button class="btn" id="btb">Run backtest</button></div><div id="bto" class="ai">Not run yet.</div><div class="disc"><b>Hypothetical results.</b> Backtests are simulated on past data, exclude commissions, fees, slippage, taxes and borrow costs, and cover a single short window. They are a sanity check on a rule, not evidence of future performance, and not investment advice.</div></div></div>
-<div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><details class="exp"><summary aria-label="Explain the scanner">?</summary><p class="iexp">Shows which symbols are trading the most volume right now (most active) and which moved the most, up or down (top movers). Without Alpaca keys it instead ranks the largest moves among the symbols in your own watchlist, from the free daily feed, and says so on screen.</p></details><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
+<div class="panel"><h2>Scanner</h2><div class="pbody"><p class="x">Alpaca most-active and top-movers. May need a paid market-data plan.</p><details class="exp"><summary aria-label="Explain the scanner">?</summary><p class="iexp">Shows which symbols are trading the most volume right now (most active) and which moved the most, up or down (top movers). Without Alpaca keys it instead ranks the largest moves among the symbols in your own watchlist, from the daily bars the page already holds, and says so on screen.</p></details><div class="row"><button class="btn" id="scb">Load</button></div><div id="sc"></div></div></div>
 </div></section>
 <section class="tab" id="t-structure"><div class="panel" id="structure"><h2>Market Structure</h2><p class="x" style="padding:12px">Loading the learning tools…</p></div></section>
 <section class="tab" id="t-learn"><div class="panel"><h2>Learn each desk tab</h2><div class="pbody"><p class="x">Plain-English guides with interactive exercises for every desk tab. No jargon, no hype, nothing uploaded.</p><div id="learn-links"></div><p class="x" style="margin-top:12px">Each page has a plain-English explanation, an interactive calculator/chart, a worked example, and the math behind it. Open any page, try your own numbers, then open the matching desk tab to apply it.</p></div></div></section>
 
 <section class="tab" id="t-set"><div class="panel" style="max-width:560px"><h2>Settings</h2><div class="pbody">
-<p class="x" style="margin-top:0"><b>These keys are optional.</b> The desk already works with no account at all: it shows the previous completed session, replayed as if live, from a free public end-of-day source. Adding your own free Alpaca keys upgrades it to current prices, 1-minute bars, the live trade stream and the symbol's own news feed.</p>
+<p class="x" style="margin-top:0"><b>These keys are optional.</b> The desk already works with no account at all: it replays a small bundled sample session that ships with the page, whose prices are generated demonstration data, labelled as such at the top of the desk. Adding your own free Alpaca keys upgrades it to current prices, 1-minute bars, the live trade stream and the symbol's own news feed.</p>
 <div class="row"><button class="btn" id="wizbtn" type="button">Connect Alpaca for live data</button><span class="muted" style="font-size:12px">Free keys, about two minutes.</span></div>
 <p class="x">Keys stay in this browser only, are sent only to Alpaca, and never reach us. Use Paper-account keys, not live trading keys. Saved keys are not encrypted in browser storage; avoid shared computers. There is no AI key to enter: the overview is written on our server and shared by visitors.</p>
 <details id="setuphelp" style="margin:4px 0 10px;border:1px solid var(--gb);border-radius:10px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:9px 12px;font-weight:600;font-size:13px">Optional: get free Alpaca keys for live data</summary>
@@ -302,7 +311,13 @@ const netErr=e=>{const m=String((e&&e.message)||e);
  return DESK_API!==null?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':'Could not reach the data source. Check your connection and try again.'};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
 const S={sym:'SPY',tf:'1Min',tfLive:'1Min',mode:null,bars:[],allBars:null,daily:[],sessionDate:null,free:null,rep:null,tz:null,tzCoverage:null,mtfRows:null,price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set(),mnews:null,mnewsAt:0};
-const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Tools'],['structure','Market Structure'],['learn','Learn'],['set','Settings']];
+/* Eleven sections, but only nine of them are analysis, so the rail groups them
+   instead of showing one flat list of eleven equal items. Settings is not a
+   section at all - it is configuration - so it left the rail for the gear in the
+   header, and "Market Structure" is now "Structure" because the rail is narrow
+   and the two long words were the reason it wrapped. */
+const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['structure','Structure'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Risk & testing'],['learn','Learn'],['set','Settings']];
+const NAV_GROUPS=[['Today',['live']],['Signals',['ind','pat','structure']],['Context',['vol','news','cal','alert']],['Learn & tools',['tools','learn']]];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Which remote URL is safe to put in an href. esc() stops a value breaking out
    of the attribute, but it would happily pass "javascript:..." through, and a
@@ -312,7 +327,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const safeUrl=u=>{const s=String(u==null?'':u).trim();return /^https?:\/\//i.test(s)?s:''};
 const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1),f2=n=>n==null||!isFinite(n)?'--':n.toFixed(2),f3=n=>n==null||!isFinite(n)?'--':n.toFixed(3),cls=s=>s>0?'up':s<0?'dn':'nu',lab=s=>s>0?'Positive':s<0?'Negative':'Neutral';
 const ET=(t,o)=>t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',...o});
-$('#nav').innerHTML=TABS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join('');
+const TAB_NAME=Object.fromEntries(TABS.map(([k,n])=>[k,n]));
+$('#nav').innerHTML=NAV_GROUPS.map(([g,keys])=>`<p class="grp">${esc(g)}</p>`+keys.map(k=>`<button type="button" data-k="${k}">${esc(TAB_NAME[k])}</button>`).join('')).join('');
+$('#gear').onclick=()=>go('set');
+/* Rows behind a "show all" button, remembered for the session only. */
+const showAll={};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-showall]');if(!b)return;showAll[b.dataset.showall]=true;if(b.dataset.showall==='cal')calRender();else render()});
 const guideSlugs={live:'overview',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',structure:'structure',learn:'learn',set:'settings'};
 const learnTabs=TABS.filter(([k])=>k!=='learn');
 document.getElementById('learn-links').innerHTML='<nav aria-label="Learning guides"><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">'+learnTabs.map(([k,n])=>`<li><a href="./${guideSlugs[k]}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')+'</ul></nav>';
@@ -324,7 +344,7 @@ function bringTab(k){const t=document.getElementById('t-'+k);if(!t)return;
  if(r.top>=0&&r.top<window.innerHeight*0.55)return;
  const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
  window.scrollTo({top:Math.max(0,r.top+window.scrollY-10),behavior:smooth?'smooth':'auto'})}
-function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP();if(bring!==false)bringTab(k)}
+function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP();if(bring!==false)bringTab(k)}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -362,12 +382,15 @@ const freeMode=()=>FREE?FREE.modeFor(cfg(),{edgeApi:EDGE_API}):'none';
 const freeTf=id=>FREE&&FREE.TIMEFRAMES.some(t=>t.id===id)?id:(/^1[Hh]our$/.test(id)?'15Min':'5Min');
 const dkOf=t=>new Date(t).toLocaleDateString('en-CA',{timeZone:'America/New_York'});
 const bannerEl=document.getElementById('fbn');
-const recommendEl=document.getElementById('fbr');
-function banner(html){
-  bannerEl.innerHTML=html||'';bannerEl.style.display=html?'block':'none';
+/* Exactly one status strip on the page. `line` is what a visitor reads without
+   doing anything; `more` is the explanation and the upgrade path, behind the
+   summary. Nothing about the data mode is stated twice anywhere on the desk. */
+function banner(line,more){
+  bannerEl.innerHTML=line?line+(more?`<details class="fbn-more"><summary>What this means</summary><div class="fbn-body">${more}</div></details>`:''):'';
+  bannerEl.style.display=line?'block':'none';
   const go2=document.getElementById('fbn-go');if(go2)go2.onclick=e=>{e.preventDefault();go('set')}}
-const fbrGo=document.getElementById('fbr-go');if(fbrGo)fbrGo.onclick=e=>{e.preventDefault();go('set')}
-if(recommendEl)recommendEl.onclick=()=>{recommendEl.classList.toggle('collapsed');recommendEl.setAttribute('aria-expanded',!recommendEl.classList.contains('collapsed'))}
+/* Behind the summary in every no-account mode: what live keys would change. */
+const KEYS_MORE='<p><b>What free Alpaca keys add:</b> current quotes and 1-minute bars, a live trade stream, alerts that fire while the page is open, and the symbol\u2019s own news feed instead of market headlines filtered by ticker.</p><p><a href="#" id="fbn-go">Add free Alpaca keys in Settings</a> \u2014 free paper-trading account, about two minutes. The desk never places trades, and the keys stay in this browser.</p>';
 function tfOptions(){const ids=S.mode==='free'?FREE.TIMEFRAMES.map(t=>t.id):['1Min','5Min','15Min'];
  const label=id=>id==='1Day'?'1 day':id==='1Hour'?'1 hour':id.replace('Min',' min');
  $('#tf').innerHTML=ids.map(id=>`<option value="${id}">${label(id)}</option>`).join('')}
@@ -391,24 +414,22 @@ async function load(){
   if(mode==='free')return loadFree(version);
  return loadNone()}
 async function loadLive(version){
-  try{$('#st').textContent='Loading...';banner('<b>Live mode — Alpaca connected.</b> Current market data is loading with the keys saved in this browser.');
-  if(recommendEl)recommendEl.style.display='none';
+  try{$('#st').textContent='Loading...';banner('<span class="pill live">Live</span> <b>Alpaca connected.</b> Current market data is loading with the keys saved in this browser.');
   const st=new Date(Date.now()-6*864e5).toISOString();
   const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);
   if(version!==loadVersion)return;
-  S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;banner('<b>Live mode — Alpaca connected.</b> Current market data is supplied by Alpaca/IEX using keys saved only in this browser.');refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
-  }catch(e){if(version!==loadVersion)return;$('#st').textContent='Error: '+netErr(e);banner(`<b>Live mode could not connect.</b> ${esc(netErr(e))} Remove the saved keys with <a href="#" id="fbn-go">Use free mode in Settings</a>.`);if(recommendEl)recommendEl.style.display='none';}}
+  S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;banner('<span class="pill live">Live</span> <b>Alpaca connected.</b> Current prices and bars come from Alpaca/IEX, using keys saved only in this browser.','<p>In live mode the trade stream and the symbol\u2019s own news feed are active, and alerts fire as prices move. To go back to the no-account session, open <b>Settings</b> and use <b>Use free mode instead</b>.</p>');refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
+  }catch(e){if(version!==loadVersion)return;$('#st').textContent='Error: '+netErr(e);banner(`<span class="pill off">No connection</span> <b>Live mode could not connect.</b> ${esc(netErr(e))}`,'<p><a href="#" id="fbn-go">Use free mode in Settings</a> to return to the bundled sample session, which needs no account.</p>');}}
 function loadNone(){S.bars=[];S.allBars=null;S.price=null;S.an=null;S.rep=null;refresh();
   $('#st').textContent='No data source';
-  banner('No price source is configured, so there is nothing to show. Either deploy the edge API (<b>worker/</b>, see its README) or paste your own free Alpaca keys in <a href="#" id="fbn-go">Settings</a>.');
-  if(recommendEl)recommendEl.style.display='none';
+  banner('<span class="pill off">No source</span> <b>No price source is configured,</b> so there is nothing to show yet.',KEYS_MORE+'<p>Self-hosting? The optional edge API in <b>worker/</b> supplies the aggregated headlines and the calendar; see its README. Price data works with your own Alpaca keys alone.</p>');
   // This is the only case where the desk pushes the setup wizard at someone:
   // there is genuinely nothing on screen without it.
   wizMaybe();go('set')}
 async function loadFree(version){
   const tf=freeTf(S.tf);S.tf=tf;$('#tf').value=tf;
   S.rep=null;S.allBars=null;
-  try{$('#st').textContent='Loading the previous session...';banner('<b>Free mode — no account, no key.</b> Loading the previous completed session...');
+  try{$('#st').textContent='Loading the previous session...';banner('<span class="pill replay">Replay</span> Loading the session, with no account and no key...');
    const j=await FREE.fetchBars(S.sym,tf);
    if(version!==loadVersion)return;
   S.free=j;S.sessionDate=j.sessionDate||j.asOf;S.tz=j.tz;
@@ -417,18 +438,26 @@ async function loadFree(version){
   S.lastPx=null;S.rep=null;freeRefresh();freeBanner();
   freeWatch();freeNews();mtf();rsq();
    }catch(e){if(version!==loadVersion)return;$('#st').textContent='Previous session unavailable';
-  banner(`<b>Could not load the previous session.</b> ${esc(netErr(e))} You can still add your own free Alpaca keys in <a href="#" id="fbn-go">Settings</a> for live data.`)}}
+  banner(`<span class="pill off">Unavailable</span> <b>Could not load the previous session.</b> ${esc(netErr(e))}`,KEYS_MORE)}}
 /* The revealed slice of the previous session. Everything downstream reads S.bars,
    so the replay only has to move this one line. */
 function freeRefresh(){if(!FREE||!S.allBars)return;const rep=S.rep||FREE.replayAt(Date.now(),S.sessionDate);S.rep=rep;
  S.bars=DeskStructure.freeBars(S.allBars,S.daily,S.tf,new Date(rep.at).getTime(),S.sessionDate).map(b=>({...b,t:new Date(b.t)}));
  S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}
-function freeBanner(){if(S.mode!=='free'){banner('');recommendEl.style.display='none';return}
-   const fbr=recommendEl;    /* Exact copy requested for the keyless banner. The date comes from the replay's session. */
-    const when=S.free?.sessionDate?new Date(S.free.sessionDate+'T12:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}):'the last session';
-    banner(`<b>Free mode \u2014 no account, no key.</b> Previous session (${esc(when)}), delayed end-of-day data from HF Data Library (IEX). Replayed as if live; not a current quote. Data sourced from IEX exchange only (~2-3% of consolidated volume). The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and the data itself refreshes once a day. <a href="#" id="fbn-go">Want current prices? Add free Alpaca keys</a><br><span>⚠ Data sourced from IEX exchange only (~2–3% of consolidated volume; not NBBO).</span>`);
-   if(fbr){fbr.style.display='block';fbr.classList.add('collapsed');fbr.setAttribute('aria-expanded','false')}
-}
+/* The status line states what the payload actually is. The bundled files carry
+   source "mock": generated prices, so the desk says so plainly and the warning
+   chip does the work colour used to do. If a verified feed ever replaces them,
+   labelled() names that source and this line changes with it - the desk never
+   claims a source it is not showing. */
+function freeBanner(){if(S.mode!=='free'){banner('');return}
+ const when=S.free?.sessionDate?FREE.prettyDate(S.free.sessionDate):'the last session';
+ const demo=(S.free&&S.free.source)==='mock';
+ const line=demo
+  ? `<span class="pill demo">Sample data</span> <b class="fbn-warn">Generated demonstration data \u2014 not real market prices.</b> Session ${esc(when)}, replayed as if live, not a current quote.`
+  : `<span class="pill replay">Replay</span> ${esc(FREE.labelled(S.free))}`;
+ const sample=demo?'<p><b>What this sample is:</b> a small bundled file that ships with the desk so every panel has something to read before you connect anything. Those prices were generated; they are not any real market session, and no reading on this page should be used to study actual market history.</p>':'';
+ const clock='<p>The clock is live: while the US session is open the replay walks through the previous session at the same time of day, and a new sample file replaces the old one when it ships. No account, no key, nothing sent anywhere.</p>';
+ banner(line,sample+clock+KEYS_MORE)}
 /* One tick a second, same as the clock: recompute where the replay should be and
    redraw only when it has actually moved. */
 function freeTick(){if(S.mode!=='free'||!S.allBars||S.tf==='1Day')return;
@@ -554,7 +583,7 @@ function analyze(){const B=S.bars;if(B.length<40){S.an=null;return}
  const sc=it.reduce((a,x)=>a+x.s,0),cs=Math.max(-2,Math.min(2,cp.reduce((a,x)=>a+x.s*(x.age<2?1:.4),0))),hs=Math.max(-3,Math.min(3,chp.reduce((a,x)=>a+x.s*1.5,0)));
  const up=Math.round(Math.max(3,Math.min(97,50+50*(sc+cs+hs)/(it.length+5)))),big=(sq<25?1:0)+(rv>1.5?1:0)+(atr/p*100>.12?1:0);
  S.an={e9,e21,vw,it,cp,chp,up,big,sq,rv,p,atr,vsd,vwap,lv:levels(B,p),fib:FIB};
- // The free feed carries the session being replayed plus the two before it, so
+ // The bundled sample carries the session being replayed plus the two before it, so
  // `levels()` finds the prior day on its own. Only the wording needs adjusting:
  // in free mode the last session on screen is the previous one, not today.
  if(S.mode==='free'&&S.an.lv)S.an.lv.openLabel='Session open'}
@@ -587,18 +616,50 @@ function charts(B,PH,PL,base){const o=[],n=B.length,p=B[n-1].c,near=(a,b,t=.0015
 /* ---------- render ---------- */
 const tag=s=>`<span class="${cls(s)}">${lab(s)}</span>`;
 const exp=(id,txt)=>`<details class="exp"><summary aria-label="Explain ${esc(id)}">?</summary><p class="iexp">${esc(txt)}</p></details>`;
+/* Long lists open short: the rows that carry a direction or a level stay, and the
+   rest sit behind one button. `showAll` is session-only, so a reload restores the
+   short view. */
+const moreRow=(key,label,total)=>`<div class="pbody"><button class="btn" type="button" data-showall="${esc(key)}">${esc(label)}${total?' ('+total+')':''}</button></div>`;
 function showPattern(i0,i1,name){if(i0==null)return;const L=S.bars.length,n=S.view.n;S.focus={i0,i1,name};S.view.end=Math.max(0,Math.min(Math.max(0,L-n),L-1-(i1+Math.round(n/2))));draw();const el=document.querySelector('.left .panel');if(el&&el.scrollIntoView)el.scrollIntoView({block:'nearest'})}
 document.addEventListener('click',e=>{const sh=e.target.closest('[data-show]');if(sh)showPattern(+sh.dataset.i0,+sh.dataset.i1,sh.dataset.name)});
+/* The on-ramp. Three lines and no ceremony: what you are looking at, what the
+   desk is saying right now, and where to go next. Dismissing it is permanent for
+   this browser - a visitor who has understood the desk never sees it again. */
+function startHere(a){const el=$('#start');if(!el)return;
+ if(LS.start==='done'){el.hidden=true;return}
+ const demo=(S.mode==='free'&&((S.free&&S.free.source)==='mock'));
+ const when=S.sessionDate?FREE.prettyDate(S.sessionDate):'the last session';
+ const look=demo?`a bundled sample session (${esc(when)}) built from <b>generated demonstration data</b>, replayed as if live`
+  :S.mode==='free'?`the previous session (${esc(when)}), replayed as if live`
+  :S.mode==='live'?'live prices from Alpaca/IEX':(S.mode==='none'?'nothing yet \u2014 no price source is configured':'the session you just loaded');
+ const read=a?`<b class="${a.up>=60?'up':a.up<=40?'dn':'nu'}">${a.up}/100</b> \u2014 ${a.up>=60?'bullish':a.up<=40?'bearish':'mixed'} readings, big-move conditions ${['quiet','normal','elevated','high'][a.big]}. It describes the indicators, not where price goes next.`
+  :'the readings appear once 40 bars have loaded.';
+ el.hidden=false;
+ el.innerHTML='<h2>Start here<button class="sdismiss" id="sdismiss" type="button">Dismiss</button></h2><div class="pbody"><ol>'
+  +`<li><b>What you are looking at:</b> ${look}.</li>`
+  +`<li><b>What it says right now:</b> ${read}</li>`
+  +'<li><b>Where to go next:</b> <button class="ask" type="button" id="sgolook">Open a guided walkthrough</button> <button class="ask" type="button" id="sgokeys">Add free Alpaca keys</button> \u2014 or pick a section on the left.</li>'
+  +'</ol></div>';
+ const d=$('#sdismiss');if(d)d.onclick=()=>{LS.start='done';el.hidden=true};
+ const l=$('#sgolook');if(l)l.onclick=()=>go('learn');
+ const k2=$('#sgokeys');if(k2)k2.onclick=()=>go('set')}
  function render(){const a=S.an;
-  if(!a){$('#ov').innerHTML='<p class="x" style="padding:12px">Waiting for enough bars (need 40).</p>';$('#top').innerHTML='';['ind','cp','chp'].forEach(id=>$('#'+id).innerHTML='<p class="x" style="padding:12px">Waiting for enough bars for this selection.</p>');lvRender(null);mtfRender();rsRender();wlRender();return}
+  if(!a){startHere(null);$('#ov').innerHTML='<p class="x" style="padding:12px">Reading the session \u2014 the panels fill in once 40 bars have loaded.</p>';$('#top').innerHTML='';['ind','cp','chp'].forEach(id=>$('#'+id).innerHTML='<p class="x" style="padding:12px">Not enough bars for this selection yet. Try a shorter timeframe, or wait for the load to finish.</p>');lvRender(null);mtfRender();rsRender();wlRender();return}
+startHere(a);
 const c=a.up>=60?'up':a.up<=40?'dn':'nu';
   const bias=a.up>=60?'Bullish readings':a.up<=40?'Bearish readings':'Mixed readings';
  $('#ov').innerHTML=`<div class="score"><span class="n num ${c}">${a.up}</span><span class="muted">/ 100</span><span class="call ${c}">${bias}</span></div><div class="track"><i class="${c}" style="width:${a.up}%"></i></div><div class="pbody"><span class="muted">Big-move conditions:</span> <span class="${a.big>=2?'nu':'muted'}">${['Quiet','Normal','Elevated','High'][a.big]}</span>${exp('Overall read','The score runs 0 to 100 but is clamped to 3-97, so it never actually reaches either end: low means most signals are bearish, high means most are bullish, and around 50 means they conflict. It is a weighted vote of the indicator and pattern readings, not a probability and not a recommendation. Measured over five years of 5-minute SPY bars it did NOT predict the next move - bullish and bearish readings were followed by much the same returns, a spread of about +0.002% per 12 bars - so read it as a description of the readings right now, not a forecast.')}${exp('Big-move conditions','Counts three conditions: Bollinger width squeezed, volume well above normal, and ATR large. It says something may happen, not which way, and it is an ordered band rather than a calibrated probability. Measured over five years of 5-minute SPY bars the bands did separate: a big move followed 21% of the time at Quiet, 35% at Normal, 53% at Elevated and 62% at High, against a 33% base rate.')}<p class="x" style="margin-top:6px">Information only, not advice. A factual summary of indicator readings - no recommendation, no instruction, no view on what you should do.</p></div>`;
  const sig=a.it.filter(x=>x.s).sort((x,y)=>Math.abs(y.s)-Math.abs(x.s)).slice(0,4);
- $('#top').innerHTML=(sig.length?`<div class="iline" style="padding:4px 12px">${exp('Strongest readings','The indicator rows with a non-neutral direction, ranked by how strong the reading is. Every one of them is explained in full on the Indicators tab; this panel just points at which signals currently lean furthest away from neutral.')}</div>`:'')+(sig.map(x=>`<div class="mrow"><span>${esc(x.n)}</span><span class="num ${cls(x.s)}">${esc(x.val)}</span></div>`).join('')||'<p class="x" style="padding:12px">No directional signals.</p>');
- $('#ind').innerHTML=a.it.map(x=>`<div class="irow"><div class="iline"><span class="iname">${esc(x.n)}</span><span class="ival num">${esc(x.val)}</span><span class="dot ${/ATR|Keltner|volume/i.test(x.n)?(/volume/i.test(x.n)&&x.s?cls(x.s):'na'):cls(x.s)}" title="${lab(x.s)}"></span>${exp(x.n,x.t)}</div></div>`).join('');
- const seen=new Set;$('#cp').innerHTML=a.cp.filter(x=>!seen.has(x.n)&&seen.add(x.n)).map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<span class="muted num">${x.age?x.age+' bars ago':'latest bar'} (${x.time})</span><button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')||'<p class="x" style="padding:12px">No candlestick pattern in the last 6 bars.</p>';
- $('#chp').innerHTML=a.chp.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')||'<p class="x" style="padding:12px">No clear chart pattern right now.</p>';
+ $('#top').innerHTML=(sig.length?`<div class="iline" style="padding:4px 12px">${exp('Strongest readings','The indicator rows with a non-neutral direction, ranked by how strong the reading is. Every one of them is explained in full on the Indicators tab; this panel just points at which signals currently lean furthest away from neutral.')}</div>`:'')+(sig.map(x=>`<div class="mrow"><span>${esc(x.n)}</span><span class="num ${cls(x.s)}">${esc(x.val)}</span></div>`).join('')||'<p class="x" style="padding:12px">No directional signals.</p>');  const indRows=showAll.ind?a.it:a.it.slice(0,8);
+  $('#ind').innerHTML=indRows.map(x=>`<div class="irow"><div class="iline"><span class="iname">${esc(x.n)}</span><span class="ival num">${esc(x.val)}</span><span class="dot ${/ATR|Keltner|volume/i.test(x.n)?(/volume/i.test(x.n)&&x.s?cls(x.s):'na'):cls(x.s)}" title="${lab(x.s)}"></span>${exp(x.n,x.t)}</div></div>`).join('')
+   +(a.it.length>indRows.length?moreRow('ind','Show all '+a.it.length+' readings'):'');  const seen=new Set,cands=a.cp.filter(x=>!seen.has(x.n)&&seen.add(x.n)),candRows=showAll.cp?cands:cands.slice(0,3);
+  $('#cp').innerHTML=candRows.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<span class="muted num">${x.age?x.age+' bars ago':'latest bar'} (${x.time})</span><button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')
+   +(cands.length>candRows.length?moreRow('cp','Show all '+cands.length+' candle patterns'):'')
+   ||'<p class="x" style="padding:12px">No candlestick pattern in the last 6 bars. Patterns are matched on close, so a bar still forming can change the reading.</p>';
+  const chartRows=showAll.chp?a.chp:a.chp.slice(0,3);
+  $('#chp').innerHTML=chartRows.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')
+   +(a.chp.length>chartRows.length?moreRow('chp','Show all '+a.chp.length+' chart patterns'):'')
+   ||'<p class="x" style="padding:12px">No clear chart pattern right now. The desk looks at the last 150 bars for the shapes it can name.</p>';
  lvRender(a.lv);mtfRender();rsRender();alerCheck();wlRender()}
 /* One AudioContext for the whole page, created (and resumed) on the first real
    user gesture. Browsers refuse to start audio that no interaction preceded, so
@@ -613,7 +674,7 @@ function beep(){try{primeAudio();if(!actx)return;const o=actx.createOscillator()
 function toast(t,quiet){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000);if(!quiet)beep()}
 async function rsq(){if(S.mode==='free')return rsqFree();if(!cfg().ak)return;const version=loadVersion;try{const st=new Date(Date.now()-6*864e5).toISOString(),url=k=>alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);const[a,b]=await Promise.all([url(S.sym),url('QQQ')]);if(version!==loadVersion)return;const ch=j=>{const x=(j.bars||[]).map(v=>v.c);return x.length>1?(x[0]/x.at(-1)-1)*100:0};const s=ch(a),q=ch(b);S.rs={s,q,d:s-q};rsRender()}catch(e){if(version!==loadVersion)return;S.rs={err:e.message};rsRender()}}
 /* Relative strength is measured on daily closes in free mode: it is a
-   multi-session question, and the free feed has years of daily bars. */
+   multi-session question, and the loaded daily bars cover years. */
 async function rsqFree(){const version=loadVersion,sym=S.sym;try{
    const j=await FREE.fetchSymbols([sym,'QQQ'],'1Day'),m=j.bars||{};
   if(version!==loadVersion)return;
@@ -650,23 +711,27 @@ async function scan(){
  // so rather than implying it looked at the whole market.
  if(S.mode==='free'){if(!Object.keys(S.wq||{}).length){try{await freeWatch()}catch(e){}}
   const mv=FREE.movers(S.wq||{},10);
-  $('#sc').innerHTML='<p class="x">Largest moves in your watchlist over the last session, from the free daily feed. A market-wide most-active and movers list needs Alpaca credentials.</p>'+exp('Main movers','Without Alpaca keys there is no market-wide screener, so this ranks the biggest one-session percentage moves among the symbols you already track, using the free daily feed. It is your watchlist, not the whole market.')
+  $('#sc').innerHTML='<p class="x">Largest moves in your watchlist over the last loaded session, from the daily bars already on the page. A market-wide most-active and movers list needs Alpaca credentials.</p>'+exp('Main movers','Without Alpaca keys there is no market-wide screener, so this ranks the biggest one-session percentage moves among the symbols you already track, using the daily bars already on the page. It is your watchlist, not the whole market.')
    +(mv.length?mv.map(v=>`<div class="mrow"><button class="csym" data-s="${esc(v.s)}" style="padding:0;background:none;border:0;color:var(--text);cursor:pointer">${esc(v.s)}</button><span class="num ${cls(v.ch)}">${f2(v.ch)}%</span></div>`).join(''):'<p class="x">No quotes yet.</p>');
   return}
  if(!cfg().ak){$('#sc').innerHTML='<p class="x">Add your Alpaca keys first.</p>';return}try{$('#sc').innerHTML='<p class="x">Loading...</p>';const retry=async(p,n=2)=>{try{return await alp(p)}catch(e){if(n>0){await new Promise(r=>setTimeout(r,700));return retry(p,n-1)}throw e}},a=await retry('/v1beta1/screener/stocks/most-actives?top=10'),m=await retry('/v1beta1/screener/stocks/movers?top=10'),li=v=>`<div class="mrow"><button class="csym" data-s="${esc(v.symbol)}" style="padding:0;background:none;border:0;color:var(--text);cursor:pointer">${esc(v.symbol)}</button><span class="num ${cls(v.percent_change)}">${f2(v.percent_change)}%</span></div>`;$('#sc').innerHTML='<div class="hrow" style="margin:8px 0 0"><b>Most active</b>'+exp('Most active','The symbols with the highest trading volume right now, from Alpaca\u2019s screener. Heavy volume means more participation, not a direction: it is a place to look, not an instruction.')+'</div>'+(a.most_actives||a.actives||[]).map(li).join('')+'<div class="hrow" style="margin:10px 0 0"><b>Top movers</b>'+exp('Top movers','The symbols that moved the most today, up and down, from Alpaca\u2019s screener. A big move is not a signal to buy or sell - most of these are simply where the largest percentage changes happened.')+'</div>'+(m.gainers||[]).concat(m.losers||[]).map(li).join('')}catch(e){const m=String(e.message||e);$('#sc').innerHTML='<p class="x">Scanner unavailable: '+esc(netErr(m))+(/^\d{3}\b/.test(m)?' If this persists, the screener endpoints may need a paid market-data plan.':'')+'</p>'}}
-function lvRender(L_){if(!L_){$('#lv').innerHTML='<p class="x" style="padding:12px">Waiting for at least two sessions of bars.</p>';return}
- const p=S.price,a=S.an||{},row=(n,v,x='',t='')=>`<div class="irow"><div class="iline"><span class="iname">${n}${x?' <span class="muted">'+x+'</span>':''}</span><span class="ival num">${f2(v)}</span>${exp(n,t)}</div></div>`;
- const ors=[5,15,30].map(X=>{const o=L_.ors[X];if(!o)return '';return `<div class="irow"><div class="iline"><span class="iname">Opening range ${X}m <span class="${p>o.h?'up':p<o.l?'dn':'nu'}">${p>o.h?'broke up':p<o.l?'broke down':'inside'}</span></span><span class="ival num">${f2(o.l)} - ${f2(o.h)}</span>${exp('Opening range '+X+'m','The high and low of the first '+X+' minutes after the 09:30 ET open. Price above the range has broken up, below it has broken down, and inside it the session has not yet chosen a side. Traders watch these breaks because early direction often continues - though they fail often too.')}</div></div>`}).join('');
+function lvRender(L_){  if(!L_){$('#lv').innerHTML='<p class="x" style="padding:12px">Levels need two sessions of bars, so they fill in with the next load.</p>';return}
+ const p=S.price,a=S.an||{},row=(n,v,x='',t='')=>`<div class="irow"><div class="iline"><span class="iname">${n}${x?' <span class="muted">'+x+'</span>':''}</span><span class="ival num">${f2(v)}</span>${exp(n,t)}</div></div>`;  const ors=[5,15,30].map(X=>{const o=L_.ors[X];if(!o)return '';return `<div class="irow"><div class="iline"><span class="iname">Opening range ${X}m <span class="${p>o.h?'up':p<o.l?'dn':'nu'}">${p>o.h?'broke up':p<o.l?'broke down':'inside'}</span></span><span class="ival num">${f2(o.l)} - ${f2(o.h)}</span>${exp('Opening range '+X+'m','The high and low of the first '+X+' minutes after the 09:30 ET open. Price above the range has broken up, below it has broken down, and inside it the session has not yet chosen a side. Traders watch these breaks because early direction often continues - though they fail often too.')}</div></div>`}).join('');
+ /* Six levels stay visible - the ones a trader checks first. Opening ranges,
+    VWAP bands, premarket and round numbers sit behind one summary line, which is
+    what turns this panel from eleven rows into six. */
+ const extra=[];
  $('#lv').innerHTML=row('Prior day high',L_.ph,'','The highest price of the previous trading session. It is watched because price often reacts when it is retested from above or below.')
   +row('Prior day low',L_.pl,'','The lowest price of the previous trading session. Like the prior high, it is a level the current session may react to when retested.')
   +row('Prior day close',L_.pc,'','The last price of the previous session. It is the reference the current session is measured against, including for the gap below.')
-  +(L_.prH!=null?row('Premarket high',L_.prH,'','The highest price traded before the 09:30 ET open. Premarket trading is thin, so the level is less solid than a regular-session one.')+row('Premarket low',L_.prL,'','The lowest price traded before the 09:30 ET open, from the same thin premarket tape.'):'')
+  +(L_.prH!=null?(extra.push(row('Premarket high',L_.prH,'','The highest price traded before the 09:30 ET open. Premarket trading is thin, so the level is less solid than a regular-session one.')+row('Premarket low',L_.prL,'','The lowest price traded before the 09:30 ET open, from the same thin premarket tape.')),''):'')
   +row(L_.openLabel||'Today open',L_.open,L_.gp>=0?'gap up '+f2(Math.abs(L_.gp))+'%':'gap down '+f2(Math.abs(L_.gp))+'%','The first price of the current session, with how far it opened from the prior close. A gap means the session began away from where the last one ended.')
   +`<div class="irow"><div class="iline"><span class="iname">Gap from prior close</span><span class="ival num ${cls(L_.gp)}">${f2(L_.pc)} / ${L_.filled?'filled':'still open'}</span>${exp('Gap from prior close','The distance between the prior close and today\u2019s open. A gap is filled when price trades back through the prior close during the session; an unfilled gap is still open.')}</div></div>`
-  +ors
-  +`<div class="irow"><div class="iline"><span class="iname">VWAP bands <span class="muted">-2/-1/+1/+2 SD</span></span><span class="ival num">${f2(a.vwap-2*a.vsd)} ... ${f2(a.vwap+2*a.vsd)}</span>${exp('VWAP bands','VWAP plus and minus one and two standard deviations of price around it. They mark where price is unusual relative to the session\u2019s own volume-weighted average: near the outer band the move is stretched by the session\u2019s standards, which can mean either continuation or a snap back.')}</div></div>`
+  +(extra.push(ors),'')
+  +(extra.push(`<div class="irow"><div class="iline"><span class="iname">VWAP bands <span class="muted">-2/-1/+1/+2 SD</span></span><span class="ival num">${f2(a.vwap-2*a.vsd)} ... ${f2(a.vwap+2*a.vsd)}</span>${exp('VWAP bands','VWAP plus and minus one and two standard deviations of price around it. They mark where price is unusual relative to the session\u2019s own volume-weighted average: near the outer band the move is stretched by the session\u2019s standards, which can mean either continuation or a snap back.')}</div></div>`),'')
   +`<div class="irow"><div class="iline"><span class="iname">VWAP</span><span class="ival num">${f2(a.vwap)}</span>${exp('VWAP','The volume-weighted average price for the session: every trade\u2019s price weighted by how many shares traded. Price above it means the average buyer this session is currently in profit; below it, the average buyer is under water.')}</div></div>`
-  +`<div class="irow"><div class="iline"><span class="iname">Round numbers</span><span class="ival num">${L_.round.map(r=>`<span class="${p-r>0?'up':p-r<0?'dn':'nu'}" style="margin-left:6px">${r}</span>`).join('')}</span>${exp('Round numbers','Whole-number prices near the current price. Orders and options strikes cluster on round figures, so price often hesitates there - a tendency, not a rule.')}</div></div>`}
+  +(extra.push(`<div class="irow"><div class="iline"><span class="iname">Round numbers</span><span class="ival num">${L_.round.map(r=>`<span class="${p-r>0?'up':p-r<0?'dn':'nu'}" style="margin-left:6px">${r}</span>`).join('')}</span>${exp('Round numbers','Whole-number prices near the current price. Orders and options strikes cluster on round figures, so price often hesitates there - a tendency, not a rule.')}</div></div>`),'')
+  +(extra.length?`<details class="morelevels"><summary>More session levels \u2014 opening ranges, VWAP bands, premarket high and low, round numbers</summary>${extra.join('')}</details>`:'')}
 function mtfRender(){const R=S.mtfRows;if(!R){$('#mtf').innerHTML='<p class="x">Timeframe alignment loads with the symbol.</p>';return}
  if(S.mtf&&S.mtf.err){$('#mtf').innerHTML='<p class="x">Higher-timeframe error: '+esc(S.mtf.err)+'</p>';return}
  $('#mtf').innerHTML=R.map(r=>`<div class="irow"><div class="iline"><span class="iname">${esc(r.n)}</span><span>${tag(r.v)}</span>${exp(r.n+' alignment','On the '+r.n+' chart: the 9-period EMA above the 21-period EMA with price above both reads bullish, below both reads bearish, and anything else reads mixed.')}</div></div>`).join('')
@@ -685,7 +750,9 @@ function sessRender(){const t=etNow();
  // Free mode shows the replayed session's clock, so the phase label underneath
  // describes the bars on screen rather than the wall clock.
  if(S.mode==='free'&&S.rep&&FREE){const c=FREE.displayClock(S.rep,Date.now(),S.sessionDate);t.h=c.h;t.mi=c.mi;t.s=c.s;t.min=c.minutes;
-  $('#st').textContent='Previous session \u00b7 '+(S.sessionDate?FREE.prettyDate(S.sessionDate):'\u2014')+' \u00b7 '+FREE.replayLabel(S.rep,S.sessionDate)+' \u00b7 delayed'}
+  // replayLabel() already ends with the session date, so naming the date here too
+  // printed it twice: "Previous session \u00b7 Fri 9 Oct \u00b7 full session \u00b7 Fri 9 Oct".
+  $('#st').textContent='Replay \u00b7 '+FREE.replayLabel(S.rep,S.sessionDate)+' \u00b7 delayed'}
  // Amber marks the phases that behave differently from a normal session: the
  // busiest (open and close) and the quietest (midday). The old test here looked
  // for phase names this function no longer returns, so it never matched.
@@ -976,8 +1043,11 @@ async function cal(){let d=null;try{d=JSON.parse(LS.calc||'null')}catch(_){d=nul
  if(!d||!Array.isArray(d.e))return;
  S.cal=d.e.filter(e=>e.country=='USD'&&/High|Medium/.test(e.impact||'')).sort((a,b)=>new Date(a.date)-new Date(b.date));
  calRender();calAList()}
-function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checked)||e.impact=='High'),now=Date.now();
- const stat=$('#cstat');if(stat)stat.textContent=evs.length+' event'+(evs.length==1?'':'s')+(evs.length<S.cal.length?' (filtered)':'');
+function calRender(){const allEvs=S.cal.filter(e=>!($('#conly')&&$('#conly').checked)||e.impact=='High'),now=Date.now();
+ // Ten events is already more than a week's worth of scrolling; the rest of the
+ // week is one button away instead of filling the tab on open.
+ const evs=showAll.cal?allEvs:allEvs.slice(0,10);
+ const stat=$('#cstat');if(stat)stat.textContent=allEvs.length+' event'+(allEvs.length==1?'':'s')+(allEvs.length<S.cal.length?' (filtered)':'')+(allEvs.length>evs.length?' \u00b7 showing the next '+evs.length:'');
  const nx=evs.find(e=>new Date(e.date).getTime()>=now),sum=$('#csum');
  if(sum)sum.innerHTML=nx?(()=>{const t=new Date(nx.date),mins=Math.max(0,Math.round((t.getTime()-now)/6e4)),h=Math.floor(mins/60),m=mins%60;
   return `<b class="${nx.impact=='High'?'dn':'nu'}">Next: ${esc(nx.title)}</b> in ${h?h+'h ':''}${m}m · ${t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit'})} ET${nx.forecast?' · forecast '+esc(nx.forecast):''}`})():'No upcoming events in this view.';
@@ -992,7 +1062,8 @@ function calRender(){const evs=S.cal.filter(e=>!($('#conly')&&$('#conly').checke
   html+=list.map(e=>{const t=new Date(e.date),past=t.getTime()<now,ex=(EXP.find(x=>x[0].test(e.title))||[])[1]||'';
    const tstr=t.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit'}),full=t.toLocaleString('en-US',{timeZone:'America/New_York',weekday:'long',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
    return `<div class="item${past?' past':''}"><details class="evtd"><summary class="hrow" title="Click to read more"><span class="evtime num">${tstr}</span><b class="evttl">${esc(e.title)}</b><span class="chipbadge ${e.impact=='High'?'dn':'nu'}">${esc(e.impact)}</span>${soon.has(e.title+'|'+e.date)?`<span class="chipbadge nu" title="You will be alerted before this event">alert in ${Math.max(0,Math.round((t.getTime()-now)/6e4))}m</span>`:''}${past?'<span class="muted" style="font-size:11px">released</span>':''}<span class="muted evtchev">read more</span></summary><div class="evtmore"><p class="x"><b>${esc(e.title)}</b><br>${esc(full)} ET · ${esc(e.impact)} impact${past?' · already released':''}</p>${ex?`<p class="x">${ex}</p>`:''}<div class="muted num" style="font-size:12px;margin-top:2px">Forecast ${esc(e.forecast||'--')} · Previous ${esc(e.previous||'--')}${e.actual?' · Actual '+esc(e.actual):''}</div><p class="x">The forecast figure is the consensus economists surveyed by the data provider expected. It is not an estimate produced by TickSPY.</p></div></details></div>`}).join('')}
- $('#cl').innerHTML=html||'<p class="x" style="padding:12px">No medium or high impact USD events in this view.</p>'}
+ $('#cl').innerHTML=(html||'<p class="x" style="padding:12px">No medium or high impact USD events in this view. The list covers USD releases with medium or high impact; turn off "High impact only" to see more.</p>')
+  +(allEvs.length>evs.length?moreRow('cal','Show all '+allEvs.length+' events'):'')}
 /* ---------- calendar event alerts (user-configurable) ---------- */
 /* Fires a toast (and a tone, unless silenced) a chosen number of minutes before
    a scheduled release, and optionally when the figure is published. Preferences
@@ -1054,7 +1125,7 @@ CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
    on the server, cached, and read by everyone (see loadOverview above). */
 /* ---------- legal & disclosures ---------- */
 const LEGAL={title:'Important - please read before using this dashboard',
-  short:'Pure information to help you do your own research. Not advice, not a recommendation. Trading risks loss of capital. Current market data requires your own Alpaca keys; keyless bars come from a labelled bundled replay file, which may be generated demonstration data. Provided "as is" without warranty.',
+  short:'Pure information to help you do your own research. Not advice, not a recommendation. Trading risks loss of capital. With no account the desk replays a small bundled sample whose prices are generated demonstration data, labelled as such on screen; current market data requires your own free Alpaca keys. Provided "as is" without warranty.',
  points:[
   ['Information only','This dashboard is a reference tool. It displays market data and mathematical summaries of it so that you can do your own research. It does not tell you what to do. We give no view on whether any security is suitable for you, and we accept no responsibility for any decision you make or for any outcome. You use it entirely at your own risk.'],
   ['Not investment advice','Nothing on this dashboard is investment, financial, legal or tax advice, and nothing is a recommendation, solicitation or offer to buy or sell any security. It is impersonal commentary of general circulation, not advice tailored to your situation.'],
@@ -1062,14 +1133,22 @@ const LEGAL={title:'Important - please read before using this dashboard',
   ['Risk of loss','Trading and investing involve substantial risk, including the total loss of your capital. You are solely responsible for your own decisions. Consult a licensed professional before acting.'],
   ['Estimates, not predictions','The statistical and AI outputs are estimates derived from historical prices. They can be wrong, they are not guaranteed, and past or hypothetical results never indicate future results. The volatility model reports a measured reliability, and often has little or no skill.'],
   ['Hypothetical backtests','Backtest figures are simulated on past data. They exclude commissions, fees, slippage, taxes and borrow costs, cover limited samples, and are not evidence of future performance.'],
-   ['Market data','Without keys, the desk loads a bundled replay file. The current sample files contain generated demonstration data, not real market prices; this is marked on screen. When verified HF Data Library files replace them, the source is IEX-only exchange data, not a consolidated quote. With your own Alpaca keys, Alpaca/IEX supplies current data under its terms. Data may be incomplete, delayed or inaccurate. The Market Structure tools describe only the completed bars actually available for the selected timeframe; their labels are not trading forecasts.'],
+   ['Market data','Without keys, the desk loads a small bundled sample file. Those prices are generated demonstration data, not any real market session and not a current quote, and the status line at the top of the desk says so. With your own Alpaca keys, Alpaca/IEX supplies current data under its terms. No other source is described here as being served, because none is. Data may be incomplete, delayed or inaccurate. The Structure tools describe only the completed bars actually available for the selected timeframe; their labels are not trading forecasts.'],
   ['Auto-generated summaries','The only machine-generated text here is one shared market overview, written on our own server from public headlines and the scheduled events and then shown to every visitor from the same copy. It is unverified and may be wrong or incomplete, and it makes no recommendation. There is no AI key to enter anywhere, so nobody can spend one on your behalf. You are responsible for complying with the terms of every provider you connect.'],
   ['No warranty','This software is provided "as is" without warranty of any kind, express or implied, including merchantability, fitness for a particular purpose and non-infringement. To the maximum extent permitted by law, the authors accept no liability for any loss or damage arising from its use.'],
   ['Privacy policy','The desk has no accounts or advertising. Preferences and optional Alpaca keys are stored in your browser. Netlify and Cloudflare process normal request information, including IP addresses. Google Fonts and jsDelivr receive request information when their resources load. Contact messages and screenshots sent through the landing page are received by FormSubmit and our support inbox. See the linked privacy policy for details and your rights.'],
   ['Operator and eligibility','Operated by Tickspycorp in Québec, Canada. You must be 18 or older and legally able to use the service. Support and privacy contact: tickspysupport@gmail.com.'],
-   ['Not for redistribution','Market data is licensed, not owned. The public desk bundles a labelled keyless replay dataset. If you host a copy, check the applicable source licence and attribution requirements before distributing data; your personal Alpaca access does not grant a general redistribution licence.']
+   ['Not for redistribution','Market data is licensed, not owned. The public desk bundles a labelled keyless sample dataset of generated demonstration data. If you host a copy, check the applicable source licence and attribution requirements before distributing any data you add; your personal Alpaca access does not grant a general redistribution licence.']
  ]};
-function legalBody(withAccept){return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+LEGAL.points.map(p=>`<p class="x"><b>${esc(p[0])}.</b> ${esc(p[1])}</p>`).join('')+'<p class="x"><a href="../terms.html" target="_blank" rel="noopener noreferrer">Terms and risk disclosure</a> · <a href="../privacy.html" target="_blank" rel="noopener noreferrer">Privacy policy</a></p>'+`<div class="legal-actions">${withAccept?'<button class="btn" id="gate-ok" type="button">I am 18+ and accept the terms</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline and return home':'Close'}</button></div>`}
+/* The first screen used to be a 620-word wall of legal text that had to be read
+   before the desk appeared. The same information is still here, and still one
+   click away, but the visitor meets three sentences first and can accept or
+   decline without scrolling through disclosures. Everything is unexpanded here
+   rather than removed: this is presentation, not a reduction in disclosure. */
+function legalBody(withAccept){const pts=LEGAL.points.map(p=>`<p class="x"><b>${esc(p[0])}.</b> ${esc(p[1])}</p>`).join('');
+ const short=`<p style="line-height:1.6">${esc(LEGAL.short)}</p>`;
+ const more=`<details><summary style="cursor:pointer;font-weight:600;font-size:13px;padding:4px 0">Read the full disclosures (${LEGAL.points.length} points)</summary><div style="border-top:1px solid var(--gb);margin-top:8px;padding-top:8px">${pts}</div></details>`;
+ return `<h2 id="gate-t">${esc(LEGAL.title)}</h2>`+short+more+'<p class="x"><a href="../terms.html" target="_blank" rel="noopener noreferrer">Terms and risk disclosure</a> · <a href="../privacy.html" target="_blank" rel="noopener noreferrer">Privacy policy</a></p>'+`<div class="legal-actions">${withAccept?'<button class="btn" id="gate-ok" type="button">I am 18+ and accept the terms</button>':''}<button class="btn" id="gate-close" type="button">${withAccept?'Decline and return home':'Close'}</button></div>`}
 let modalReturn=null;
 function modalShow(id){if(!document.querySelector('.gate.on'))modalReturn=document.activeElement;$(id).classList.add('on');document.body.style.overflow='hidden';$(id).querySelector('button,input,a')?.focus()}
 function modalClose(id){$(id).classList.remove('on');if(!document.querySelector('.gate.on')){document.body.style.overflow='';modalReturn?.focus()}}
@@ -1116,7 +1195,7 @@ function wizRender(){const s=WIZ[wizI],last=wizI===WIZ.length-1,c=cfg();
    free mode the visitor already has data and is left alone. */
 function wizMaybe(){if(!cfg().ak&&LS.wiz!=='done'&&LS.wiz!=='skipped'&&S.mode==='none')setTimeout(()=>wizOpen(0),400)}
 $('#wizbtn').onclick=()=>wizOpen(0);
-$('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><a href="../terms.html">Terms</a><a href="../privacy.html">Privacy</a><a href="mailto:tickspysupport@gmail.com">Support</a><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
+$('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><a href="../terms.html">Terms</a><a href="../privacy.html">Privacy</a><a href="mailto:tickspysupport@gmail.com">Support</a><a href="https://buymeacoffee.com/tickspy" target="_blank" rel="noopener noreferrer">Buy me a coffee</a><button class="ask" id="legal-open" type="button">Full disclosures</button>`;
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
 function fill(){const c=cfg();['ak','as'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]))}

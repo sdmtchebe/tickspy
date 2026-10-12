@@ -76,22 +76,27 @@ results.**
 
 Market data displayed by the Software is obtained from third-party providers.
 With your own credentials that is **Alpaca** and, through it, exchange feeds such
-as **IEX**. With no credentials the Software loads the previous completed session
-from **HF Data Library (IEX exchange data, CC BY 4.0)** — one shared, cached copy
-per symbol, delayed, end-of-day, one session old, and replayed rather than
-streamed. Either way the data is licensed, not owned by you, and is subject to the
-provider's terms.
+as **IEX**. With no credentials the Software loads a small **bundled sample file**
+that ships inside the build. That sample carries `source: "mock"`: its prices are
+**generated demonstration data**, not any real market session, one session old and
+replayed rather than streamed, and the desk states this in its status line. Any
+third-party data is licensed, not owned by you, and is subject to the provider's
+terms.
 
 - Alpaca's published position is that **you may not redistribute its API data**.
 - Exchange market data generally requires a **display or distribution agreement**
   for any customer-facing or public use.
 - Free or personal tiers are typically licensed for **personal, non-commercial
   use only**.
-- **HF Data Library (IEX) data is CC BY 4.0 redistributable with attribution.**
-  IEX represents ~2–3% of consolidated volume and is not the NBBO.
-- **The no-credentials view is one completed session old, end-of-day, and
-  replayed** rather than streamed. It is not a live quote, it must never be
-  presented or relied on as one, and it is labelled as such on screen.
+- **The bundled sample is generated, so it carries no third-party rights.** That
+  is the only reason it can be published at all. Do not read it as market history.
+- **Swapping in real free data is your decision and your licence.** The repository
+  includes a build script for **HF Data Library (IEX exchange data, CC BY 4.0)**.
+  If you regenerate the sample from it, attribution is required, IEX represents
+  ~2–3% of consolidated volume, and it is not the NBBO.
+- **The no-credentials view is one completed session old and replayed** rather
+  than streamed. It is not a live quote, it must never be presented or relied on
+  as one, and it is labelled as such on screen.
 
 Consequently: **do not publish, host, sublicense, resell or otherwise expose this
 Software — or a service built on it — in a way that serves or redistributes
@@ -110,8 +115,9 @@ affiliation is implied.
 
 The Software uses third-party services. Some you connect yourself — **Alpaca**,
 if you choose to enter your own free keys for live market data — and some the
-project operates on your behalf: **HF Data Library (IEX exchange data, CC BY 4.0)**
-(the keyless previous-session price source, bundled at build time), the public
+project operates on your behalf: the **bundled sample price file** (generated
+demonstration data, shipped inside the build — no visitor request reaches any
+price provider), the public
 news feeds and the FairEconomy economic calendar it aggregates, **Cloudflare**,
 which hosts the edge function, and **Google Gemini**, which writes the single
 shared market overview. The page also loads its web fonts from **Google Fonts**,
