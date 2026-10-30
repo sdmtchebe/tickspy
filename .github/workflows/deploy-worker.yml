@@ -33,8 +33,10 @@ jobs:
           node-version: "20"
 
       # No dependencies to install: the Worker and its tests are dependency-free.
+      # tests/all.js runs every suite (feeds and cache, web push encryption, the
+      # alert engine and its API) and fails if any of them does.
       - name: Run worker tests
-        run: node tests/run.js
+        run: node tests/all.js
         working-directory: worker
 
       - name: Check for Cloudflare credentials

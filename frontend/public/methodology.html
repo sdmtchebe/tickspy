@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Methodology — how every TickSPY number is calculated</title><meta name="description" content="The formulas, data sources and backtest behind TickSPY: Wilder RSI and ATR, Bollinger bands, VWAP, Garman-Klass to HAR volatility, market structure, the fixture calendar, and the limits of each."><link rel="stylesheet" href="legal.css"><link rel="canonical" href="https://tickspy.com/methodology.html"></head>
+<body><main>
+<nav aria-label="Site pages"><a href="./">Back to TickSPY</a><a href="about.html">About</a><a href="learn/">Guides</a><a href="privacy.html">Privacy</a><a href="risk.html">Risk</a></nav>
+<p class="date">Reviewed October 25, 2026</p><h1>Methodology</h1>
+<p class="lead">This page exists so that every figure on the desk can be checked rather than trusted. It states what is computed, from which data, with which formula, and — in a section that is not an afterthought — what each method cannot do. Where a result was measured, the measurement is named and can be reproduced from the repository.</p>
+<div class="notice"><strong>Nothing on this site is a prediction of price direction.</strong> Indicators summarise past bars. The volatility model estimates how large a move may be, not which way it will go. A reading is an observation about data that has already printed.</div>
+
+<h2>1. Where the prices come from</h2>
+<p><strong>With no keys</strong>, the desk replays one bundled sample session whose prices are <strong>generated demonstration data</strong>. It is not a real market session and it is not a current quote. The desk labels every panel that shows it. In this mode the volatility model is fed daily bars rather than intraday bars.</p>
+<p><strong>With your own Alpaca keys</strong>, price data is supplied by Alpaca and, through it, the <strong>IEX</strong> feed. IEX is a single exchange; it is not a consolidated tape and not the NBBO. Bars can be delayed, missing or partial, and a bar built from one venue's trades can differ from the official high, low and close of the session. Volume is IEX-only volume, so it understates consolidated volume.</p>
+<p>Headlines, the shared market overview and calendar entries come from third-party feeds described in sections 5 and 6. None of these sources is redistributed.</p>
+
+<h2>2. Candlestick and chart figures</h2>
+<p>Body, wicks and range are geometry, not interpretation. For a bar with open <em>o</em>, high <em>h</em>, low <em>l</em> and close <em>c</em>:</p>
+<p><code>body = |c − o|&nbsp;&nbsp;·&nbsp;&nbsp;upper wick = h − max(o, c)&nbsp;&nbsp;·&nbsp;&nbsp;lower wick = min(o, c) − l</code></p>
+<p>The desk names a shape only after the geometry is shown, and any named pattern is presented as a shape to recognise rather than a signal with an implied success rate. We do not publish a pattern hit rate, because measuring one honestly requires a defined pattern, a holding period, a benchmark and an out-of-sample test — and we have not run that study.</p>
+
+<h2>3. Indicators</h2>
+<p>Fourteen indicators are computed from the loaded bars. The four that raise the most questions:</p>
+<p><strong>RSI (14).</strong> Seeded from the first fourteen changes, then smoothed with Wilder's recursion. <code>RSI = 100 − 100 / (1 + average gain / average loss)</code>. RSI 70 describes recent momentum; it is not a sell instruction, and an instrument can stay above 70 for a long time.</p>
+<p><strong>ATR (14).</strong> True range takes the widest of the bar's own range and its gaps from the previous close: <code>TR = max(h − l, |h − prev close|, |l − prev close|)</code>, then <code>ATRₜ = (13 × ATRₜ₋₁ + TR) / 14</code>. ATR measures movement size, not direction, and is not a confidence interval for the next bar.</p>
+<p><strong>Bollinger bands (20, 2σ).</strong> The middle band is a 20-period simple mean of closes; the bands are that mean ± 2 population standard deviations of the same window. A close outside a band is unusual relative to those twenty bars. It is not automatically a reversal.</p>
+<p><strong>VWAP.</strong> The desk computes a running weighted average using each bar's typical price <code>(h + l + c) / 3</code> weighted by volume. This is an approximation from bar data; it is not a reconstruction of every executed trade.</p>
+<p>The remaining indicators — moving averages including EMA(9) and EMA(21), MACD, Stochastic, ADX, CCI, MFI, OBV, Keltner channels and rate of change — use their conventional published formulations on the same bars.</p>
+
+<h2>4. The indicator score</h2>
+<p>Trend, momentum and volume readings are combined into a single number, with the individual components shown next to it. The score describes what the indicators say at that moment.</p>
+<p><strong>We tested whether it forecasts, and it does not.</strong> Over five years of five-minute SPY bars, splitting the sample by reading produced much the same subsequent returns for bullish and bearish scores. That is why the score is never presented as a prediction. A number in the bullish column is a statement about the past, and the desk says so on the page.</p>
+
+<h2>5. The volatility model</h2>
+<p>The volatility panel runs a two-stage model in a worker, off the main thread:</p>
+<ol>
+<li><strong>Stage 1.</strong> Realized volatility from the <strong>Garman-Klass</strong> estimator of each bar, then <strong>HAR(1,5,22)</strong> — a regression on yesterday's, last week's and last month's realized volatility — fitted as an <strong>expanding walk-forward</strong>, with a <strong>GARCH(1,1)</strong> estimate computed independently as a cross-check.</li>
+<li><strong>Stage 2.</strong> An LSTM correction stage. It is wired into the pipeline and tested, but it <strong>carries no weight in the shipped build</strong>. In practice the estimate you see is HAR-only, and we say so rather than implying a neural network is doing work it is not.</li>
+</ol>
+<p>For intraday bars, the return across a US/Eastern session boundary is masked out of stage 1, because the overnight jump is not a return the model should learn from. For daily bars every bar is a session, so masking there would delete the sample; the rule reads the cadence from the data instead.</p>
+
+<h2>6. The backtest record</h2>
+<p>The shipped engine is measured, not asserted. Sample: <strong>SPY, 5-minute bars, 2021-10-05 → 2026-10-02, 105,085 bars</strong> from Alpaca's IEX feed. Method: the engine trains on the first 80% of a slice and tests on the held-out 20%, re-running at seven cutoffs from 40% to 100% of the sample so that one lucky window cannot flatter the result. Inside each fold the HAR fit is itself an expanding walk-forward, so every one-step estimate is genuinely out of sample.</p>
+<p>The comparison is against a naive <strong>persistence</strong> baseline — "the next bar's volatility equals the last one's" — which is a hard baseline to beat and the one that matters. Across the folds tested, the estimate <strong>cut RMSE by 10–16% against persistence</strong>. The parity harness reproduces the reference Python model's HAR, RMSE, out-of-sample window and neutral band to machine precision; the GARCH field is compared with a documented tolerance because maximum-likelihood convergence cannot be ported exactly.</p>
+<p><strong>Scope of that claim.</strong> One ticker, one timeframe, one venue. It says nothing about other instruments, other intervals, or future market conditions, and RMSE is an error-size measure rather than a trading result. No profitability claim is made or implied, and the backtest excludes commissions, fees, spread, slippage and financing.</p>
+
+<h2>7. Market structure</h2>
+<p>The structure panel describes the character of recent movement rather than forecasting it.</p>
+<ul>
+<li><strong>Path efficiency</strong> — <code>|last − first| / Σ|successive changes|</code>. A price that wanders from 100 to 104 via 103 and 101 has lower efficiency than one that climbs straight, even though both end in the same place.</li>
+<li><strong>Compression</strong> — current price dispersion compared with its own recent history. Low dispersion does not guarantee a breakout.</li>
+<li><strong>Support and resistance zones</strong> — earlier turning points grouped into price bands. A pivot is only confirmed once later bars have printed, and the desk waits for that confirmation rather than marking pivots in real time. A zone can still break.</li>
+<li><strong>CUSUM change detection</strong> — accumulates unusually large or repeated returns against an adaptive rolling baseline. This differs from a fixed industrial control process, so NIST's false-alarm guarantees do not transfer to market returns. An alarm is a flag to look closer, not a calibrated probability.</li>
+</ul>
+<p>Structure features require at least 77 completed bars, which is roughly 385 trading minutes at five minutes per bar and just under three full sessions at fifteen.</p>
+
+<h2>8. The shared market overview</h2>
+<p>The desk shows one machine-written overview of public headlines and scheduled events. A single summary is generated every twenty minutes and shared by every visitor, which keeps cost bounded and means two people looking at the same time see the same text.</p>
+<p><strong>It is unverified.</strong> It can be incomplete, out of date or wrong, and it makes no recommendation. The desk shows its source headlines alongside it so the summary can be checked against what was actually published. Treat it as a draft to verify, never as a statement of fact.</p>
+
+<h2>9. The economic calendar</h2>
+<p>Calendar entries — releases such as CPI and FOMC announcements — come from a third-party economic calendar feed, with times normalised and a rating shown where the feed provides one. Release times and timezones are the most common source of error in event studies, so check the time against the issuing agency before drawing a conclusion about a market move. A before-and-after price change around an event is a description of what happened; it is not evidence that the event caused it.</p>
+
+<h2>10. What has not been tested</h2>
+<p>Stated plainly, because a methodology page that lists only its strengths is marketing:</p>
+<ul>
+<li>The volatility model was validated on <strong>one ticker and one timeframe</strong>. Cross-sectional and multi-interval testing has not been published.</li>
+<li>The <strong>LSTM stage carries no weight</strong> in the shipped build.</li>
+<li>No <strong>pattern hit rates</strong>, no <strong>indicator win rates</strong> and no <strong>event-reaction distribution</strong> are published, because those studies have not been run to a standard we would defend.</li>
+<li>The <strong>indicator score has a measured null result</strong>: it did not separate subsequent returns. It is presented as a description, not a forecast.</li>
+<li>Free mode uses <strong>generated demonstration data</strong>. Any conclusion drawn from it describes the sample, not the market.</li>
+<li>IEX data is <strong>one venue</strong>, so intraday volume and some highs and lows differ from consolidated figures.</li>
+</ul>
+
+<h2>11. Reproducing any of this</h2>
+<p>The backtest and the parity harnesses ship with the code and are runnable. The backtest reuses cached bars and can fetch fresh ones with your own keys. The parity harness requires Python with pandas, scikit-learn, torch and arch; the stage-2 harness has no extra dependencies. Each guide page also shows its own arithmetic so you can recompute a result by hand.</p>
+
+<h2>12. Corrections</h2>
+<p>If a formula, a data source or a stated result on this page is wrong, write to <a href="mailto:tickspysupport@gmail.com">tickspysupport@gmail.com</a> naming the section. Corrections are made on the page and the review date above is updated. We would rather correct a claim than keep it.</p>
+<p class="date">See also: <a href="risk.html">Risk Disclosure</a> · <a href="terms.html">Terms of Use</a> · <a href="privacy.html">Privacy Policy</a> · <a href="about.html">About TickSPY</a></p>
+</main></body></html>

@@ -146,12 +146,22 @@ same-origin server, or a full URL.
 
 ## Alerts
 
-Alerts are checked in the page: a price alert on the current symbol, and
-scheduled economic-calendar warnings a chosen number of minutes before a release
-and optionally on the release itself. They fire while the desk is open, including
-when the tab is in the background, and play a short tone unless you turn the sound
-off. They **do not** fire once the tab or the browser is closed — nothing is sent
-to a server to watch for you — and the Alerts tab says so.
+Two kinds, and the difference between them is the whole point of the tab.
+
+**In the page:** a price alert on the current symbol, and scheduled
+economic-calendar warnings a chosen number of minutes before a release and
+optionally on the release itself. They fire while the desk is open, including
+when the tab is in the background. Alerts stop when the tab or browser is closed. off. They **do not** fire once the tab or the browser is closed, and the tab says
+so plainly.
+
+**On Telegram:** the same kinds of rule, handed to the Worker, which re-checks
+them every five minutes and messages the chat you linked — so they arrive with
+the desk closed. Connecting is a one-time code: press **Connect Telegram**, the
+desk opens the bot with the code inside the link, and pressing START in the chat
+connects it. Nothing is sent to Telegram until that happens, the desk never sees
+the chat id, and **Disconnect and delete** (or `/stop` in the chat) removes the
+record. What the server keeps, and the limits, are in [PRIVACY.md](PRIVACY.md)
+and in `worker/README.md`.
 
 ## Keys and privacy
 

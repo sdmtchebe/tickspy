@@ -15,6 +15,11 @@ const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // Only the static assets the page actually loads. Secrets (local-config.js) are
 // deliberately never copied. edge-config.js holds only a public Worker URL, so
 // it is safe to publish.
+// No service worker is published any more: alerts are delivered by Telegram on
+// the server, so there is nothing for the page to register and nothing to keep
+// in its cache. A stale sw.js from an older build is removed below, because a
+// browser that already installed it would otherwise keep it until it is
+// unregistered.
 const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js", "structure-engine.js", "structure-chart.js", "structure-view.js", "structure.css", "profile.js"];
 const HFDATA_DIR = path.join(SRC_DIR, "hfdata");
 
@@ -62,6 +67,14 @@ function main() {
   if (fs.existsSync(stray)) {
     fs.unlinkSync(stray);
     console.log("[sync-desk] removed a stray local-config.js from the published desk");
+  }
+
+  // The web-push service worker is gone. Leaving an old copy published would let
+  // a browser keep a worker whose only job was a feature that no longer exists.
+  const staleWorker = path.join(OUT_DIR, "sw.js");
+  if (fs.existsSync(staleWorker)) {
+    fs.unlinkSync(staleWorker);
+    console.log("[sync-desk] removed the retired sw.js from the published desk");
   }
 
   console.log(`[sync-desk] bundled desk -> ${path.relative(process.cwd(), OUT_DIR)} (${FILES.join(", ")}, local-config tag stripped)`);

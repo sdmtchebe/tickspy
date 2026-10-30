@@ -7,6 +7,12 @@
  *   GET /api/bars       keyless price data: the last completed session
  *   GET /api/health     cache ages and per-source status, for debugging
  *
+ *   GET    /api/comments        the anonymous community wall
+ *   POST   /api/comments        post as a browser-generated pseudonym
+ *   DELETE /api/comments/:id    delete your own comment
+ *   GET    /api/comments/admin  moderation queue (token required)
+ *   POST   /api/comments/admin/:id  hide, show or delete (token required)
+ *
  * Everything an API key touches lives here. The browser only ever sees our own
  * JSON, never a key, and never talks to Gemini or to a feed directly.
  *
@@ -15,38 +21,34 @@
  * clock and not the audience.
  */
 
-import { cached, createMemory, warm } from "./cache.js";
+import { cached, warm } from "./cache.js";
 import { collectNews } from "./news.js";
 import { fetchSeries, knownInterval } from "./bars.js";
 import { generateOverview, DEFAULT_MODEL } from "./gemini.js";
 import { produceCalendar } from "./calendar.js";
+import { alertRoutes } from "./alertapi.js";
+import { commentRoutes, turnstileEnabled } from "./comments.js";
+import { telegramBot } from "./telegram.js";
+import { runAlertTick } from "./alerts.js";
+import { _memory as MEM, ALERTS_CRON, BARS_CRON, barsKey, budgetAllows } from "./internals.js";
 
-// Per-isolate, survives between requests handled by the same instance.
-const MEM = createMemory();
-
-// Exposed so tests can reset the per-isolate cache between cases; production
-// code only ever goes through the routes above.
-export const _memory = MEM;
+/* Everything the tests need to reach - the per-isolate cache, the cron
+ * expressions, the bearer of the fetch budget - lives in internals.js, and
+ * NOTHING but functions and the default handler is exported from this module.
+ *
+ * That is a hard requirement of the runtime, not a preference: workerd validates
+ * the entry module's export map when the Worker starts and refuses to boot at all
+ * if it finds a non-function export ("Incorrect type for map entry"). Since Node
+ * exports anything without complaint, a stray `export const` here passes every
+ * test and then takes the whole API down on deploy - which is how this comment
+ * came to be written. `MEM` is the same object the tests import under its own
+ * name. */
 
 const KEYS = {
   overview: "overview:v1",
   news: "news:v1",
   calendar: "calendar:v1",
 };
-
-// Price bars are cached per symbol and timeframe. The version prefix means a
-// payload-shape change can be shipped without serving a half-migrated entry, and
-// v2 is exactly that: the intraday payload went from one session to the last
-// three, and a stale entry would have quietly kept the desk on the old shape
-// until its 20-hour TTL ran out.
-//
-// The `l` variant is the light range the symbol-list path asks for. It gets its
-// own key on purpose: one key cannot hold two different histories, and when the
-// watchlist and the detail view shared it, whichever wrote first decided how much
-// history the other saw - which quietly turned a relative-strength comparison
-// into five years for one symbol and three months for the other.
-export const BARS_KEY_PREFIX = "bars:v2";
-const barsKey = (tf, symbol, light = false) => `${BARS_KEY_PREFIX}${light ? "l" : ""}:${tf}:${String(symbol).toUpperCase()}`;
 
 // 25-minute TTL with a 20-minute cron: the schedule refreshes each entry before
 // it expires, so a visitor almost never pays for a rebuild.
@@ -66,8 +68,9 @@ const CALENDAR_GRACE = 21600;
 const BARS_TTL = 20 * 3600;
 const BARS_GRACE = 4 * 86400;
 
-/** The daily cron. Anything else on the schedule leaves price bars alone. */
-export const BARS_CRON = "17 5 * * *";
+/* The cron expressions live in internals.js. /api/alerts/config reports the tick
+ * interval from the same constant TICK_MINUTES in alertapi.js, so the schedule
+ * and the sentence the desk shows a visitor cannot drift apart. */
 
 /** How many symbols one request may ask for. */
 const MAX_SYMBOLS = 12;
@@ -150,8 +153,15 @@ function corsHeaders(request, env) {
   const granted = originAllowed(origin, allowedOrigins(env));
   const headers = {
     Vary: "Origin",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    // POST and DELETE are allowed because the alert and comment routes need
+    // them. Those are the only writable endpoints, and each re-checks the
+    // Origin or the bearer token itself before touching anything — the header
+    // here only tells a browser what is possible, and a browser is the one
+    // participant that always tells the truth about where a request came from.
+    // Authorization is what the community identity and the moderation token
+    // travel in; without it listed, a preflight would block both.
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
   };
   if (granted) headers["Access-Control-Allow-Origin"] = granted;
@@ -229,45 +239,6 @@ function warmSymbols(env) {
     .map((s) => s.trim().toUpperCase())
     .filter(Boolean)
     .slice(0, 20);
-}
-
-/* Stooq's free feed publishes a low daily request quota, and /api/bars is the
- * one endpoint that takes a caller-supplied symbol. Without a limit, a script
- * could walk through ticker after ticker and spend that quota on symbols no
- * visitor asked for, leaving the desk's own list unserved. A per-isolate token
- * bucket bounds it: at most BARS_FETCH_BUDGET missing entries may start an
- * upstream fetch per window. Past that the endpoint answers with a sentence
- * instead of calling upstream again. It is a speed bump rather than a wall -
- * Cloudflare runs many isolates - but together with the durable cache holding
- * only DESK_SYMBOLS it keeps the quota pointed at symbols people actually look
- * at. Cached and stale entries are untouched, so ordinary traffic never sees it. */
-const BARS_FETCH_WINDOW_MS = 60_000;
-const BARS_FETCH_BUDGET = 60;
-const FETCH_HITS = [];
-let FETCH_BLOCKED = 0;
-
-/** Exported so the tests can drive the clock and read the block count. */
-export const _fetchBudget = {
-  windowMs: BARS_FETCH_WINDOW_MS,
-  max: BARS_FETCH_BUDGET,
-  get hits() {
-    return FETCH_HITS;
-  },
-  get blocked() {
-    return FETCH_BLOCKED;
-  },
-};
-
-export function budgetAllows(now = Date.now()) {
-  // Drop the timestamps that have aged out of the window, then admit one more
-  // only if the window still has room.
-  while (FETCH_HITS.length && now - FETCH_HITS[0] >= BARS_FETCH_WINDOW_MS) FETCH_HITS.shift();
-  if (FETCH_HITS.length >= BARS_FETCH_BUDGET) {
-    FETCH_BLOCKED++;
-    return false;
-  }
-  FETCH_HITS.push(now);
-  return true;
 }
 
 async function getBars(request, env, ctx, symbol, tf, light = false) {
@@ -456,7 +427,54 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders(request, env) });
     }
-    // Read-only API: everything here is a GET, so anything else is a 405.
+
+    /* Telegram alerts are the one part of this API that writes, so they are
+     * routed before the read-only guard below. Everything they accept is
+     * validated inside alertapi.js, including the Origin, because a
+     * subscription is the only thing here that belongs to one person rather
+     * than to everybody. The bot's webhook is routed there too: it carries no
+     * Origin (Telegram is a server, not a page) and authenticates with the
+     * secret token in its own header instead. */
+    try {
+      const alertResponse = await alertRoutes({
+        request,
+        env,
+        ctx,
+        url,
+        json,
+        originAllowed: (o) => originAllowed(o, allowedOrigins(env)),
+      });
+      if (alertResponse) return alertResponse;
+    } catch (e) {
+      return json(
+        { error: "alert_failed", message: String((e && e.message) || e) },
+        { status: 500, request, env }
+      );
+    }
+
+    /* The community wall. It is separated from the alerts because it has its
+     * own credential (an anonymous browser token, not a subscription secret)
+     * and its own abuse budget. A failure here returns a fixed sentence rather
+     * than the internal message: the only thing that can throw is the database,
+     * and a driver error can name columns. */
+    try {
+      const commentResponse = await commentRoutes({
+        request,
+        env,
+        url,
+        json,
+        originAllowed: (o) => originAllowed(o, allowedOrigins(env)),
+      });
+      if (commentResponse) return commentResponse;
+    } catch (e) {
+      console.error("[comments]", (e && e.message) || e);
+      return json(
+        { error: "comments_failed", message: "The community wall is unavailable right now. Try again in a moment." },
+        { status: 500, request, env }
+      );
+    }
+
+    // The rest of the API is read-only: everything below is a GET.
     if (request.method !== "GET") {
       return json({ error: "Method not allowed" }, { status: 405, request, env });
     }
@@ -470,8 +488,24 @@ export default {
             {
               ok: true,
               model: env.GEMINI_MODEL || DEFAULT_MODEL,
-              // Booleans only - never the values.
-              configured: { geminiKey: Boolean(env.GEMINI_API_KEY), kv: Boolean(env.CACHE) },
+              // Booleans and one public name - never the token: are the pieces
+              // Telegram alerts need actually present on this deployment?
+              configured: {
+                geminiKey: Boolean(env.GEMINI_API_KEY),
+                kv: Boolean(env.CACHE),
+                // True only when both the token (secret) and the public bot
+                // username are usable, because a bot that can send but cannot
+                // be linked to is not a working channel.
+                telegram: Boolean(telegramBot(env)),
+                telegramBot: (telegramBot(env) || {}).username || null,
+                telegramWebhookSecret: Boolean(env.TELEGRAM_WEBHOOK_SECRET),
+                comments: Boolean(env.COMMENTS_DB),
+                commentModeration: Boolean(env.COMMENTS_ADMIN_TOKEN),
+                // True only when the bot gate has both halves: the public site
+                // key (a var) and the secret. Half a configuration posts
+                // exactly as before, which is why it is reported as false.
+                commentTurnstile: turnstileEnabled(env),
+              },
               cacheAgeSeconds: mem,
               ttl: { overview: OVERVIEW_TTL, news: NEWS_TTL, calendar: CALENDAR_TTL, bars: BARS_TTL },
               deskSymbols: warmSymbols(env),
@@ -548,7 +582,27 @@ export default {
         }
 
         default:
-          return json({ error: "Not found", endpoints: ["/api/overview", "/api/news", "/api/calendar", "/api/bars", "/api/health"] }, { status: 404, request, env });
+          return json(
+            {
+              error: "Not found",
+              endpoints: [
+                "/api/overview",
+                "/api/news",
+                "/api/calendar",
+                "/api/bars",
+                "/api/health",
+                "/api/alerts/config",
+                "/api/alerts/link/start",
+                "/api/alerts/link/status",
+                "/api/alerts/rules",
+                "/api/comments",
+                "/api/alerts/test",
+                "/api/alerts/unsubscribe",
+                "/api/telegram/webhook",
+              ],
+            },
+            { status: 404, request, env }
+          );
       }
     } catch (e) {
       // Last resort: the cached layer already serves stale values where it can,
@@ -569,6 +623,31 @@ export default {
    * summarising the same run's data. */
   async scheduled(event, env = {}, ctx = {}) {
     const kv = env.CACHE || null;
+
+    /* Telegram alerts run on their own schedule, before anything else, because
+     * the tick is cheap when nothing is due and it should not have to wait
+     * behind a news refresh to find out. It reads the news and calendar that
+     * are already cached rather than fetching its own copy. */
+    if (event && event.cron === ALERTS_CRON) {
+      try {
+        const req = new Request("https://worker.local/api/alert-tick");
+        // Both are cache reads on a warm entry, and both are already refreshed
+        // on their own schedules. A cold cache here returns nothing rather than
+        // failing the tick, so an alert run can never be the thing that breaks.
+        const [news, cal] = await Promise.all([
+          getNews(req, env, ctx, "").then((r) => r.value.news || []).catch(() => []),
+          getCalendar(req, env, ctx).then((r) => r.value || []).catch(() => []),
+        ]);
+        const summary = await runAlertTick({ env, news, events: cal });
+        console.log(
+          `cron: alerts checked ${summary.checked}, sent ${summary.sent}, removed ${summary.removed}, deferred ${summary.skipped}`
+        );
+        for (const err of summary.errors) console.error(`cron: alerts ${err}`);
+      } catch (e) {
+        console.error(`cron: alerts failed: ${(e && e.message) || e}`);
+      }
+      return;
+    }
 
     // Price bars belong to the daily run only. On the 20-minute schedule they
     // would be identical every time, and each extra rebuild spends one of

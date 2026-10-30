@@ -30,6 +30,14 @@ if (process.env.REACT_APP_ENABLE_ADS === "true") {
   const ads = ["https://*.googlesyndication.com", "https://*.doubleclick.net", "https://*.google.com", "https://*.googleadservices.com"];
   scripts.push(...ads); connects.push(...ads); images.push(...ads); frames.splice(0, 1, ...ads);
 }
+// Turnstile is the bot gate for the community wall. The host is Cloudflare's own
+// and the widget is only fetched when the Worker advertises a site key, but the
+// policy has to allow it up front: a CSP cannot be changed by the API.
+const turnstile = ["https://challenges.cloudflare.com"];
+scripts.push(...turnstile);
+connects.push(...turnstile);
+if (frames[0] === "'none'") frames.splice(0, 1);
+frames.push(...turnstile);
 const csp = [
   "default-src 'self'", "base-uri 'self'", "object-src 'none'", "frame-ancestors 'none'",
   `script-src ${scripts.join(" ")}`, "script-src-attr 'none'",

@@ -34,6 +34,11 @@ export const Footer = () => {
         <p className="t-label">The desk</p>
         <ul className="mt-4 space-y-2.5">
           <li>
+            <button onClick={() => scrollToId("telegram-alerts")} className="link-quiet text-[14px]" data-testid="footer-link-telegram">
+              Alerts on Telegram
+            </button>
+          </li>
+          <li>
             <a href={DESK_PATH} target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
               Open the desk
             </a>
@@ -65,11 +70,14 @@ export const Footer = () => {
             <a href="privacy.html" className="link-quiet">Privacy policy</a>
             <a href="terms.html" className="link-quiet">Terms of service</a>
             <a href="risk.html" className="link-quiet">Risk disclosure</a>
-            <a href="privacy-fr.html" lang="fr" hreflang="fr" className="link-quiet">Confidentialité&nbsp;(FR)</a>
+            <a href="privacy-fr.html" lang="fr" hrefLang="fr" className="link-quiet">Confidentialité&nbsp;(FR)</a>
             <a href="mailto:tickspysupport@gmail.com" className="link-quiet">Support</a>
             <a href="desk/overview/" className="link-quiet">Learn the desk</a>
             <a href="desk/tools/" className="link-quiet">Risk calculators</a>
             <a href="desk/volatility/" className="link-quiet">ATR and volatility</a>
+            <a href="learn/" className="link-quiet">All ten guides</a>
+            <a href="methodology.html" className="link-quiet">Methodology</a>
+            <a href="about.html" className="link-quiet">About</a>
             <p>No accounts, no server of ours holding your keys.</p>
           </nav>
         </div>

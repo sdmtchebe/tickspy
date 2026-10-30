@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Deliberately unlinked and unlisted. It is not a secret page — the token is
+     the secret — but there is no reason for it to appear in a search result. -->
+<meta name="robots" content="noindex,nofollow">
+<title>Comment moderation | TickSPY</title>
+<link rel="stylesheet" href="legal.css">
+<style>
+  main{width:min(1080px,calc(100% - 40px))}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:18px 0 8px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+  .bar label{flex:1 1 320px}
+  .bar span{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--steel);margin-bottom:6px}
+  .bar input{width:100%}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .tabs button[aria-pressed="true"]{border-color:var(--mint);color:var(--mint)}
+  .row{padding:16px 0;border-bottom:1px solid var(--line)}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-size:12.5px;color:var(--steel)}
+  .meta strong{color:var(--ink);font-size:13.5px}
+  .body{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;color:var(--steel)}
+  .tag{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:1px 8px;color:var(--steel)}
+  .tag.hidden{color:#e0c98d;border-color:#6b5a2a}
+  .tag.deleted{color:#e5b4b4;border-color:#7a3b3b}
+  .actions{display:flex;flex-wrap:wrap;gap:8px}
+  .actions button{padding:6px 10px;font-size:13px}
+  .danger{color:#e5b4b4;border-color:#7a3b3b}
+  .muted{font-size:13px;color:var(--steel)}
+  #status{min-height:1.5em;font-size:13px;color:var(--steel)}
+</style>
+</head>
+<body><main>
+<nav aria-label="Site pages"><a href="./">Back to TickSPY</a><a href="privacy.html">Privacy</a></nav>
+<p class="date">Private moderation console · not indexed</p>
+<h1>Comment moderation</h1>
+<div class="notice">
+  This page talks to the Worker with the <code>COMMENTS_ADMIN_TOKEN</code> secret. The token is kept in this tab only
+  (<code>sessionStorage</code>) and is never part of the build, the repository or the sitemap. Closing the tab forgets it.
+</div>
+
+<div class="bar">
+  <label><span>Moderation token</span>
+    <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Paste COMMENTS_ADMIN_TOKEN">
+  </label>
+  <button id="connect" type="button">Load comments</button>
+  <button id="forget" type="button">Forget token</button>
+</div>
+<p id="status" role="status" aria-live="polite"></p>
+
+<div class="tabs" role="group" aria-label="Filter">
+  <button type="button" data-filter="visible" aria-pressed="true">Visible <span id="c-visible"></span></button>
+  <button type="button" data-filter="hidden" aria-pressed="false">Held <span id="c-hidden"></span></button>
+  <button type="button" data-filter="deleted" aria-pressed="false">Deleted <span id="c-deleted"></span></button>
+  <button type="button" data-filter="all" aria-pressed="false">All</button>
+</div>
+
+<div id="list" aria-live="polite"></div>
+<div style="margin-top:18px"><button id="more" type="button" hidden>Load older</button></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var API = "https://tickspy-api.sdmtchebe.workers.dev/api/comments/admin";
+  var TOKEN_KEY = "tickspy-moderation-token";
+  var token = "";
+  var filter = "visible";
+  var before = null;
+  var busy = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  try { token = sessionStorage.getItem(TOKEN_KEY) || ""; } catch (e) { token = ""; }
+
+  function remember(value) {
+    token = value;
+    try { sessionStorage.setItem(TOKEN_KEY, value); } catch (e) { /* tab-only */ }
+  }
+
+  function say(text) { $("status").textContent = text || ""; }
+
+  function request(path, options) {
+    return fetch(API + path, {
+      method: (options && options.method) || "GET",
+      headers: { Accept: "application/json", Authorization: "Bearer " + token },
+      body: options && options.body ? JSON.stringify(options.body) : undefined
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) {
+          var error = new Error(data.message || "Request failed (" + res.status + ").");
+          error.code = data.error;
+          error.status = res.status;
+          throw error;
+        }
+        return data;
+      });
+    });
+  }
+
+  function tag(text, kind) {
+    var span = document.createElement("span");
+    span.className = "tag" + (kind ? " " + kind : "");
+    span.textContent = text;
+    return span;
+  }
+
+  function button(label, action, danger) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    if (danger) b.className = "danger";
+    b.addEventListener("click", action);
+    return b;
+  }
+
+  function renderRow(comment) {
+    var row = document.createElement("article");
+    row.className = "row";
+    row.dataset.id = comment.id;
+
+    var meta = document.createElement("div");
+    meta.className = "meta";
+    var who = document.createElement("strong");
+    who.textContent = comment.nickname;
+    meta.appendChild(who);
+
+    var when = document.createElement("span");
+    when.textContent = new Date(comment.createdAt).toLocaleString();
+    meta.appendChild(when);
+
+    if (comment.status === "hidden") meta.appendChild(tag("held", "hidden"));
+    if (comment.deleted) meta.appendChild(tag("deleted", "deleted"));
+    if (comment.autoHidden) meta.appendChild(tag("filtered"));
+
+    var id = document.createElement("span");
+    id.textContent = "id " + comment.id;
+    id.style.fontFamily = "ui-monospace,monospace";
+    meta.appendChild(id);
+
+    if (comment.authorHash) {
+      var author = document.createElement("span");
+      author.textContent = "author " + comment.authorHash;
+      author.style.fontFamily = "ui-monospace,monospace";
+      meta.appendChild(author);
+    }
+    row.appendChild(meta);
+
+    var body = document.createElement("p");
+    body.className = "body";
+    // textContent, never innerHTML: the whole point of the wall is that a
+    // comment is data. The moderation page must not be the one place that
+    // turns it into markup.
+    body.textContent = comment.deleted ? "(text deleted)" : comment.body;
+    row.appendChild(body);
+
+    var actions = document.createElement("div");
+    actions.className = "actions";
+
+    if (!comment.deleted) {
+      if (comment.status === "hidden") {
+        actions.appendChild(button("Approve / show", function () { act(comment.id, "show"); }));
+      } else {
+        actions.appendChild(button("Hide", function () { act(comment.id, "hide"); }));
+      }
+      actions.appendChild(button("Delete", function () {
+        if (window.confirm("Delete this comment permanently? The text is removed from the database.")) {
+          act(comment.id, "delete");
+        }
+      }, true));
+    }
+
+    row.appendChild(actions);
+    return row;
+  }
+
+  function render(data) {
+    var list = $("list");
+    list.textContent = "";
+
+    if (data.counts) {
+      $("c-visible").textContent = "(" + data.counts.visible + ")";
+      $("c-hidden").textContent = "(" + data.counts.hidden + ")";
+      $("c-deleted").textContent = "(" + data.counts.deleted + ")";
+    }
+
+    if (!data.comments.length) {
+      var empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = "Nothing in this filter.";
+      list.appendChild(empty);
+    }
+
+    data.comments.forEach(function (comment) { list.appendChild(renderRow(comment)); });
+    before = data.nextBefore;
+    $("more").hidden = !before;
+  }
+
+  function load(reset) {
+    if (busy) return;
+    if (!token) { say("Paste the moderation token first."); return; }
+    busy = true;
+    if (reset) { before = null; $("list").textContent = ""; }
+    say("Loading...");
+    var url = "?status=" + encodeURIComponent(filter) + "&limit=50" + (before ? "&before=" + encodeURIComponent(before) : "");
+    request(url).then(function (data) {
+      render(data);
+      say(data.comments.length ? "Loaded " + data.comments.length + " comment(s)." : "Nothing here.");
+    }).catch(function (error) {
+      if (error.status === 401) say("That token was not accepted. Nothing was changed.");
+      else if (error.code === "not_configured") say("Moderation is not configured: set COMMENTS_ADMIN_TOKEN on the Worker.");
+      else say(error.message);
+    }).finally(function () { busy = false; });
+  }
+
+  function act(id, action) {
+    if (busy) return;
+    busy = true;
+    say(action === "delete" ? "Deleting..." : "Updating...");
+    request("/" + encodeURIComponent(id), { method: "POST", body: { action: action } })
+      .then(function () { busy = false; say("Done."); load(true); })
+      .catch(function (error) { busy = false; say(error.message); });
+  }
+
+  $("connect").addEventListener("click", function () {
+    remember($("token").value.trim());
+    load(true);
+  });
+  $("token").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") { event.preventDefault(); $("connect").click(); }
+  });
+  $("forget").addEventListener("click", function () {
+    remember("");
+    $("token").value = "";
+    $("list").textContent = "";
+    say("Token forgotten for this tab.");
+  });
+  $("more").addEventListener("click", function () { load(false); });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-filter]"), function (b) {
+    b.addEventListener("click", function () {
+      filter = b.dataset.filter;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-filter]"), function (other) {
+        other.setAttribute("aria-pressed", String(other === b));
+      });
+      load(true);
+    });
+  });
+
+  if (token) {
+    $("token").value = token;
+    load(true);
+  } else {
+    say("Paste the moderation token to load the queue.");
+  }
+})();
+</script>
+</body></html>

@@ -52,6 +52,27 @@ label{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 .header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(16,20,28,.88),rgba(16,20,28,.58));backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%);position:sticky;top:0;z-index:10}
 .brand{font-weight:600;letter-spacing:.02em}
 .tagline{color:var(--muted);font-size:12px}
+/* The Telegram tutorial: numbered steps rather than a paragraph, because the
+   whole task is "do these four things in this order". The number is a mint
+   badge and the copy is the page's own prose, so it reads as part of the desk
+   rather than as a help article pasted into it. */
+.tsteps{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px}
+.tsteps li{display:grid;grid-template-columns:22px 1fr;gap:9px;align-items:start;background:var(--well);border:1px solid var(--line);border-radius:var(--r-well);padding:9px 11px;color:var(--muted);font-size:12px;line-height:1.55}
+.tsteps .tstepn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(0,229,160,.14);color:var(--mint-ink);font-family:var(--mono);font-size:12px;font-weight:600}
+.tsteps b{color:var(--ink);font-weight:600}
+.tsteps code{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+/* The rules editor: one block per alert family, each with its own switch. The
+   sections are separated by the same hairline the rest of the desk uses, so the
+   panel reads as one form rather than five unrelated widgets. */
+.rgroup{border-top:1px solid var(--gb);margin-top:12px;padding-top:11px}
+.rgroup:first-of-type{border-top:0;margin-top:2px;padding-top:0}
+.rhead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:2px}
+.rhead b{font-weight:600;font-size:13px;color:var(--ink)}
+.rctl{display:flex;flex-wrap:wrap;gap:9px 14px;align-items:center;margin:7px 0}
+.rctl label{font-size:12px}
+.rctl input[type=time]{width:104px}
+.chk{display:inline-flex;gap:7px;align-items:center;cursor:pointer}
+.rctl input:disabled,.rctl select:disabled{opacity:.45;cursor:not-allowed}
 #sym{width:84px;text-transform:uppercase;font-weight:600}
 #px{font-size:24px;font-weight:600;padding:1px 5px;border-radius:4px;transition:background-color 150ms linear}
 #px.tfu{background:rgba(0,229,160,.16)}#px.tfd{background:rgba(255,77,106,.16)}
@@ -151,6 +172,7 @@ nav.tabs .grp:first-child{padding-top:3px}
 .banner .pill.replay{background:rgba(130,169,255,.16);border-color:rgba(130,169,255,.5);color:#a9c3ff}
 .banner .pill.live{background:rgba(0,229,160,.14);border-color:rgba(0,229,160,.45);color:var(--up)}
 .banner .pill.off{background:rgba(255,77,106,.13);border-color:rgba(255,77,106,.45);color:var(--dn)}
+.pill.wait{background:rgba(150,162,186,.18);border-color:rgba(150,162,186,.5);color:#c8d2e4}
 .banner summary{cursor:pointer;color:var(--text);font-weight:600;font-size:12px;margin-top:7px}
 .banner summary:hover{text-decoration:underline;text-underline-offset:2px}
 .banner .fbn-body{border-top:1px solid rgba(130,169,255,.35);margin-top:7px;padding-top:8px;font-size:12px;line-height:1.6;color:var(--text);max-width:80ch}
@@ -246,16 +268,59 @@ nav.tabs .grp:first-child{padding-top:3px}
 <div id="nl" class="stack"></div></div></section>
 <section class="tab" id="t-cal"><div class="panel"><h2>Economic calendar <span class="tagline">USD releases · one week open, the rest one press away</span></h2>
 <div class="pbody"><div class="row"><label><input type="checkbox" id="conly"> High impact only</label><span class="tagline" id="cstat"></span></div>
-<div class="row" style="border-top:1px solid var(--gb);padding-top:9px;margin-top:2px"><label><input type="checkbox" id="caon"> Alert me</label><span id="calfields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="caimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="calead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="carel"> and on release</label><label><input type="checkbox" id="casnd"> sound</label></span></div>  <div id="csum" class="x" style="margin-bottom:6px"></div><p class="x" style="margin-bottom:6px"><b>One whole week is always open</b>, Sunday to Saturday in New York time, with every event on it; the weeks after it come from Nasdaq's public calendar. Each further week is one press away. Days with nothing are left out rather than padded, and a week neither source has published yet is not invented either - it fills itself in, because the desk re-reads the calendar every hour and again when the New York day rolls over. Anything the provider has not rated yet is marked <b>not rated</b> and cannot trigger impact-based alerts, so nothing is quietly treated as unimportant.</p></div>
+<div class="row" style="border-top:1px solid var(--gb);padding-top:9px;margin-top:2px"><label><input type="checkbox" id="caon"> Alert me</label><span id="calfields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="caimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="calead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="carel"> and on release</label></span></div>  <div id="csum" class="x" style="margin-bottom:6px"></div><p class="x" style="margin-bottom:6px"><b>One whole week is always open</b>, Sunday to Saturday in New York time, with every event on it; the weeks after it come from Nasdaq's public calendar. Each further week is one press away. Days with nothing are left out rather than padded, and a week neither source has published yet is not invented either - it fills itself in, because the desk re-reads the calendar every hour and again when the New York day rolls over. Anything the provider has not rated yet is marked <b>not rated</b> and cannot trigger impact-based alerts, so nothing is quietly treated as unimportant.</p></div>
 <div id="cl" class="stack"></div></div></section>
 <section class="tab" id="t-alert"><div class="panel"><h2>Alerts</h2><div class="pbody">
-<p class="x">Price alerts on the current symbol. They fire while the desk is open &mdash; including when the tab is in the background &mdash; and play a short tone unless you turn sound off. They stop once the tab or the browser is closed, and each alert is removed once it triggers.</p>
-<div class="row"><select id="at" aria-label="Alert type"><option value="above">Price above</option><option value="below">Price below</option><option value="vwapup">Price above VWAP</option><option value="vwapdown">Price below VWAP</option><option value="pattern">Any pattern appears</option></select><input id="av" type="number" step="0.01" placeholder="price" aria-label="Price" style="width:110px"><button class="btn primary" id="aadd">Add alert</button><button class="btn" id="atest" type="button">Test sound</button></div>
+<p class="x">Price alerts on the current symbol. They fire while the desk is open &mdash; including when the tab is in the background &mdash;  They stop once the tab or the browser is closed, and each alert is removed once it triggers.</p>
+<div class="row"><select id="at" aria-label="Alert type"><option value="above">Price above</option><option value="below">Price below</option><option value="vwapup">Price above VWAP</option><option value="vwapdown">Price below VWAP</option><option value="pattern">Any pattern appears</option></select><input id="av" type="number" step="0.01" placeholder="price" aria-label="Price" style="width:110px"><button class="btn primary" id="aadd">Add alert</button></div>
 <div id="al" class="stack"></div>
 <div style="border-top:1px solid var(--gb);margin-top:14px;padding-top:12px"><h3 style="margin:0 0 6px;font-size:15px">Financial calendar alerts</h3>
-<p class="x" style="margin:0 0 8px">Scheduled US economic releases from the Calendar tab. They fire the same way as price alerts &mdash; while the desk is open, with a tone &mdash; and they also stop when the browser is closed. The same preference is shared by both tabs and stays in this browser.</p>
-<div class="row"><label><input type="checkbox" id="faon"> Alert me</label><span id="fafields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="faimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="falead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="farel"> and on release</label><label><input type="checkbox" id="fasnd"> sound</label></span></div>
-<div id="falist" class="stack"></div></div></div></div></section>
+<p class="x" style="margin:0 0 8px">Scheduled US economic releases from the Calendar tab. They fire the same way as price alerts &mdash; while the desk is open and they also stop when the browser is closed. The same preference is shared by both tabs and stays in this browser.</p>
+<div class="row"><label><input type="checkbox" id="faon"> Alert me</label><span id="fafields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center"><label>for <select id="faimp"><option value="High">high impact</option><option value="HighMedium">high and medium</option></select></label><label><input id="falead" type="number" min="1" max="120" step="1" style="width:62px"> min before</label><label><input type="checkbox" id="farel"> and on release</label></span></div>
+<div id="falist" class="stack"></div></div>
+<div id="tgwrap" style="border-top:1px solid var(--gb);margin-top:14px;padding-top:12px"><h3 style="margin:0 0 6px;font-size:15px">Alerts on Telegram <span class="tagline">free · no account · arrives with the desk closed</span></h3>
+<p class="x" style="margin:0 0 8px">The two kinds above stop the moment this page closes. These do not: our server re-checks the rules below every five minutes and sends a message to Telegram, which your phone shows even with the desk shut. It needs a free Telegram account and nothing else &mdash; no email, no phone number, no app from us. What the server keeps is the chat it may message, your rules, and when each rule last fired; one button deletes all of it. Messages travel through Telegram, so they are private to your chat but are not end-to-end encrypted against Telegram itself.</p>
+<div id="tgstate" class="x" style="margin-bottom:6px">Checking the server&hellip;</div>
+<div id="tgtut" hidden>
+<ol class="tsteps">
+<li><span class="tstepn">1</span><div><b>Press Connect Telegram.</b> This page makes a one-time code that expires in 15 minutes, and opens the chat for you. Nothing is sent anywhere until you press START there.</div></li>
+<li><span class="tstepn">2</span><div><b>If Telegram did not open,</b> press the button below. It is the same link: <b id="tgbotname">the bot</b> in the Telegram app, Telegram Web or the desktop client, whichever you already use.</div></li>
+<li><span class="tstepn">3</span><div><b>Press START in the chat.</b> A new chat has a big <b>START</b> button at the bottom, and the link carries the code, so there is nothing to type. If you found the bot by searching instead, send <code>/start</code> and then the code shown here.</div></li>
+<li><span class="tstepn">4</span><div><b>Come back to this tab.</b> It checks every three seconds and finishes by itself, then shows the rules below. Press <b>Send a test message</b> to see one arrive.</div></li>
+</ol>
+<div class="row"><button class="btn primary" id="tgon">Connect Telegram</button><a class="btn" id="tgopen" hidden target="_blank" rel="noopener noreferrer">Open the bot in Telegram ↗</a><button class="btn" id="tgcancel" hidden>Cancel</button><span class="tagline" id="tgwait"></span></div>
+<p class="x" id="tgcode" hidden></p>
+</div>
+<div id="tgcfg" hidden>
+<div class="rgroup">
+<div class="rhead"><b>Delivery</b><span class="tagline">these apply to every rule below</span></div>
+<div class="rctl"><label class="chk"><input type="checkbox" id="tgpause"> Pause all alerts</label><label class="chk"><input type="checkbox" id="tgquieton"> Quiet hours</label><label>from <input type="time" id="tgqfrom" value="22:00" aria-label="Quiet hours start"></label><label>to <input type="time" id="tgqto" value="07:00" aria-label="Quiet hours end"></label><span class="tagline" id="tgqtz"></span></div>
+<div class="rctl"><label>Repeat suppression <input id="tgrearm" type="number" min="10" max="240" step="5" style="width:70px" aria-label="Minutes a fired rule stays quiet"> min</label><span class="tagline">a rule that fires stays quiet this long before it can speak again</span></div>
+</div>
+<div class="rgroup">
+<div class="rhead"><b>Price</b><span class="tagline">a level, or a move from the previous close</span></div>
+<div class="rctl"><label>Symbol <input id="tgsym" maxlength="12" style="width:84px" aria-label="Symbol"></label><label><select id="tgtype" aria-label="Condition"><option value="above">rises above $</option><option value="below">falls below $</option><option value="pct_up">is up % from prev close</option><option value="pct_down">is down % from prev close</option></select></label><label><span id="tgvt">$</span> <input id="tgval" type="number" min="0.01" step="0.01" placeholder="price" style="width:100px" aria-label="Value"></label><button class="btn primary" id="tgadd">Add</button></div>
+<div id="tglist" class="stack"></div>
+</div>
+<div class="rgroup">
+<div class="rhead"><label class="chk"><input type="checkbox" id="tgmoves"> <b>Big moves</b></label><span class="tagline">a percentage jump or drop inside a short window</span></div>
+<div class="rctl" id="tgmovesctl"><label>Jumps of <input id="tgmup" type="number" min="0.1" max="25" step="0.1" style="width:64px" aria-label="Jump threshold percent"> %</label><label>drops of <input id="tgmdown" type="number" min="0.1" max="25" step="0.1" style="width:64px" aria-label="Drop threshold percent"> %</label><label>within <input id="tgmwin" type="number" min="1" max="120" step="1" style="width:64px" aria-label="Window in minutes"> min</label></div>
+<div class="rctl" id="tgmovesyms"><label>Symbols <input id="tgmsyms" placeholder="SPY, QQQ" style="width:210px" aria-label="Symbols for big moves"></label><span class="tagline">comma-separated; empty watches the desk's default list</span></div>
+</div>
+<div class="rgroup">
+<div class="rhead"><label class="chk"><input type="checkbox" id="tgnews"> <b>Headlines</b></label><span class="tagline">new stories from the aggregated feeds</span></div>
+<div class="rctl" id="tgnewsymsrow"><label>Mentioning <input id="tgnewsyms" placeholder="SPY, NVDA" style="width:170px" aria-label="Symbols headlines must mention"></label><label>and containing <input id="tgnewskw" placeholder="earnings, Fed" style="width:180px" aria-label="Words headlines must contain"></label></div>
+<div class="rctl" id="tgnewsmuterow"><label>Never containing <input id="tgnewsmute" placeholder="sponsored, recap" style="width:180px" aria-label="Words that rule a headline out"></label><span class="tagline">empty fields do not filter; both filled means both must match</span></div>
+</div>
+<div class="rgroup">
+<div class="rhead"><label class="chk"><input type="checkbox" id="tgcal"> <b>Economic calendar</b></label><span class="tagline">scheduled US releases</span></div>
+<div class="rctl" id="tgcalfields"><label><select id="tgcimp" aria-label="Which calendar events"><option value="High">high impact</option><option value="HighMedium">high and medium</option><option value="All">everything on it</option></select></label><label><input id="tgclead" type="number" min="1" max="120" step="1" style="width:62px" aria-label="Minutes before"> min before</label><label class="chk"><input type="checkbox" id="tgcrel"> and on release</label></div>
+<div class="rctl" id="tgcalwords"><label>Only titles with <input id="tgcalonly" placeholder="CPI, FOMC" style="width:180px" aria-label="Words an event title must contain"></label><label>never <input id="tgcalmute" placeholder="speech" style="width:140px" aria-label="Words that rule an event out"></label></div>
+</div>
+<div class="row" style="border-top:1px solid var(--gb);padding-top:9px"><button class="btn" id="tgtest">Send a test message</button><button class="btn" id="tgoff">Disconnect and delete</button><span class="tagline" id="tgstat"></span></div>
+<p class="x">Every section is independent: switch off the ones you do not want and nothing in them is evaluated. Rules are saved as you change them. In the chat, <code>/rules</code> lists exactly what this chat is watching and <code>/stop</code> disconnects. The check runs on the server's clock every five minutes: this is a reminder to look, not a resting order at a broker.</p>
+</div>
+</div></div></div></section>
 <section class="tab" id="t-tools"><div class="cols">
 <div class="panel"><h2>Risk calculator</h2><div class="pbody"><p class="x">Arithmetic only: divides a chosen dollar amount by the distance between the two prices you enter.</p>
 <div class="row"><label>Account $ <input id="ra" type="number" value="25000" style="width:110px"></label><details class="exp"><summary aria-label="Explain Account">?</summary><p class="iexp">The total size of the account the trade is being sized against, in dollars. It is used only to turn the risk percentage into a dollar amount; the calculator places no trade.</p></details><label>Risk % <input id="rr" type="number" value="0.5" step="0.1" style="width:80px"></label><details class="exp"><summary aria-label="Explain Risk percent">?</summary><p class="iexp">How much of the account you are willing to lose if the stop is hit, as a percent of the whole account. This is a number you choose; it is not a recommendation.</p></details></div>
@@ -313,7 +378,7 @@ const memoryStore=Object.create(null),LS=new Proxy(memoryStore,{
  get:(target,key)=>{if(key in target)return target[key];try{return localStorage.getItem(key)}catch(_){return null}},
  set:(target,key,value)=>{target[key]=String(value);try{localStorage.setItem(key,String(value))}catch(_){}return true}
 });
-for(const [key,array] of [['cfg',false],['wl',true],['alerts',true],['calalert',false],['calfired',false]]){
+for(const [key,array] of [['cfg',false],['wl',true],['alerts',true],['calalert',false],['calfired',false],['tgsub',false],['tgrules',false]]){
  if(!LS[key])continue;try{const value=JSON.parse(LS[key]);if(!value||typeof value!=='object'||Array.isArray(value)!==array)throw Error('invalid preference')}catch(_){LS[key]=array?'[]':'{}'}
 }
 const cfg=()=>JSON.parse(LS.cfg||'{}');
@@ -376,7 +441,7 @@ function bringTab(k){const t=document.getElementById('t-'+k);if(!t)return;
  if(r.top>=0&&r.top<window.innerHeight*0.55)return;
  const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
  window.scrollTo({top:Math.max(0,r.top+window.scrollY-10),behavior:smooth?'smooth':'auto'})}
-function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP();if(bring!==false)bringTab(k)}
+function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList();tgLoad()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP();if(bring!==false)bringTab(k)}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -396,7 +461,50 @@ async function edgeGet(path,ms){if(!EDGE_API)throw Error('The edge API is not co
   // so a quota or an unknown ticker reads as a sentence in the UI.
   if(!r.ok){const txt=await r.text();let msg='';try{msg=(JSON.parse(txt)||{}).message||''}catch(_){}throw Error(msg||(r.status+' '+txt.slice(0,120)))}
   return await r.json()}finally{clearTimeout(t)}}
-async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});if(!r.ok)throw Error(r.status+' '+(await r.text()).slice(0,140));return r.json()}
+/* A failed call has to read as a sentence. Alpaca answers a key it does not
+   recognise with a whole HTML error page from its edge, and 140 characters of
+   that markup in the status line tells a visitor nothing: prefer the JSON
+   `message` when the provider offers one, otherwise flatten the body to text,
+   drop the tags and cap the length. The HTTP status is kept, because it is the
+   part the UI can act on. */
+function briefBody(txt){const t=String(txt==null?'':txt);
+ try{const j=JSON.parse(t);if(j&&typeof j==='object'&&j.message)return String(j.message)}catch(_){}
+ return t.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,140)}
+/* The two ways Alpaca says no, kept apart because the fix differs: an unknown
+   pair (401) needs new keys, a valid pair the account cannot read the feed with
+   (403) does not. Anything else is passed through as the provider worded it. */
+const KEY_HINT={401:'Alpaca rejected these keys. Check that both halves come from the same paper account, or generate a new pair.',403:'These keys are valid, but this Alpaca account cannot read IEX market data.'};
+async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});
+ if(!r.ok){const body=briefBody(await r.text());throw Object.assign(Error(r.status+(body?' '+body:'')),{status:r.status})}
+ return r.json()}
+/* Saving keys is a promise that prices will now be current, so the pair is
+   proved before it is kept: one tiny bars request against the host live mode
+   already uses, which Alpaca answers 401 for a pair it does not know. Getting
+   that verdict here puts it next to the boxes the visitor just filled in,
+   instead of storing the pair and failing on the next load. A probe that cannot
+   run at all (offline, blocked, no CORS answer) is reported as unverified and
+   the keys are kept: refusing to save because the network blipped would be worse
+   than storing a pair the next load tests for real. */
+const KEYS_PROBE='https://data.alpaca.markets/v2/stocks/SPY/bars?timeframe=1Min&limit=1&feed=iex';
+async function checkKeys(ak,as){
+ try{const r=await fetch(KEYS_PROBE,{headers:{'APCA-API-KEY-ID':ak,'APCA-API-SECRET-KEY':as}});
+  if(r.ok)return {ok:true,msg:''};
+  const body=briefBody(await r.text());
+  return {ok:false,msg:KEY_HINT[r.status]||('Alpaca answered '+r.status+(body?' '+body:''))}
+ }catch(_){return {ok:null,msg:''}}}
+/* One save path for the Settings box and the wizard, so both check the pair the
+   same way and both say the same thing when it is refused. A refused pair is
+   never stored, so the desk keeps working on whatever it was already using. */
+async function saveKeys(ak,as,btn,then){
+ const b=btn&&$(btn),was=b?b.textContent:'';
+ if(b){b.disabled=true;b.textContent='Checking keys...'}
+ let v={ok:null,msg:''};
+ try{v=await checkKeys(ak,as)}catch(_){v={ok:null,msg:''}}finally{if(b){b.disabled=false;b.textContent=was}}
+ if(v.ok===false){toast('Alpaca rejected those keys, so nothing was saved.');$('#st').textContent='Error: '+v.msg;banner(`<span class="pill off">Keys rejected</span> <b>Those Alpaca keys were rejected,</b> so the desk kept the data source it was already using. ${esc(v.msg)}`,'<p>Generate a fresh paper-trading key pair in the Alpaca dashboard and paste both halves here. <a href="#" id="fbn-go">Back to Settings</a></p>');return false}
+ LS.cfg=JSON.stringify(Object.assign(cfg(),{ak,as}));
+ toast(v.ok===null?'Keys saved. Alpaca could not be reached to check them yet.':'Keys accepted. Loading live data...');
+ if(then)then();
+ return true}
 /* ---------- modes ----------
    Three ways the desk can get data, and only the last one asks you for anything:
 
@@ -446,12 +554,25 @@ async function load(){
   if(mode==='free')return loadFree(version);
  return loadNone()}
 async function loadLive(version){
-  try{$('#st').textContent='Loading...';banner('<span class="pill live">Live</span> <b>Alpaca connected.</b> Current market data is loading with the keys saved in this browser.');
+  const keys=cfg();
+  /* modeFor() calls a pair live as soon as either half is saved. The missing
+     half cannot sign a request, so it is caught here rather than sent as an empty
+     header and answered with an opaque 401. */
+  if(!keys.ak||!keys.as){$('#st').textContent='No keys';banner('<span class="pill off">No keys</span> <b>Live mode needs both halves of the Alpaca key pair.</b> '+esc('A Key ID on its own cannot sign a request.'),'<p><a href="#" id="fbn-go">Open Settings</a> to paste the Secret Key, or use free mode there to go back to the no-account feed.</p>');return}
+  /* Nothing has been asked of Alpaca yet at this point, so nothing can honestly
+     be called connected: the banner says what is being checked, and the claim of
+     a connection waits for the first successful response. */
+  try{$('#st').textContent='Connecting...';banner('<span class="pill wait">Connecting</span> <b>Checking the Alpaca keys saved in this browser...</b>');
   const st=new Date(Date.now()-6*864e5).toISOString();
   const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);
   if(version!==loadVersion)return;
   S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;banner('<span class="pill live">Live</span> <b>Alpaca connected.</b> Current prices and bars come from Alpaca/IEX, using keys saved only in this browser.','<p>In live mode the trade stream and the symbol\u2019s own news feed are active, and alerts fire as prices move. To go back to the no-account session, open <b>Settings</b> and use <b>Use free mode instead</b>.</p>');refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
-  }catch(e){if(version!==loadVersion)return;$('#st').textContent='Error: '+netErr(e);banner(`<span class="pill off">No connection</span> <b>Live mode could not connect.</b> ${esc(netErr(e))}`,'<p><a href="#" id="fbn-go">Use free mode in Settings</a> to return to the bundled sample session, which needs no account.</p>');}}
+  }catch(e){if(version!==loadVersion)return;
+  /* A refusal is not a connection problem: the request arrived and Alpaca said
+     no. Saying which of the two happened is the point of this strip. */
+  const status=Number(e&&e.status)||0,hint=KEY_HINT[status]||'',line=hint||netErr(e);
+  $('#st').textContent='Error: '+line;
+  banner(`<span class="pill off">No connection</span> <b>Live mode could not connect.</b> ${esc(line)}`,hint?'<p><a href="#" id="fbn-go">Open Settings</a> to paste a fresh key pair, or use free mode there to return to the no-account session.</p>':'<p><a href="#" id="fbn-go">Use free mode in Settings</a> to return to the bundled sample session, which needs no account.</p>');}}
 function loadNone(){S.bars=[];S.allBars=null;S.price=null;S.an=null;S.rep=null;refresh();
   $('#st').textContent='No data source';
   banner('<span class="pill off">No source</span> <b>No price source is configured,</b> so there is nothing to show yet.',KEYS_MORE+'<p>Self-hosting? The optional edge API in <b>worker/</b> supplies the aggregated headlines and the calendar; see its README. Price data works with your own Alpaca keys alone.</p>');
@@ -694,16 +815,9 @@ const c=a.up>=60?'up':a.up<=40?'dn':'nu';
    ||'<p class="x" style="padding:12px">No clear chart pattern right now. The desk looks at the last 150 bars for the shapes it can name.</p>';
  lvRender(a.lv);mtfRender();rsRender();alerCheck();wlRender()}
 /* One AudioContext for the whole page, created (and resumed) on the first real
-   user gesture. Browsers refuse to start audio that no interaction preceded, so
-   building a fresh context inside toast() silently failed for anyone who had only
-   scrolled; priming it on pointerdown/keydown is what makes the alert tone
-   reliable. The Alerts tab exposes a "Test sound" button, which both verifies it
-   and primes the context. */
-let actx=null;
-function primeAudio(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;actx=actx||new C();if(actx.state==='suspended')actx.resume()}catch(_){}}
-addEventListener('pointerdown',primeAudio,{passive:true});addEventListener('keydown',primeAudio,{passive:true});
-function beep(){try{primeAudio();if(!actx)return;const o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);g.gain.value=.04;o.frequency.value=880;o.start();o.stop(actx.currentTime+.15)}catch(_){}}
-function toast(t,quiet){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000);if(!quiet)beep()}
+
+
+function toast(t){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000)}
 async function rsq(){if(S.mode==='free')return rsqFree();if(!cfg().ak)return;const version=loadVersion;try{const st=new Date(Date.now()-6*864e5).toISOString(),url=k=>alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);const[a,b]=await Promise.all([url(S.sym),url('QQQ')]);if(version!==loadVersion)return;const ch=j=>{const x=(j.bars||[]).map(v=>v.c);return x.length>1?(x[0]/x.at(-1)-1)*100:0};const s=ch(a),q=ch(b);S.rs={s,q,d:s-q};rsRender()}catch(e){if(version!==loadVersion)return;S.rs={err:e.message};rsRender()}}
 /* Relative strength is measured on daily closes in free mode: it is a
    multi-session question, and the loaded daily bars cover years. */
@@ -1178,7 +1292,7 @@ function calRender(){const now=Date.now(),week0=etWeekStart(now),highOnly=!!($('
    a scheduled release, and optionally when the figure is published. Preferences
    live in localStorage; each event alerts once, keyed by title and time, so a
    reload or a re-render cannot re-fire the same warning. */
-const CALA_DEF={on:true,impact:'High',lead:15,releases:false,sound:true};
+const CALA_DEF={on:true,impact:'High',lead:15,releases:true};
 function calACfg(){let c={};try{c=JSON.parse(LS.calalert||'{}')}catch(_){}return Object.assign({},CALA_DEF,c)}
 function calASave(patch){LS.calalert=JSON.stringify(Object.assign(calACfg(),patch));calARender();calRender();calAlertTick()}
 /* The Calendar tab and the Alerts tab share one preference, so the controls are
@@ -1186,9 +1300,9 @@ function calASave(patch){LS.calalert=JSON.stringify(Object.assign(calACfg(),patc
 const CAL_CTL=['ca','fa'];
 function calARender(){const c=calACfg();
  CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
-  const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),snd=g(p+'snd'),f=g(p+'fields');
+  const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),;
   if(on)on.checked=!!c.on;if(imp)imp.value=c.impact==='High'?'High':'HighMedium';
-  if(lead)lead.value=String(c.lead);if(rel)rel.checked=!!c.releases;if(snd)snd.checked=c.sound!==false;
+  if(lead)lead.value=String(c.lead);if(rel)rel.checked=!!c.releases;
   if(f){f.style.opacity=c.on?'1':'.45';f.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!c.on})}});
  calAList()}
 /* The upcoming events that would actually alert, listed in the Alerts tab. */
@@ -1214,17 +1328,292 @@ function calAlertTick(){const c=calACfg();if(!c.on||!S.cal||!S.cal.length)return
  for(const e of S.cal){const hi=e.impact==='High',ok=c.impact==='High'?hi:/High|Medium/.test(e.impact||'');if(!ok)continue;
   const t=new Date(e.date).getTime();if(!isFinite(t))continue;const key=e.title+'|'+e.date;
   if(t>now&&t-now<=lead&&!fired['p:'+key]){fired['p:'+key]=now;changed=true;
-   toast((hi?'HIGH IMPACT':'Event')+' in '+Math.max(1,Math.round((t-now)/6e4))+' min: '+e.title+' — '+calATime(t),c.sound===false)}
+   toast((hi?'HIGH IMPACT':'Event')+' in '+Math.max(1,Math.round((t-now)/6e4))+' min: '+e.title+' — '+calATime(t))}
   if(c.releases&&e.actual&&t<=now&&t>now-36e5&&!fired['r:'+key]){fired['r:'+key]=now;changed=true;
-   toast('Released: '+e.title+' — actual '+e.actual+' vs forecast '+(e.forecast||'--'),c.sound===false)}}
+   toast('Released: '+e.title+' — actual '+e.actual+' vs forecast '+(e.forecast||'--'))}}
  if(changed){const cut=now-14*864e5;for(const x in fired)if(fired[x]<cut)delete fired[x];LS.calfired=JSON.stringify(fired);calRender()}}
 CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
- const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),snd=g(p+'snd');
+ const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),
  if(on)on.onchange=e=>calASave({on:e.target.checked});
  if(imp)imp.onchange=e=>calASave({impact:e.target.value==='High'?'High':'HighMedium'});
  if(lead)lead.onchange=e=>calASave({lead:+e.target.value||15});
  if(rel)rel.onchange=e=>calASave({releases:e.target.checked});
- if(snd)snd.onchange=e=>calASave({sound:e.target.checked})});
+
+/* ---------- alerts on Telegram (server-side) ----------
+ * The alerts above are client-side: they run on the ticking clock of this page,
+ * so they stop when the page does. This block is the other half - the rules are
+ * handed to our own Worker, which re-checks them on a five-minute cron and sends
+ * a Telegram message to the chat you linked. The phone shows it with the desk
+ * closed, and so does the desktop client.
+ *
+ * How the two halves are joined: this page asks the server for a one-time code,
+ * and the code travels to Telegram inside a t.me deep link. Pressing START sends
+ * the code back to the bot, which is the only thing that can attach a chat to a
+ * set of rules - the page never learns the chat id, and the chat never learns
+ * the desk's token. The token comes back to this browser on a poll, so the page
+ * can change or delete its own record and nothing else.
+ *
+ * What the server keeps for one subscription, and nothing else:
+ *   { id, token, chatId, chatLabel, rules, createdAt, fired, lastSentAt }
+ *
+ * `chatId` is a number Telegram assigns to a conversation. There is no phone
+ * number, no email, no name beyond the first name Telegram shows the bot, and no
+ * IP. The desk keeps the id and the token in this browser only, so losing them
+ * costs nothing but a re-link, which replaces the record rather than adding a
+ * second one.
+ *
+ * The honest limits, stated here rather than discovered later:
+ *   · The check runs every five minutes, so an alert is "within about five
+ *     minutes", not instant.
+ *   · Alerts fire on the server's clock. A price alert is checked when the cron
+ *     runs, which is not a substitute for a resting order at a broker.
+ *   · Telegram carries the message, so it is private to the chat but is not
+ *     end-to-end encrypted against Telegram itself.
+ */
+const TG_STORE='tgsub',TG_RULES='tgrules';
+let TG={cfg:null,sub:null,rules:null,busy:false,timer:0,poll:0,expiry:0,link:null,lost:''};
+/* The rule editor runs in the person's own browser, so it knows the zone they
+   are actually in. That is the only way quiet hours can mean their night rather
+   than the server's: the saved rules carry the IANA zone, and the Worker does the
+   arithmetic with it. */
+const TG_TZ=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'}catch(_){return 'UTC'}})();
+function tgStored(){try{const s=JSON.parse(LS[TG_STORE]||'null');return s&&typeof s.id==='string'&&typeof s.token==='string'?s:null}catch(_){return null}}
+/* Storage is written as an empty string rather than deleted: the LS proxy is
+   backed by localStorage, where a key that is really removed can be written
+   back by a later page view. Values are validated on read for the same reason. */
+function tgKeep(s){LS[TG_STORE]=s?JSON.stringify(s):''}
+function tgDefaults(){return{price:[],
+ moves:{on:false,up:2,down:2,window:15,symbols:[]},
+ news:{on:false,symbols:[],keywords:[],mute:[]},
+ calendar:{on:false,impact:'High',lead:15,releases:false,keywords:[],mute:[]},
+ quiet:{on:false,from:'22:00',to:'07:00',tz:TG_TZ},
+ rearm:30,paused:false}}
+/* Merge what was saved into the current shape, section by section. A record
+   written by an older build is missing the newer sections, and a record written
+   by a newer build may carry fields this one does not know; neither should stop
+   the panel from opening. The server clamps everything again on save. */
+function tgMerge(raw){const d=tgDefaults(),src=raw&&typeof raw==='object'?raw:{},arr=v=>Array.isArray(v)?v:[];
+ const obj=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
+ return{price:arr(src.price).filter(x=>x&&typeof x.sym==='string'&&typeof x.type==='string'&&Number.isFinite(+x.val)).map(x=>({sym:x.sym,type:x.type,val:+x.val})).slice(0,20),
+  moves:{...d.moves,...obj(src.moves),symbols:arr(src.moves&&src.moves.symbols)},
+  news:{...d.news,...obj(src.news),symbols:arr(src.news&&src.news.symbols),keywords:arr(src.news&&src.news.keywords),mute:arr(src.news&&src.news.mute)},
+  calendar:{...d.calendar,...obj(src.calendar),keywords:arr(src.calendar&&src.calendar.keywords),mute:arr(src.calendar&&src.calendar.mute)},
+  quiet:{...d.quiet,...obj(src.quiet)},
+  rearm:Number.isFinite(+src.rearm)?+src.rearm:d.rearm,
+  paused:Boolean(src.paused)}}
+function tgLocalRules(){try{return tgMerge(JSON.parse(LS[TG_RULES]||'null'))}catch(_){return tgDefaults()}}
+/* The zone is stamped on save, not when the rules are first built: a laptop that
+   moves between zones keeps working, and the server never has to guess. */
+function tgSaveRules(){if(!TG.rules)return;
+ if(TG.rules.quiet)TG.rules.quiet.tz=TG_TZ;
+ LS[TG_RULES]=JSON.stringify(TG.rules)}
+function tgSet(k,t){const e=$('#'+k);if(e)e.textContent=t}
+function tgHtml(k,t){const e=$('#'+k);if(e)e.innerHTML=t}
+/* Comma-separated words in, a bounded list out. The same rule as the server's
+   wordList: trim, drop empties, drop duplicates case-insensitively, cap. */
+function tgWords(value,max=10){const out=[];for(const raw of String(value||'').split(',')){
+ const w=raw.trim().replace(/\s+/g,' ').slice(0,24);if(!w)continue;
+ if(out.some(x=>x.toLowerCase()===w.toLowerCase()))continue;out.push(w);if(out.length>=max)break}
+ return out}
+function tgSyms(value,max=12){const out=[];for(const raw of String(value||'').split(',')){
+ const s=raw.trim().toUpperCase();if(!/^[A-Z0-9][A-Z0-9.^-]{0,11}$/.test(s))continue;
+ if(out.includes(s))continue;out.push(s);if(out.length>=max)break}
+ return out}
+function tgEnable(sel,on){document.querySelectorAll(sel+' input, '+sel+' select, '+sel+' button').forEach(el=>{el.disabled=!on})}
+/* Every call is a same-origin JSON request to the Worker, carrying the Origin
+   the browser attaches itself. The same POST from any other site is refused by
+   the server, which is what stops a page linking a chat on a visitor's behalf. */
+async function tgApi(path,body,ms=15000){if(!EDGE_API)throw Error('this copy of the desk has no server configured (edge-config.js)');
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+ try{const r=await fetch(EDGE_API+path,{method:'POST',signal:c.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));return{status:r.status,json:j||{}}}finally{clearTimeout(t)}}
+async function tgGet(path,ms=15000){if(!EDGE_API)throw Error('this copy of the desk has no server configured (edge-config.js)');
+ const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+ try{const r=await fetch(EDGE_API+path,{signal:c.signal,headers:{Accept:'application/json'}});
+  const j=await r.json().catch(()=>({}));return{status:r.status,json:j||{}}}finally{clearTimeout(t)}}
+/* Why this desk cannot connect, in the words a person needs. Every case is
+   answered instead of being papered over with a button that would throw. */
+function tgBlocked(){if(!EDGE_API)return 'This copy of the desk has no server configured (edge-config.js), so Telegram alerts cannot be connected here.';
+ if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return 'Telegram alerts need an https page, because the desk and the bot exchange a code over it. Open the published desk over https.';
+ // `!== true` rather than `=== false`: a server that predates this panel has no
+ // `telegram` field at all, and offering a button that posts to a route it does
+ // not have would be the one thing this panel exists to avoid.
+ if(TG.cfg&&TG.cfg.telegram!==true)return esc((TG.cfg&&TG.cfg.note)||'This deployment has no Telegram bot connected yet, so nothing can be sent from it.');
+ return null}
+function tgWhen(){const t=TG.sub&&TG.sub.lastSentAt;if(!t)return 'no alert sent yet';
+ try{return 'last alert '+new Date(t).toLocaleString()}catch(_){return 'last alert sent'}}
+function tgRuleCount(r){r=r||TG.rules||tgDefaults();return r.price.length+(r.moves.on?1:0)+(r.news.on?1:0)+(r.calendar.on?1:0)}
+function tgPriceLabel(x){if(x.type==='above')return 'rises above '+f2(x.val);
+ if(x.type==='below')return 'falls below '+f2(x.val);
+ return (x.type==='pct_up'?'up ':'down ')+x.val+'% from prev close'}
+/* One request per edit, coalesced: changing four settings in a row is one write,
+   which matters because the free plan allows a thousand KV writes a day. */
+function tgSync(delay=700){clearTimeout(TG.timer);tgSet('tgstat','Saving…');
+ TG.timer=setTimeout(async()=>{const s=tgStored();if(!s||!TG.rules){tgSet('tgstat','Nothing to save yet: connect Telegram first.');return}
+  try{const r=await tgApi('/api/alerts/rules',{id:s.id,token:s.token,rules:TG.rules});
+   if(r.status===200){TG.sub=r.json.subscription;TG.lost='';tgRender();tgSet('tgstat',tgRuleCount()+' rule'+(tgRuleCount()===1?'':'s')+' saved · '+tgWhen())}
+   else if(r.status===404){tgKeep(null);TG.sub=null;TG.lost='This browser\u2019s connection is no longer on the server, so it was dropped here: no rule could be saved to it. Press Connect Telegram to link a chat again.';tgRender()}
+   else tgSet('tgstat',esc(r.json.message||'The server refused that change.'))}
+  catch(e){tgSet('tgstat','Not saved: the server could not be reached ('+esc(e.message)+').')}},delay)}
+/* ---- render ---- */
+function tgRender(){const cfg=TG.cfg||{},stored=tgStored(),blocked=tgBlocked(),on=!!stored,link=TG.link;
+ const tut=$('#tgtut'),cfgEl=$('#tgcfg'),send=$('#tgon'),open=$('#tgopen'),cancel=$('#tgcancel');
+ const bot=cfg.botUsername?'@'+cfg.botUsername:'the bot',bn=$('#tgbotname');
+ if(bn)bn.textContent=bot;
+ if(tut)tut.hidden=on||!!blocked;
+ if(cfgEl)cfgEl.hidden=!on;
+ if(send)send.hidden=on||!!link||!!blocked;
+ if(open){open.hidden=!(link&&link.deepLink);if(link&&link.deepLink){open.href=link.deepLink;open.textContent='Open '+bot+' in Telegram \u2197'}}
+ if(cancel)cancel.hidden=!link;
+ if($('#tgcode')){$('#tgcode').hidden=!(link&&link.code);
+  if(link&&link.code)$('#tgcode').innerHTML='The code is <code>'+esc(link.code)+'</code>, good until '+esc(new Date(link.expiresAt).toLocaleTimeString())+'. The link already contains it, so there is nothing to type unless you open the bot by searching.'}
+ const notes=[];
+ if(on){const s=tgStored(),r=TG.rules||tgDefaults();
+  notes.push('Alerts are <b>on</b> for '+esc(s.chat||'this Telegram chat')+'. The server re-checks your rules every '+(cfg.tickMinutes||5)+' minutes and messages you only when something actually happens · '+esc(tgWhen())+'.');
+  if(r.paused)notes.push('<b>Paused:</b> nothing will be sent until you untick “Pause all alerts”.');
+  if(TG.lost)notes.push(esc(TG.lost))}
+ else if(link)notes.push('Waiting for Telegram. Open the chat with '+esc(bot)+', press <b>START</b>, and this page finishes by itself.');
+ else if(blocked)notes.push(blocked);
+ else notes.push('Nothing is sent anywhere until you connect. It needs a free Telegram account and nothing else, and <b>Disconnect and delete</b> removes the record, not just the button.');
+ tgHtml('tgstate',notes.join(' '));
+ if(!on)return;
+ const r=TG.rules||tgDefaults(),list=$('#tglist');
+ if(list)list.innerHTML=r.price.length?r.price.map((x,i)=>`<div class="item hrow"><span>${esc(x.sym)} ${tgPriceLabel(x)}</span><button class="btn" data-tgdel="${i}" aria-label="Remove price alert" style="margin-left:auto;padding:2px 7px">Remove</button></div>`).join(''):'<p class="x">No price alert yet. A level or a percent move is enough to start.</p>';
+ const set=(id,v)=>{const e=$(id);if(e&&document.activeElement!==e)e.value=v};
+ if($('#tgpause'))$('#tgpause').checked=r.paused;
+ set('#tgrearm',r.rearm);
+ set('#tgqfrom',r.quiet.from);set('#tgqto',r.quiet.to);
+ if($('#tgquieton'))$('#tgquieton').checked=r.quiet.on;
+ tgSet('tgqtz',r.quiet.on?('times use '+TG_TZ):('your browser reports '+TG_TZ));
+ ['#tgqfrom','#tgqto'].forEach(s=>{const el=$(s);if(el)el.disabled=!r.quiet.on});
+ if($('#tgmoves'))$('#tgmoves').checked=r.moves.on;
+ set('#tgmup',r.moves.up);set('#tgmdown',r.moves.down);set('#tgmwin',r.moves.window);
+ set('#tgmsyms',r.moves.symbols.join(', '));
+ if($('#tgnews'))$('#tgnews').checked=r.news.on;
+ set('#tgnewsyms',r.news.symbols.join(', '));set('#tgnewskw',r.news.keywords.join(', '));set('#tgnewsmute',r.news.mute.join(', '));
+ if($('#tgcal'))$('#tgcal').checked=r.calendar.on;
+ if($('#tgcimp'))$('#tgcimp').value=r.calendar.impact;
+ set('#tgclead',r.calendar.lead);
+ if($('#tgcrel'))$('#tgcrel').checked=r.calendar.releases;
+ set('#tgcalonly',r.calendar.keywords.join(', '));set('#tgcalmute',r.calendar.mute.join(', '));
+ // A section that is off keeps its settings but cannot be edited: it is not
+ // participating, so pretending its fields still matter would be misleading.
+ tgEnable('#tgmovesctl',r.moves.on);tgEnable('#tgmovesyms',r.moves.on);
+ tgEnable('#tgnewsymsrow',r.news.on);tgEnable('#tgnewsmuterow',r.news.on);
+ tgEnable('#tgcalfields',r.calendar.on);tgEnable('#tgcalwords',r.calendar.on);
+ tgSet('tgstat',TG.busy?'Working…':(tgRuleCount()===0?'No rules yet — add one above, or nothing will ever arrive':tgRuleCount()+' rule'+(tgRuleCount()===1?'':'s')+' active · '+tgWhen()))}
+/* ---- load ---- */
+/* The desk's copy of the rules is what the UI shows, and the server's copy is
+   what the cron evaluates. They are written together on every change, and the
+   browser's copy is re-sent when a chat is linked, so the two only disagree if
+   the record was deleted on the server - which the 404 path in tgSync and the
+   410 in tgTest handle by asking for the link again. */
+async function tgLoad(){const wrap=$('#tgwrap');if(!wrap)return;
+ TG.lost='';
+ if(!EDGE_API){TG.cfg={};TG.rules=tgLocalRules();tgRender();return}
+ try{TG.cfg=await (await fetch(EDGE_API+'/api/alerts/config',{headers:{Accept:'application/json'}})).json()}
+ catch(e){tgHtml('tgstate','The server could not be reached, so Telegram alerts are unavailable right now: '+esc(e.message));return}
+ TG.rules=tgLocalRules();
+ /* The old browser-push record, if this browser ever made one, is dead weight:
+    no server reads it any more and its service worker has been removed. Clearing
+    the two keys is the last step of that removal, and costs nothing when they
+    were never there. */
+ if(LS.pushsub||LS.pushrules){LS.pushsub='';LS.pushrules=''}
+ const stored=tgStored();
+ if(stored)TG.sub=stored;
+ const sym=$('#tgsym');if(sym&&!sym.value)sym.value=S.sym||'SPY';
+ tgRender()}
+/* ---- connect: a one-time code, then a poll ---- */
+function tgStopPoll(){clearInterval(TG.poll);TG.poll=0;clearTimeout(TG.expiry);TG.expiry=0}
+function tgWaitStart(){tgStopPoll();
+ /* Three seconds is faster than a person can switch tabs and read a message, and
+    slow enough that a full 15-minute wait is 300 cheap GETs. */
+ TG.poll=setInterval(async()=>{
+  const link=TG.link;if(!link){tgStopPoll();return}
+  try{const r=await tgGet('/api/alerts/link/status?code='+encodeURIComponent(link.code));
+   if(r.status!==200)return;
+   if(r.json.linked&&r.json.id&&r.json.token){tgStopPoll();
+    const sub=r.json.subscription||{};
+    tgKeep({id:r.json.id,token:r.json.token,chat:sub.chat||'Telegram chat'});
+    TG.sub=sub;TG.link=null;TG.lost='';
+    const server=sub.rules?tgMerge(sub.rules):null;
+    TG.rules=server&&tgRuleCount(server)?server:(TG.rules||tgLocalRules());
+    tgSaveRules();tgRender();
+    toast('Telegram is connected — this chat now receives your alerts.')}
+   else if(r.json.expired){tgStopPoll();TG.link=null;tgRender();toast('That code expired. Press Connect Telegram for a fresh one.',true)}
+  }catch(_){/* a dropped poll is retried by the next tick of this interval */}
+ },3000);
+ const ms=TG.link?Math.max(60000,Date.parse(TG.link.expiresAt)-Date.now()+2000):60000;
+ TG.expiry=setTimeout(()=>{if(TG.link){tgStopPoll();TG.link=null;tgRender();toast('The link code expired. Press Connect Telegram to make a new one.',true)}},ms)}
+async function tgStart(){const blocked=tgBlocked();if(blocked){tgRender();return}
+ TG.busy=true;TG.lost='';tgRender();
+ try{
+  if(!TG.rules)TG.rules=tgLocalRules();
+  tgSaveRules();
+  const r=await tgApi('/api/alerts/link/start',{rules:TG.rules});
+  if(r.status!==200){TG.busy=false;tgHtml('tgstate',esc(r.json.message||'The server could not make a link code.'));return}
+  TG.busy=false;TG.link={code:r.json.code,deepLink:r.json.deepLink,expiresAt:r.json.expiresAt};
+  tgRender();
+  /* Open Telegram on the same press. The gesture has just happened, so the new
+     tab is allowed; if a blocker eats it, the button on screen is the same link
+     and the tutorial says so. */
+  try{window.open(r.json.deepLink,'_blank','noopener,noreferrer')}catch(_){}
+  tgWaitStart()
+ }catch(e){TG.busy=false;tgHtml('tgstate','A link code could not be made: '+esc(e.message))}}
+function tgCancel(){tgStopPoll();TG.link=null;tgRender()}
+/* ---- turn off ---- */
+async function tgOff(){const s=tgStored();tgStopPoll();TG.busy=true;tgRender();
+ try{
+  if(s)await tgApi('/api/alerts/unsubscribe',{id:s.id,token:s.token});
+  tgKeep(null);TG.sub=null;TG.link=null;TG.rules=tgDefaults();tgSaveRules();TG.busy=false;TG.lost='';
+  toast('Telegram alerts are off, and the record on the server is deleted.');tgRender()
+ }catch(e){TG.busy=false;tgHtml('tgstate','Turning alerts off did not finish: '+esc(e.message)+' The button can be pressed again.')}}
+/* ---- test ---- */
+async function tgTest(){const s=tgStored();if(!s)return;
+ TG.busy=true;tgRender();
+ try{const r=await tgApi('/api/alerts/test',{id:s.id,token:s.token});TG.busy=false;
+  if(r.status===200){toast('Test message sent — it should arrive in Telegram within a few seconds.',true);TG.sub=TG.sub||{};TG.sub.lastSentAt=new Date().toISOString();tgRender()}
+  else if(r.status===410){tgKeep(null);TG.sub=null;TG.lost=esc(r.json.message||'That chat was disconnected.');tgRender()}
+  else if(r.status===429){tgRender();toast(r.json.message||'A test was sent a moment ago.',true)}
+  else{tgRender();toast(r.json.message||'The test could not be delivered.',true)}}
+ catch(e){TG.busy=false;tgSet('tgstat','The server could not be reached: '+esc(e.message))}}
+/* ---- edit handlers: every one mutates TG.rules, saves locally, then syncs ---- */
+function tgEdit(fn){TG.rules=TG.rules||tgLocalRules();fn(TG.rules);tgSaveRules();tgRender();tgSync()}
+if($('#tgon'))$('#tgon').onclick=tgStart;
+if($('#tgcancel'))$('#tgcancel').onclick=tgCancel;
+if($('#tgoff'))$('#tgoff').onclick=tgOff;
+if($('#tgtest'))$('#tgtest').onclick=tgTest;
+if($('#tgtype'))$('#tgtype').onchange=()=>{const pct=$('#tgtype').value.startsWith('pct');
+ tgSet('tgvt',pct?'%':'$');const v=$('#tgval');v.step=pct?'0.1':'0.01';v.placeholder=pct?'percent':'price'};
+if($('#tgadd'))$('#tgadd').onclick=()=>{const sym=(($('#tgsym').value||S.sym||'')).trim().toUpperCase(),type=$('#tgtype').value,val=+$('#tgval').value;
+ if(!/^[A-Z0-9][A-Z0-9.^-]{0,11}$/.test(sym)){toast('Enter a symbol, for example SPY.');return}
+ if(!Number.isFinite(val)||val<=0){toast('Enter a positive value.');return}
+ if(type.startsWith('pct')&&(val<0.1||val>50)){toast('A percent rule is between 0.1% and 50%.');return}
+ TG.rules=TG.rules||tgLocalRules();
+ if(TG.rules.price.length>=20){toast('Twenty price alerts is the limit. Remove one first.');return}
+ TG.rules.price.push({sym,type,val});$('#tgval').value='';tgSaveRules();tgRender();tgSync()};
+if($('#tglist'))$('#tglist').onclick=e=>{const b=e.target.closest('[data-tgdel]');if(!b)return;
+ TG.rules=TG.rules||tgLocalRules();TG.rules.price.splice(+b.dataset.tgdel,1);tgSaveRules();tgRender();tgSync()};
+if($('#tgpause'))$('#tgpause').onchange=e=>tgEdit(r=>{r.paused=e.target.checked});
+if($('#tgrearm'))$('#tgrearm').onchange=e=>tgEdit(r=>{r.rearm=Math.min(240,Math.max(10,Math.round(+e.target.value||30)))});
+if($('#tgquieton'))$('#tgquieton').onchange=e=>tgEdit(r=>{r.quiet.on=e.target.checked});
+if($('#tgqfrom'))$('#tgqfrom').onchange=e=>tgEdit(r=>{r.quiet.from=e.target.value||'22:00'});
+if($('#tgqto'))$('#tgqto').onchange=e=>tgEdit(r=>{r.quiet.to=e.target.value||'07:00'});
+if($('#tgmoves'))$('#tgmoves').onchange=e=>tgEdit(r=>{r.moves.on=e.target.checked});
+if($('#tgmup'))$('#tgmup').onchange=e=>tgEdit(r=>{r.moves.up=Math.min(25,Math.max(0.1,+e.target.value||2))});
+if($('#tgmdown'))$('#tgmdown').onchange=e=>tgEdit(r=>{r.moves.down=Math.min(25,Math.max(0.1,+e.target.value||2))});
+if($('#tgmwin'))$('#tgmwin').onchange=e=>tgEdit(r=>{r.moves.window=Math.min(120,Math.max(1,Math.round(+e.target.value||15)))});
+if($('#tgmsyms'))$('#tgmsyms').onchange=e=>tgEdit(r=>{r.moves.symbols=tgSyms(e.target.value,12)});
+if($('#tgnews'))$('#tgnews').onchange=e=>tgEdit(r=>{r.news.on=e.target.checked});
+if($('#tgnewsyms'))$('#tgnewsyms').onchange=e=>tgEdit(r=>{r.news.symbols=tgSyms(e.target.value,10)});
+if($('#tgnewskw'))$('#tgnewskw').onchange=e=>tgEdit(r=>{r.news.keywords=tgWords(e.target.value,10)});
+if($('#tgnewsmute'))$('#tgnewsmute').onchange=e=>tgEdit(r=>{r.news.mute=tgWords(e.target.value,10)});
+if($('#tgcal'))$('#tgcal').onchange=e=>tgEdit(r=>{r.calendar.on=e.target.checked});
+if($('#tgcimp'))$('#tgcimp').onchange=e=>tgEdit(r=>{r.calendar.impact=e.target.value});
+if($('#tgclead'))$('#tgclead').onchange=e=>tgEdit(r=>{r.calendar.lead=Math.min(120,Math.max(1,Math.round(+e.target.value||15)))});
+if($('#tgcrel'))$('#tgcrel').onchange=e=>tgEdit(r=>{r.calendar.releases=e.target.checked});
+if($('#tgcalonly'))$('#tgcalonly').onchange=e=>tgEdit(r=>{r.calendar.keywords=tgWords(e.target.value,10)});
+if($('#tgcalmute'))$('#tgcalmute').onchange=e=>tgEdit(r=>{r.calendar.mute=tgWords(e.target.value,10)});
 /* ---------- no client-side AI ----------
    The desk used to let a visitor paste their own Gemini key and generate a
    per-symbol and per-calendar summary from this browser. That is gone: it asked
@@ -1245,7 +1634,7 @@ const LEGAL={title:'Important - please read before using this dashboard',
    ['Market data','Without keys, the desk loads a small bundled sample file. Those prices are generated demonstration data, not any real market session and not a current quote, and the status line at the top of the desk says so. With your own Alpaca keys, Alpaca/IEX supplies current data under its terms. No other source is described here as being served, because none is. Data may be incomplete, delayed or inaccurate. The Structure tools describe only the completed bars actually available for the selected timeframe; their labels are not trading forecasts.'],
   ['Auto-generated summaries','The only machine-generated text here is one shared market overview, written on our own server from public headlines and the scheduled events and then shown to every visitor from the same copy. It is unverified and may be wrong or incomplete, and it makes no recommendation. There is no AI key to enter anywhere, so nobody can spend one on your behalf. You are responsible for complying with the terms of every provider you connect.'],
   ['No warranty','This software is provided "as is" without warranty of any kind, express or implied, including merchantability, fitness for a particular purpose and non-infringement. To the maximum extent permitted by law, the authors accept no liability for any loss or damage arising from its use.'],
-  ['Privacy policy','The desk has no accounts or advertising. Preferences and optional Alpaca keys are stored in your browser. Netlify and Cloudflare process normal request information, including IP addresses. Google Fonts and jsDelivr receive request information when their resources load. Contact messages and screenshots sent through the landing page are received by FormSubmit and our support inbox: FormSubmit relays the name, email, message, category and any optional screenshot you submit to our Gmail inbox, and we use it only to answer you. That handling follows PIPEDA and Quebec Law 25, so you can ask to see, correct or delete it at tickspysupport@gmail.com. See the linked privacy policy for details and your rights.'],
+  ['Privacy policy','The desk has no accounts or advertising. Preferences and optional Alpaca keys are stored in your browser. Telegram alerts are the one exception, and only if you connect them: our server then keeps the Telegram chat it may message, your rules, and when each rule last fired \u2014 no phone number, no email, no name \u2014 and one button deletes it. Telegram carries those messages, so they are private to your chat but are not end-to-end encrypted against Telegram itself. Netlify and Cloudflare process normal request information, including IP addresses. Google Fonts and jsDelivr receive request information when their resources load. Contact messages and screenshots sent through the landing page are received by FormSubmit and our support inbox: FormSubmit relays the name, email, message, category and any optional screenshot you submit to our Gmail inbox, and we use it only to answer you. That handling follows PIPEDA and Quebec Law 25, so you can ask to see, correct or delete it at tickspysupport@gmail.com. See the linked privacy policy for details and your rights.'],
   ['Operator and eligibility','Operated by Tickspycorp in Québec, Canada. You must be 18 or older and legally able to use the service. Support and privacy contact: tickspysupport@gmail.com.'],
    ['Not for redistribution','Market data is licensed, not owned. The public desk bundles a labelled keyless sample dataset of generated demonstration data. If you host a copy, check the applicable source licence and attribution requirements before distributing any data you add; your personal Alpaca access does not grant a general redistribution licence.']
  ]};
@@ -1297,7 +1686,7 @@ function wizRender(){const s=WIZ[wizI],last=wizI===WIZ.length-1,c=cfg();
  $('#wiz-next').onclick=()=>{if(!last)return wizOpen(wizI+1);
   const ak=$('#wak').value.trim(),as=$('#was').value.trim();
   if(!ak||!as){toast('Please paste both the Key ID and the Secret Key.');return}
-   LS.cfg=JSON.stringify(Object.assign(cfg(),{ak,as}));LS.wiz='done';modalClose('#wiz');fill();go('live');load()};
+   saveKeys(ak,as,'#wiz-next').then(ok=>{if(!ok)return;LS.wiz='done';modalClose('#wiz');fill();go('live');load()})};
   $('#wiz-skip').onclick=()=>{LS.wiz='skipped';modalClose('#wiz')}}
 /* The wizard is an optional upgrade now, not a gate. It only opens by itself when
    the desk genuinely has no way to show anything (no keys and no edge API); in
@@ -1308,12 +1697,12 @@ $('#legal-bar').innerHTML=`<span>${esc(LEGAL.short)}</span><a href="../terms.htm
 $('#legal-open').onclick=legalOpen;
 /* ---------- settings ---------- */
 function fill(){const c=cfg();['ak','as'].forEach(k=>c[k]!=null&&($('#'+k).value=c[k]))}
-$('#sv').onclick=()=>{const ak=$('#ak').value.trim(),as=$('#as').value.trim();if(!ak||!as){toast('Paste both Alpaca keys, or choose Use free mode instead.');return}LS.cfg=JSON.stringify({ak,as});go('live');load()};
+$('#sv').onclick=async()=>{const ak=$('#ak').value.trim(),as=$('#as').value.trim();if(!ak||!as){toast('Paste both Alpaca keys, or choose Use free mode instead.');return}if(await saveKeys(ak,as,'#sv')){go('live');load()}};
 /* A one-click way back to the no-account feed. Without it, saved keys could only
    be removed by clearing the site's data in the browser. */
-$('#sfree').onclick=()=>{LS.cfg=JSON.stringify({ak:'',as:''});$('#ak').value='';$('#as').value='';go('live');load()};
+$('#sfree').onclick=()=>{LS.cfg=JSON.stringify(Object.assign(cfg(),{ak:'',as:''}));$('#ak').value='';$('#as').value='';go('live');load()};
 $('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
-$('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#atest').onclick=()=>beep();$('#scb').onclick=scan;
+$('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#atest').onclick=()=>toast('Sound feature removed.');$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
 /* Rescale the desk to the machine it is running on. A short screen gets the
    whole panel scaled down so more of it fits at once; a tall one is left at
@@ -1334,7 +1723,7 @@ setInterval(alerCheck,5000);setInterval(calAlertTick,10000);
 setInterval(()=>cal(),600000);
 // Coming back to the tab after a while: catch the replay up, re-read a stale
 // calendar and re-check alerts, none of which a throttled background tab can do.
-document.addEventListener('visibilitychange',()=>{if(document.hidden)return;primeAudio();freeTick();sessRender();cal();alerCheck();calAlertTick()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return;freeTick();sessRender();cal();alerCheck();calAlertTick()});
 sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
 $('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();

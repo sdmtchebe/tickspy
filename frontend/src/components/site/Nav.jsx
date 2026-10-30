@@ -11,6 +11,7 @@ export const NAV_LINKS = [
   { id: "features", index: 2 },
   { id: "how-it-works", index: 3 },
   { id: "setup", index: 4 },
+  { id: "community", index: 6 },
   { id: "contact", index: 5 },
 ];
 
@@ -38,7 +39,7 @@ export const Nav = () => {
       }`}
       data-testid="site-nav"
     >
-      <nav aria-label="Main navigation" className="shell flex h-16 items-center justify-between gap-6 lg:h-[84px]">
+      <nav aria-label="Main navigation" className="shell flex h-[68px] items-center justify-between gap-6 lg:h-[76px]">
         <button onClick={() => go("home")} className="text-[26px]" data-testid="nav-logo-link" aria-label="TickSPY home">
           <Logo testId="nav-logo" />
         </button>

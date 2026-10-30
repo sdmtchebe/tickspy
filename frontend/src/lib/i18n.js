@@ -17,7 +17,7 @@ export const LANGUAGES = [
 
 const COPY = {
   en: {
-    nav: ["Home", "The desk", "Features", "How it works", "Setup", "Contact"],
+    nav: ["Home", "The desk", "Features", "How it works", "Setup", "Contact", "Community"],
     openDesk: "Open desk",
     menu: "Menu",
     eyebrow: "Free market analysis desk",
@@ -31,7 +31,7 @@ const COPY = {
     language: "Language",
   },
   fr: {
-    nav: ["Accueil", "Le bureau", "Fonctions", "Fonctionnement", "Configuration", "Contact"],
+    nav: ["Accueil", "Le bureau", "Fonctions", "Fonctionnement", "Configuration", "Contact", "Communauté"],
     openDesk: "Ouvrir le bureau",
     menu: "Menu",
     eyebrow: "Bureau gratuit d'analyse des marchés",
@@ -45,7 +45,7 @@ const COPY = {
     language: "Langue",
   },
   es: {
-    nav: ["Inicio", "La plataforma", "Funciones", "Cómo funciona", "Configuración", "Contacto"],
+    nav: ["Inicio", "La plataforma", "Funciones", "Cómo funciona", "Configuración", "Contacto", "Comunidad"],
     openDesk: "Abrir plataforma",
     menu: "Menú",
     eyebrow: "Plataforma gratuita de análisis de mercado",
@@ -59,7 +59,7 @@ const COPY = {
     language: "Idioma",
   },
   de: {
-    nav: ["Start", "Das Desk", "Funktionen", "So funktioniert es", "Einrichtung", "Kontakt"],
+    nav: ["Start", "Das Desk", "Funktionen", "So funktioniert es", "Einrichtung", "Kontakt", "Community"],
     openDesk: "Desk öffnen",
     menu: "Menü",
     eyebrow: "Kostenloses Marktanalyse-Desk",
@@ -73,7 +73,7 @@ const COPY = {
     language: "Sprache",
   },
   pt: {
-    nav: ["Início", "A mesa", "Recursos", "Como funciona", "Configuração", "Contato"],
+    nav: ["Início", "A mesa", "Recursos", "Como funciona", "Configuração", "Contato", "Comunidade"],
     openDesk: "Abrir mesa",
     menu: "Menu",
     eyebrow: "Mesa gratuita de análise de mercado",
@@ -87,7 +87,7 @@ const COPY = {
     language: "Idioma",
   },
   it: {
-    nav: ["Home", "La desk", "Funzioni", "Come funziona", "Configurazione", "Contatti"],
+    nav: ["Home", "La desk", "Funzioni", "Come funziona", "Configurazione", "Contatti", "Community"],
     openDesk: "Apri la desk",
     menu: "Menu",
     eyebrow: "Desk gratuita di analisi dei mercati",
@@ -101,7 +101,7 @@ const COPY = {
     language: "Lingua",
   },
   zh: {
-    nav: ["首页", "分析台", "功能", "工作方式", "设置", "联系"],
+    nav: ["首页", "分析台", "功能", "工作方式", "设置", "联系", "社区"],
     openDesk: "打开分析台",
     menu: "菜单",
     eyebrow: "免费的市场分析台",
@@ -115,7 +115,7 @@ const COPY = {
     language: "语言",
   },
   ja: {
-    nav: ["ホーム", "デスク", "機能", "使い方", "設定", "お問い合わせ"],
+    nav: ["ホーム", "デスク", "機能", "使い方", "設定", "お問い合わせ", "コミュニティ"],
     openDesk: "デスクを開く",
     menu: "メニュー",
     eyebrow: "無料の市場分析デスク",
@@ -129,7 +129,7 @@ const COPY = {
     language: "言語",
   },
   ko: {
-    nav: ["홈", "분석 데스크", "기능", "작동 방식", "설정", "문의"],
+    nav: ["홈", "분석 데스크", "기능", "작동 방식", "설정", "문의", "커뮤니티"],
     openDesk: "데스크 열기",
     menu: "메뉴",
     eyebrow: "무료 시장 분석 데스크",
@@ -143,7 +143,7 @@ const COPY = {
     language: "언어",
   },
   ru: {
-    nav: ["Главная", "Терминал", "Возможности", "Как это работает", "Настройка", "Контакты"],
+    nav: ["Главная", "Терминал", "Возможности", "Как это работает", "Настройка", "Контакты", "Сообщество"],
     openDesk: "Открыть терминал",
     menu: "Меню",
     eyebrow: "Бесплатный терминал анализа рынка",
@@ -157,7 +157,7 @@ const COPY = {
     language: "Язык",
   },
   ar: {
-    nav: ["الرئيسية", "المنصة", "الميزات", "كيف تعمل", "الإعداد", "اتصل بنا"],
+    nav: ["الرئيسية", "المنصة", "الميزات", "كيف تعمل", "الإعداد", "اتصل بنا", "المجتمع"],
     openDesk: "فتح المنصة",
     menu: "القائمة",
     eyebrow: "منصة مجانية لتحليل الأسواق",
@@ -171,7 +171,7 @@ const COPY = {
     language: "اللغة",
   },
   hi: {
-    nav: ["होम", "डेस्क", "सुविधाएँ", "यह कैसे काम करता है", "सेटअप", "संपर्क"],
+    nav: ["होम", "डेस्क", "सुविधाएँ", "यह कैसे काम करता है", "सेटअप", "संपर्क", "समुदाय"],
     openDesk: "डेस्क खोलें",
     menu: "मेन्यू",
     eyebrow: "मुफ़्त बाज़ार विश्लेषण डेस्क",

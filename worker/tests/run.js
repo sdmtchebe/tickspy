@@ -30,7 +30,11 @@ import {
   fetchSeries,
   seriesUrl,
 } from "../src/bars.js";
-import worker, { upcomingEvents, _memory, BARS_CRON, budgetAllows, _fetchBudget, BARS_KEY_PREFIX } from "../src/index.js";
+import worker, { upcomingEvents } from "../src/index.js";
+// The values the entry module used to export now live in internals.js, because a
+// Worker's entry module may only export functions (see that file's header).
+import { _memory, BARS_CRON, budgetAllows, _fetchBudget, BARS_KEY_PREFIX, ALERTS_CRON } from "../src/internals.js";
+import * as entryModule from "../src/index.js";
 import {
   produceCalendar,
   mergeCalendar,
@@ -1390,6 +1394,33 @@ console.log("\nbars.js");
     } finally {
       globalThis.fetch = realFetch;
     }
+  });
+
+  /* --------------------------------------------------- the entry module --- */
+  /*
+   * The one check that cannot be made by running code in Node: workerd inspects
+   * the entry module's export map when a Worker starts, and refuses to boot on a
+   * non-function export. A `export const SOME_CRON = "..."` in src/index.js is
+   * therefore a Worker that will not start, while every test here passes happily.
+   * That is a deploy-time failure with no local symptom, so it is asserted
+   * directly: only functions and the default handler may leave the entry module.
+   */
+  await test("the entry module exports only functions, as the runtime requires", () => {
+    const bad = Object.entries(entryModule)
+      .filter(([name]) => name !== "default")
+      .filter(([, value]) => typeof value !== "function")
+      .map(([name, value]) => `${name} (${typeof value})`);
+    assert.deepEqual(
+      bad,
+      [],
+      `src/index.js exports ${bad.join(", ")}. Move values into src/internals.js: workerd rejects a non-function export at startup.`
+    );
+    assert.equal(typeof entryModule.default.fetch, "function", "the handler is the default export");
+    assert.equal(typeof entryModule.default.scheduled, "function");
+  });
+
+  await test("the alert cron is the one the schedule and the UI state", () => {
+    assert.equal(ALERTS_CRON, "*/5 * * * *");
   });
 
   /* ------------------------------------------------------------------ report */

@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
-Disallow: /desk/
+# The desk guides (/desk/overview/ ... /desk/settings/) are the site's
+# substantive content and are listed in the sitemap. Blocking /desk/ told
+# Google to skip the pages the sitemap was submitting, which is a large part
+# of why the site read as thin. Only the raw data snapshots stay out.
 Disallow: /edge/
+Disallow: /desk/hfdata/
 Sitemap: https://tickspy.com/sitemap.xml

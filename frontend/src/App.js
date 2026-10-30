@@ -13,7 +13,9 @@ import { AdSlot } from "@/components/site/AdSlot";
 import { Features } from "@/components/site/Features";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { SetupGuide } from "@/components/site/SetupGuide";
+import { TelegramAlerts } from "@/components/site/TelegramAlerts";
 import { Why } from "@/components/site/Why";
+import { Community } from "@/components/site/Community";
 import { Contact } from "@/components/site/Contact";
 import { CookieConsent } from "@/components/site/CookieConsent";
 import { Footer } from "@/components/site/Footer";
@@ -61,7 +63,9 @@ function App() {
         <HowItWorks />
         <AdSlot slot={AD_SLOTS.afterHow} className="pb-2" />
         <SetupGuide />
+        <TelegramAlerts />
         <Why />
+        <Community />
         <Contact />
       </main>
       <Footer />

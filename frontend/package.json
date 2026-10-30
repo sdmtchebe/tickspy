@@ -69,7 +69,7 @@
     "prebuild": "node scripts/sync-desk.js",
     "start": "craco start",
     "build": "craco build",
-    "postbuild": "node scripts/finalize-build.js && node ../worker/scripts/write-calendar.mjs build/calendar.json build/desk/calendar.json",
+    "postbuild": "node scripts/prerender.js && node scripts/finalize-build.js && node ../worker/scripts/write-calendar.mjs build/calendar.json build/desk/calendar.json",
     "release:netlify": "GENERATE_SOURCEMAP=false REACT_APP_ENABLE_ADS=false npm run build && node scripts/package-release.js",
     "test": "craco test"
   },
@@ -102,6 +102,7 @@
     "globals": "15.15.0",
     "parquetjs": "^0.11.2",
     "postcss": "8.5.28",
+    "puppeteer": "^25.16.0",
     "tailwindcss": "3.4.17"
   },
   "resolutions": {
