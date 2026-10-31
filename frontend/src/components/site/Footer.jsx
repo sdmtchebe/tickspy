@@ -39,6 +39,11 @@ export const Footer = () => {
             </button>
           </li>
           <li>
+            <button onClick={() => scrollToId("personalize")} className="link-quiet text-[14px]" data-testid="footer-link-personalize">
+              Personalize your desk
+            </button>
+          </li>
+          <li>
             <a href={DESK_PATH} target="_blank" rel="noopener noreferrer" className="link-quiet text-[14px]">
               Open the desk
             </a>

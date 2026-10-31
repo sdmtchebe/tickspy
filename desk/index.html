@@ -113,6 +113,38 @@ nav.tabs .grp:first-child{padding-top:3px}
 @supports(height:1dvh){#cv{height:clamp(240px,46dvh,620px)}}
 .legend{color:var(--muted);font-size:11px;padding:8px 12px;border-top:1px solid var(--gb);background:var(--glass-2);backdrop-filter:var(--blur-2);-webkit-backdrop-filter:var(--blur-2);display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .tab{display:none;padding-top:12px}.tab.on{display:block}
+/* Research: a brief is prose backed by the numbers beside it. The headline is
+   the one line to read; every block below it is a claim plus its evidence. */
+.rheadline{font-family:var(--display);font-size:19px;line-height:1.3;letter-spacing:-.02em;color:var(--ink);margin:0 0 10px;max-width:72ch}
+.rblock{border-top:1px solid var(--gb);padding:10px 0}
+.rblock:first-of-type{border-top:0;padding-top:2px}
+.rblock .rh{display:flex;align-items:baseline;gap:8px}
+.rblock h3{font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mint-ink);margin:0 0 3px}
+.rblock p{font-size:12.5px;line-height:1.6;color:var(--steel);margin:0;max-width:100ch}
+.rblock.rcompact p{font-size:12px;line-height:1.55}
+.revrow{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:7px}
+.rev{font-family:var(--mono);font-size:10.5px;color:var(--faint);border:1px solid var(--gb);border-radius:999px;padding:2px 7px;background:var(--well);white-space:nowrap}
+.rev b{color:var(--muted);font-weight:500}
+.rbig{font-family:var(--mono);font-size:24px;line-height:1.1;color:var(--ink);letter-spacing:-.03em}
+.rband{margin:10px 0 12px}
+.rband-track{position:relative;height:12px;background:var(--well);border:1px solid var(--gb);border-radius:999px;box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.rband-track i{position:absolute;top:-1px;bottom:-1px;background:rgba(0,229,160,.2);border-left:1px solid var(--mint);border-right:1px solid var(--mint);border-radius:3px}
+.rband-track b{position:absolute;top:-5px;width:2px;height:20px;background:var(--mint);border-radius:2px}
+.rband-track em{position:absolute;top:-7px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid var(--amber);transform:translateX(-50%)}
+.rband-l{display:flex;justify-content:space-between;margin-top:5px;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin:10px 0}
+.rstat{background:var(--well);border:1px solid var(--gb);border-radius:8px;padding:7px 9px;min-width:0}
+.rstat span{display:block;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rstat b{display:block;font-family:var(--mono);font-size:16px;font-weight:500;color:var(--ink);margin-top:2px}
+.rstat i{display:block;font-style:normal;font-size:10px;color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtable{display:flex;flex-direction:column}
+.rtr{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-top:1px solid var(--gb);font-size:12px;color:var(--steel)}
+.rtr:first-child{border-top:0}
+.rtr b{font-weight:500;color:var(--ink);text-align:right;white-space:nowrap}
+.rlist{margin:0;padding-left:16px;font-size:12px;line-height:1.6;color:var(--steel)}
+.rlist li{margin:2px 0}
+.rnote{font-size:11.5px;line-height:1.55;color:var(--faint);margin:8px 0 0}
+@media(max-width:600px){.rheadline{font-size:16px}.rstat b{font-size:14px}}
 .cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
 .stack{display:flex;flex-direction:column}
 .irow{border-bottom:1px solid var(--gb);transition:background-color 150ms ease}.irow:last-child{border-bottom:0}.irow:hover{background:var(--glass-2)}
@@ -244,6 +276,22 @@ nav.tabs .grp:first-child{padding-top:3px}
 <div class="panel"><h2>Timeframe alignment</h2><div id="mtf" class="pbody"></div></div>
 <div class="panel"><h2>Relative strength</h2><div id="rsx" class="pbody"></div></div>
 </div></section>
+<section class="tab" id="t-research">
+<div class="panel"><h2>Research <span class="tagline" id="rstat">daily bars · delayed</span></h2>
+<div class="pbody"><p class="x" style="margin-top:0">A computed brief for the symbol above: what the daily bars say, how wide the next session's high-low range has tended to be in this volatility state, and how often that model has actually been right. No generated text, no price target and no recommendation.</p>
+<div class="row"><span class="tagline">Symbol</span><b id="rsym" class="num">SPY</b><button class="btn primary" id="rrun" type="button">Reload brief</button><span class="tagline" id="rwhen"></span></div>
+<div class="disc" style="margin:0"><b>Computed, not generated.</b> Every sentence is assembled from the evidence table below. It is a description of past prices and a historical range estimate, not investment advice, not a direction forecast, and not a recommendation.</div></div></div>
+<div id="rerror"></div>
+<div class="panel"><h2>Symbol brief <span class="tagline">what the numbers say</span></h2><div id="rbrief" class="pbody"><p class="x">Open this tab to build the brief.</p></div></div>
+<div class="cols">
+<div class="panel"><h2>Range model <span class="tagline">k-NN · walk-forward</span></h2><div id="rmodel" class="pbody"><p class="x">Loading...</p></div></div>
+<div class="panel"><h2>Market brief <span class="tagline" id="rmstat"></span></h2><div id="rmarket" class="pbody"><p class="x">Loading...</p></div></div>
+</div>
+<div class="cols">
+<div class="panel"><h2>Evidence <span class="tagline">every number above comes from here</span></h2><div id="revidence" class="pbody"><p class="x">Loading...</p></div></div>
+<div class="panel"><h2>What this cannot tell you</h2><div id="rlimits" class="pbody"><p class="x">Loading...</p></div></div>
+</div>
+</section>
 <section class="tab" id="t-ind"><div class="panel"><h2>Indicators</h2><div id="ind" class="stack"></div></div></section>
 <section class="tab" id="t-pat"><div class="cols">
 <div class="panel"><h2>Candlestick patterns</h2><div id="cp" class="stack"></div></div>
@@ -348,6 +396,11 @@ nav.tabs .grp:first-child{padding-top:3px}
 <div class="row"><input id="as" type="password" placeholder="Alpaca secret" style="width:100%" aria-label="Alpaca secret"></div>
 <div class="row"><button class="btn primary" id="sv">Save and connect</button><button class="btn" id="sfree" type="button">Use free mode instead</button></div>
 <p class="x"><b>Use free mode instead</b> forgets any saved keys and returns the desk to the no-account feed below, where it started.</p>
+<div class="rgroup">
+<div class="rhead"><b>Your default view</b><span class="tagline">stored in this browser only</span></div>
+<p class="x">Choose the symbol, timeframe and tab you want a new visit to open on. The landing page's <b>Personalize</b> panel writes the same setting; this button simply saves whatever is on screen now.</p>
+<div class="row"><button class="btn" id="prefsave" type="button">Use this view as my default</button><button class="btn" id="prefclear" type="button">Clear</button><span class="tagline" id="prefstat"></span></div>
+</div>
 </div></div></section>
 </main>
 </div>
@@ -370,6 +423,7 @@ nav.tabs .grp:first-child{padding-top:3px}
 <script src="structure-chart.js"></script>
 <script src="profile.js"></script>
 <script src="structure-view.js"></script>
+<script src="research.js"></script>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -378,11 +432,22 @@ const memoryStore=Object.create(null),LS=new Proxy(memoryStore,{
  get:(target,key)=>{if(key in target)return target[key];try{return localStorage.getItem(key)}catch(_){return null}},
  set:(target,key,value)=>{target[key]=String(value);try{localStorage.setItem(key,String(value))}catch(_){}return true}
 });
-for(const [key,array] of [['cfg',false],['wl',true],['alerts',true],['calalert',false],['calfired',false],['tgsub',false],['tgrules',false]]){
+for(const [key,array] of [['cfg',false],['wl',true],['alerts',true],['calalert',false],['calfired',false],['tgsub',false],['tgrules',false],['deskprefs',false]]){
  if(!LS[key])continue;try{const value=JSON.parse(LS[key]);if(!value||typeof value!=='object'||Array.isArray(value)!==array)throw Error('invalid preference')}catch(_){LS[key]=array?'[]':'{}'}
 }
 const cfg=()=>JSON.parse(LS.cfg||'{}');
 if(window.DESK_KEYS){try{LS.cfg=JSON.stringify({...window.DESK_KEYS,...JSON.parse(LS.cfg||'{}')})}catch(e){}}
+/* The landing page's Personalize panel writes the same key. A missing or
+   malformed value falls back to the desk's shipped view rather than stopping
+   the page, and the symbol is taken from the first watchlist entry when the
+   visitor has not chosen one explicitly. */
+function deskPrefs(){let first='SPY';try{const wl=JSON.parse(LS.wl||'[]');if(Array.isArray(wl)&&wl.length&&/^[A-Z][A-Z0-9.-]{0,9}$/.test(String(wl[0]).toUpperCase()))first=String(wl[0]).toUpperCase()}catch(_){}
+ let raw={};try{raw=JSON.parse(LS.deskprefs||'null')||{}}catch(_){}
+ const symbol=String(raw.symbol||first).toUpperCase();
+ return {symbol:/^[A-Z][A-Z0-9.-]{0,9}$/.test(symbol)?symbol:first,
+  timeframe:['1Min','5Min','15Min','1Day'].includes(raw.timeframe)?raw.timeframe:'1Min',
+  tab:typeof raw.tab==='string'?raw.tab:'live'}}
+const PREF=deskPrefs();
 /* Two ways to run. With the desk's own Python server present we route through
    its /p and /vol endpoints. The /vol path is the reference two-stage model.
    Without one (a static host such as GitHub Pages) the page talks straight to
@@ -403,14 +468,14 @@ const netErr=e=>{const m=String((e&&e.message)||e);
  // a visitor to run a Python script would be nonsense.
  return DESK_API!==null?'Could not reach the local server. Run "python3 server.py" and open http://localhost:8000 rather than opening the file directly.':'Could not reach the data source. Check your connection and try again.'};
 if(location.protocol=='file:'){const b=document.createElement('div');b.className='banner';b.innerHTML='This page is open as a file, so no live data can load. Start the server with <b>python3 server.py</b> and use <b>http://localhost:8000</b>.';document.body.prepend(b)}
-const S={sym:'SPY',tf:'1Min',tfLive:'1Min',mode:null,bars:[],allBars:null,daily:[],sessionDate:null,free:null,rep:null,tz:null,tzCoverage:null,mtfRows:null,price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set(),mnews:null,mnewsAt:0};
+const S={sym:PREF.symbol,tf:PREF.timeframe,tfLive:PREF.timeframe,mode:null,bars:[],allBars:null,daily:[],sessionDate:null,free:null,rep:null,tz:null,tzCoverage:null,mtfRows:null,price:null,lastPx:null,an:null,ws:null,nk:'',nt:0,wq:{},view:{n:90,end:0},cross:null,focus:null,news:[],newsIds:new Set(),newsWs:null,newsFresh:new Set(),mnews:null,mnewsAt:0};
 /* Eleven sections, but only nine of them are analysis, so the rail groups them
    instead of showing one flat list of eleven equal items. Settings is not a
    section at all - it is configuration - so it left the rail for the gear in the
    header, and "Market Structure" is now "Structure" because the rail is narrow
    and the two long words were the reason it wrapped. */
-const TABS=[['live','Overview'],['ind','Indicators'],['pat','Patterns'],['structure','Structure'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Risk & testing'],['learn','Learn'],['set','Settings']];
-const NAV_GROUPS=[['Today',['live']],['Signals',['ind','pat','structure']],['Context',['vol','news','cal','alert']],['Learn & tools',['tools','learn']]];
+const TABS=[['live','Overview'],['research','Research'],['ind','Indicators'],['pat','Patterns'],['structure','Structure'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Risk & testing'],['learn','Learn'],['set','Settings']];
+const NAV_GROUPS=[['Today',['live','research']],['Signals',['ind','pat','structure']],['Context',['vol','news','cal','alert']],['Learn & tools',['tools','learn']]];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Which remote URL is safe to put in an href. esc() stops a value breaking out
    of the attribute, but it would happily pass "javascript:..." through, and a
@@ -431,7 +496,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-showall],[
  if(b.dataset.calrefresh){try{LS.calc='null'}catch(_){}calRender();cal();return}
  showAll[b.dataset.showall]=true;render()});
 const guideSlugs={live:'overview',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',structure:'structure',learn:'learn',set:'settings'};
-const learnTabs=TABS.filter(([k])=>k!=='learn');
+const learnTabs=TABS.filter(([k])=>k!=='learn'&&k!=='research');
 document.getElementById('learn-links').innerHTML='<nav aria-label="Learning guides"><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">'+learnTabs.map(([k,n])=>`<li><a href="./${guideSlugs[k]}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')+'</ul></nav>';
 /* Switching tabs used to leave the scroll exactly where it was, so on a short
    screen the panel just chosen was still below the fold and it looked like the
@@ -441,7 +506,7 @@ function bringTab(k){const t=document.getElementById('t-'+k);if(!t)return;
  if(r.top>=0&&r.top<window.innerHeight*0.55)return;
  const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
  window.scrollTo({top:Math.max(0,r.top+window.scrollY-10),behavior:smooth?'smooth':'auto'})}
-function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList();tgLoad()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='live')drawVP();if(bring!==false)bringTab(k)}
+function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList();tgLoad()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='research'&&window.DeskResearch)DeskResearch.open({symbol:S.sym,edgeApi:EDGE_API});if(k=='live')drawVP();if(bring!==false)bringTab(k)}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -531,9 +596,12 @@ function banner(line,more){
   const go2=document.getElementById('fbn-go');if(go2)go2.onclick=e=>{e.preventDefault();go('set')}}
 /* Behind the summary in every no-account mode: what live keys would change. */
 const KEYS_MORE='<p><b>What free Alpaca keys add:</b> current quotes and 1-minute bars, a live trade stream, alerts that fire while the page is open, and the symbol\u2019s own news feed instead of market headlines filtered by ticker.</p><p><a href="#" id="fbn-go">Add free Alpaca keys in Settings</a> \u2014 free paper-trading account, about two minutes. The desk never places trades, and the keys stay in this browser.</p>';
-function tfOptions(){const ids=S.mode==='free'?FREE.TIMEFRAMES.map(t=>t.id):['1Min','5Min','15Min'];
- const label=id=>id==='1Day'?'1 day':id==='1Hour'?'1 hour':id.replace('Min',' min');
- $('#tf').innerHTML=ids.map(id=>`<option value="${id}">${label(id)}</option>`).join('')}
+/* One name for a timeframe everywhere the desk shows one: the selector, the
+   saved-default line and the toast. `1Day` must not be rendered as "1Day" or as
+   a stray "1 day" in one place and "1Day" in another. */
+const tfName=id=>id==='1Day'?'1 day':id==='1Hour'?'1 hour':String(id||'').replace('Min',' min');
+function tfOptions(){const ids=S.mode==='free'?FREE.TIMEFRAMES.map(t=>t.id):['1Min','5Min','15Min','1Day'];
+ $('#tf').innerHTML=ids.map(id=>`<option value="${id}">${tfName(id)}</option>`).join('')}
 let loadVersion=0;
 async function load(){
  const version=++loadVersion;
@@ -628,7 +696,7 @@ function structureRefresh(){
   const cutoff=S.mode==='live'?Date.now():S.tf==='1Day'?Infinity:S.rep?new Date(S.rep.at).getTime():0;
   window.StructureDesk.update({bars:S.mode==='live'?structureSnapshot:S.allBars,daily:S.daily,sessionDate:S.sessionDate,source:S.free?.source,symbol:S.sym,tf:S.tf,mode:S.mode,cutoff});
 }
-function refresh(){analyze();draw();head();render();structureRefresh()}
+function refresh(){analyze();draw();head();render();structureRefresh();if(document.getElementById('t-research')?.classList.contains('on')&&window.DeskResearch)DeskResearch.setSymbol(S.sym,EDGE_API)}
 /* In free mode the change is measured against the previous session's close, not
    today's open, because there is no today - the bars on screen ARE the previous
    session, and the label has to say so. */
@@ -814,9 +882,6 @@ const c=a.up>=60?'up':a.up<=40?'dn':'nu';
    +(a.chp.length>chartRows.length?moreRow('chp','Show all '+a.chp.length+' chart patterns'):'')
    ||'<p class="x" style="padding:12px">No clear chart pattern right now. The desk looks at the last 150 bars for the shapes it can name.</p>';
  lvRender(a.lv);mtfRender();rsRender();alerCheck();wlRender()}
-/* One AudioContext for the whole page, created (and resumed) on the first real
-
-
 function toast(t){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}const m=document.createElement('div');m.className='t';m.textContent=t;e.append(m);setTimeout(()=>m.remove(),9000)}
 async function rsq(){if(S.mode==='free')return rsqFree();if(!cfg().ak)return;const version=loadVersion;try{const st=new Date(Date.now()-6*864e5).toISOString(),url=k=>alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);const[a,b]=await Promise.all([url(S.sym),url('QQQ')]);if(version!==loadVersion)return;const ch=j=>{const x=(j.bars||[]).map(v=>v.c);return x.length>1?(x[0]/x.at(-1)-1)*100:0};const s=ch(a),q=ch(b);S.rs={s,q,d:s-q};rsRender()}catch(e){if(version!==loadVersion)return;S.rs={err:e.message};rsRender()}}
 /* Relative strength is measured on daily closes in free mode: it is a
@@ -1300,7 +1365,7 @@ function calASave(patch){LS.calalert=JSON.stringify(Object.assign(calACfg(),patc
 const CAL_CTL=['ca','fa'];
 function calARender(){const c=calACfg();
  CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
-  const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),;
+  const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),f=g(p+'fields');
   if(on)on.checked=!!c.on;if(imp)imp.value=c.impact==='High'?'High':'HighMedium';
   if(lead)lead.value=String(c.lead);if(rel)rel.checked=!!c.releases;
   if(f){f.style.opacity=c.on?'1':'.45';f.querySelectorAll('input,select,button').forEach(el=>{el.disabled=!c.on})}});
@@ -1333,11 +1398,11 @@ function calAlertTick(){const c=calACfg();if(!c.on||!S.cal||!S.cal.length)return
    toast('Released: '+e.title+' — actual '+e.actual+' vs forecast '+(e.forecast||'--'))}}
  if(changed){const cut=now-14*864e5;for(const x in fired)if(fired[x]<cut)delete fired[x];LS.calfired=JSON.stringify(fired);calRender()}}
 CAL_CTL.forEach(p=>{const g=id=>document.getElementById(id);
- const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel'),
+ const on=g(p+'on'),imp=g(p+'imp'),lead=g(p+'lead'),rel=g(p+'rel');
  if(on)on.onchange=e=>calASave({on:e.target.checked});
  if(imp)imp.onchange=e=>calASave({impact:e.target.value==='High'?'High':'HighMedium'});
  if(lead)lead.onchange=e=>calASave({lead:+e.target.value||15});
- if(rel)rel.onchange=e=>calASave({releases:e.target.checked});
+ if(rel)rel.onchange=e=>calASave({releases:e.target.checked})});
 
 /* ---------- alerts on Telegram (server-side) ----------
  * The alerts above are client-side: they run on the ticking clock of this page,
@@ -1702,7 +1767,7 @@ $('#sv').onclick=async()=>{const ak=$('#ak').value.trim(),as=$('#as').value.trim
    be removed by clearing the site's data in the browser. */
 $('#sfree').onclick=()=>{LS.cfg=JSON.stringify(Object.assign(cfg(),{ak:'',as:''}));$('#ak').value='';$('#as').value='';go('live');load()};
 $('#sym').onchange=e=>{S.sym=e.target.value.trim().toUpperCase()||'SPY';S.nk='';S.news=[];S.newsIds=new Set();S.newsFresh=new Set();const ns=$('#nstat');if(ns)ns.textContent='live · filtering for '+S.sym;load()};$('#tf').onchange=e=>{S.tf=e.target.value;load()};
-$('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#atest').onclick=()=>toast('Sound feature removed.');$('#scb').onclick=scan;
+$('#btb').onclick=btRender;$('#aadd').onclick=alertAdd;$('#scb').onclick=scan;
 $('#sc').onclick=e=>{const s=e.target.closest('[data-s]');if(s){$('#sym').value=s.dataset.s;S.sym=s.dataset.s;S.nk='';go('live');load()}};
 /* Rescale the desk to the machine it is running on. A short screen gets the
    whole panel scaled down so more of it fits at once; a tall one is left at
@@ -1727,7 +1792,22 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)return;free
 sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
 $('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();
-function requestedTab(){const id=location.hash.slice(1);return TABS.some(([k])=>k===id)?id:'live'}
+function requestedTab(){const id=location.hash.slice(1);if(TABS.some(([k])=>k===id))return id;
+ const p=deskPrefs();return TABS.some(([k])=>k===p.tab)?p.tab:'live'}
+function activeTab(){const t=document.querySelector('.tab.on');return t?t.id.slice(2):'live'}
+/* What a new visit will actually open. A saved 1-minute view becomes 5 minutes in
+   the no-key feed (freeTf), so printing the stored value would promise a
+   timeframe the desk then replaces on screen. */
+function prefTf(tf){try{return freeMode()==='free'?freeTf(tf):tf}catch(_){return tf}}
+function prefLabel(){const p=deskPrefs(),tab=(TABS.find(([k])=>k===p.tab)||[,p.tab])[1];return p.symbol+' · '+tfName(prefTf(p.timeframe))+' · '+tab}
+$('#prefsave').onclick=()=>{const tab=activeTab();LS.deskprefs=JSON.stringify({symbol:S.sym,timeframe:S.tf,tab});
+ $('#prefstat').textContent='Default saved: '+S.sym+' · '+tfName(S.tf)+' · '+((TABS.find(([k])=>k===tab)||[,tab])[1]);toast('This view will open the next time you visit the desk.')};
+$('#prefclear').onclick=()=>{LS.deskprefs='';$('#prefstat').textContent='No saved default; new visits start on '+prefLabel()+'.';toast('Your saved opening view was cleared.')};
+/* Saying "Current default" before anything was saved was a claim the page could
+   not back: the desk then opened its shipped view instead. Only a real saved
+   value is described as a default. */
+$('#prefstat').textContent=LS.deskprefs?'Current default: '+prefLabel():'No saved default; new visits start on '+prefLabel()+'.';
 window.addEventListener('hashchange',()=>go(requestedTab()));
+$('#sym').value=S.sym;tfOptions();$('#tf').value=S.tf;
 alertRender();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go(requestedTab(),false);load();
 </script></body></html>

@@ -514,6 +514,18 @@ async function main() {
     );
   });
 
+  await test("upcomingEvents orders events by time, not by feed order", () => {
+    const from = Date.parse("2030-01-01T00:00:00Z");
+    const ev = upcomingEvents(
+      [
+        { country: "USD", impact: "High", title: "Later", date: "2030-01-10T13:30:00Z" },
+        { country: "USD", impact: "Medium", title: "Sooner", date: "2030-01-03T13:30:00Z" },
+      ],
+      { from }
+    );
+    assert.deepEqual(ev.map((e) => e.title), ["Sooner", "Later"]);
+  });
+
   await test("OPTIONS returns 204 with CORS headers for an allowed origin", async () => {
     const req = new Request("https://api.test/api/overview", {
       method: "OPTIONS",

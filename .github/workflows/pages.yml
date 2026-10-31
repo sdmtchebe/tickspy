@@ -100,6 +100,10 @@ jobs:
           # the desk falls back to training in the page, which freezes it.
           test -f frontend/build/desk/volworker.js || { echo "::error::desk volatility worker missing"; exit 1; }
           grep -q "volworker.js" frontend/build/desk/index.html || { echo "::error::desk does not start the volatility worker"; exit 1; }
+          # The Research tab renders the worker's computed brief. Without its
+          # script the nav item is a blank panel, so fail rather than ship that.
+          test -f frontend/build/desk/research.js || { echo "::error::desk research tab missing"; exit 1; }
+          grep -q "research.js" frontend/build/desk/index.html || { echo "::error::desk does not load the research tab"; exit 1; }
           test -f frontend/build/desk/edge-config.js || { echo "::error::desk edge config missing"; exit 1; }
           # Telegram alerts replaced browser push, so there is no service worker
           # any more. A published one would be a stale worker whose only job was

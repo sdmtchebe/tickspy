@@ -34,17 +34,20 @@ to a provider you chose.
 |---|---|
 | `cfg` | Your Alpaca keys, if you enter them. Optional: the desk works without them |
 | `wl` | Your watchlist symbols |
+| `deskprefs` | Your default symbol, timeframe and opening tab |
 | `alerts` | Price alerts you created |
 | `calalert` | Your calendar-alert preferences |
 | `calfired` | Which scheduled events have already alerted, so none fires twice |
 | `calc` | A cached copy of the public economic calendar |
 | `legal` | A timestamp recording that you accepted the disclosures |
 | `wiz` | Whether you have already seen the optional setup wizard, so it does not reopen |
-| `pushsub` | Your phone-alert subscription's id and token — this browser's own key to change or delete it |
-| `pushrules` | The price, news and calendar rules you set for phone alerts |
+| `tgsub` | Your Telegram subscription's id and token — this browser's own key to change or delete it |
+| `tgrules` | The price, news and calendar rules you set for Telegram alerts |
 
 You can erase all of it at any time by clearing site data for this page in your
-browser. Nothing is backed up anywhere else.## Alerts on Telegram — the one feature that stores something off this device
+browser. Nothing is backed up anywhere else.
+
+## Alerts on Telegram — the one feature that stores something off this device
 
 Every alert above this section is client-side: it runs on the page's own ticking
 clock, keeps everything in `localStorage`, and stops the moment the page closes.
@@ -70,19 +73,20 @@ There is no email, no phone number, no IP address, no account and no identifier
 from any other service. Nothing is sold, shared or profiled, and the rule list is
 used for one thing: deciding whether to send you that message.
 
-**Connecting is a one-time code, not a login.** The desk asks the server for a
-code valid for fifteen minutes and it travels to Telegram inside a `t.me` link you
-press. Pressing START in the chat is the only thing that attaches a chat to rules.
-The desk never learns your chat identifier, and the chat never receives the desk's
-management key. The code is marked used and expires.
+**Connecting is a one-time code, not a login.** The landing page or the desk
+asks the server for a code valid for fifteen minutes and it travels to Telegram
+inside a `t.me` link you press. Pressing START in the chat is the only thing that
+attaches a chat to rules. Neither page learns your chat identifier, and the chat
+never receives the page's management key. The code is marked used and expires.
 
 **Telegram can read these messages.** They are private to your chat, but unlike
 the browser push notifications this replaced they are not end-to-end encrypted
 against the messaging platform. Telegram handles them under its own privacy
 policy, and it is the only other provider involved in delivering an alert.
 
-The **delete button in the Alerts tab removes the record and the rules from the
-server**, and `/stop` in the chat does the same. Blocking the bot is noticed too:
+The **Disconnect button on the landing page or the delete button in the Alerts
+tab removes the record and the rules from the server**, and `/stop` in the chat
+does the same. Blocking the bot is noticed too:
 the failed delivery deletes the record on the next check rather than retrying
 forever.
 

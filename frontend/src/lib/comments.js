@@ -11,9 +11,9 @@
 // are no longer deletable from this browser. That is the honest trade of an
 // anonymous system with no recovery channel, and the UI says so.
 
-const API_BASE = (
-  process.env.REACT_APP_COMMENTS_API || "https://tickspy-api.sdmtchebe.workers.dev"
-).replace(/\/+$/, "");
+import { EDGE_API } from "./edge";
+
+const API_BASE = EDGE_API;
 
 const STORAGE_KEY = "tickspy-community-key";
 const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;

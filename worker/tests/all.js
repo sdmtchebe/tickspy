@@ -5,8 +5,10 @@
  * Each suite below is a standalone program with its own tiny harness, so it can
  * still be run on its own while working on one area:
  *
- *   node tests/run.js       feeds, cache, bars, calendar, the handler, the cron
- *   node tests/alerts.js    rules, the tick, the Telegram link flow and webhook
+ *   node tests/run.js         feeds, cache, bars, calendar, the handler, the cron
+ *   node tests/alerts.js      rules, the tick, the Telegram link flow and webhook
+ *   node tests/research.js    the brief, the range model and its walk-forward scorecard
+ *   node tests/research-api.js the research routes, caching and symbol validation
  *
  * They are spawned as child processes rather than imported, for two reasons: a
  * suite that stubs `globalThis.fetch` or a timer cannot leak that stub into the
@@ -21,7 +23,7 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const SUITES = ["run.js", "alerts.js", "comments.js"];
+const SUITES = ["run.js", "alerts.js", "comments.js", "research.js", "research-api.js"];
 
 const results = [];
 for (const name of SUITES) {

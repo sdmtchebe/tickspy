@@ -70,13 +70,15 @@ async function main() {
     check("New desk has no opener", await desk.evaluate(() => window.opener === null));
     check("Netlify custom-domain mode uses the same-origin proxy", await desk.evaluate(() => window.DESK_EDGE_API) === "https://tickspy.com/edge");
     check("Bundled samples are labelled as generated, not real market quotes", (await desk.locator("#fbn").textContent()).includes("Generated demonstration data") && (await desk.locator("#fbn").textContent()).includes("not a current quote"));
-check("The desk has 11 working navigation sections", await desk.locator("#nav button").count() === 11);
+    check("The desk has 11 working navigation sections", await desk.locator("#nav button").count() === 11);
     check("The desk computes the advertised 14 indicators", await desk.evaluate(() => S.an.it.length === 14));
     check("Feed links reject script URLs and HTML is escaped", await desk.evaluate(() => safeUrl('javascript:alert(1)') === '' && esc('<img src=x onerror=alert(1)>').startsWith('&')));
-    for (const id of ["ind", "pat", "news", "cal", "alert", "tools", "structure", "learn", "set", "live"]) {
+    for (const id of ["research", "ind", "pat", "structure", "vol", "news", "cal", "alert", "tools", "learn"]) {
       await desk.locator(`#nav button[data-k="${id}"]`).click();
       check(`Desk section ${id} opens`, await desk.locator(`#t-${id}`).isVisible());
     }
+    await desk.locator("#gear").click();
+    check("Desk settings open from the gear", await desk.locator("#t-set").isVisible());
     await desk.waitForFunction(() => document.querySelectorAll("#ml .item").length > 0, null, { timeout: 30000 });
     check("News renders through the public proxy", await desk.locator("#ml .item").count() > 0);
     await desk.waitForFunction(() => document.getElementById("ovw").textContent.length > 100, null, { timeout: 30000 });
@@ -93,7 +95,7 @@ check("The desk has 11 working navigation sections", await desk.locator("#nav bu
     check("SPY alert survives a price check on a different ticker", await desk.evaluate(() => JSON.parse(localStorage.alerts).some((a) => a.sym === "SPY")));
     await desk.evaluate(() => { S.sym = "SPY"; alerCheck(); });
     check("The alert fires only on its own ticker", await desk.evaluate(() => JSON.parse(localStorage.alerts).length === 0));
-    await desk.locator('#nav button[data-k="set"]').click();
+    await desk.locator("#gear").click();
     await desk.locator("#ak").fill("PK_TEST_ONLY"); await desk.locator("#sv").click();
     check("Partial API keys are rejected without storing credentials", await desk.evaluate(() => !JSON.parse(localStorage.cfg || "{}").ak));
     await desk.locator("#legal-open").click();

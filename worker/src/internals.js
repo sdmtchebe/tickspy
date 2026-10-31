@@ -30,7 +30,7 @@ export const _memory = createMemory();
 /** The daily cron. Anything else on the schedule leaves price bars alone. */
 export const BARS_CRON = "17 5 * * *";
 
-/* The phone-alert cron.
+/* The Telegram-alert cron.
  *
  * Five minutes is the shortest interval that is honest about what the free tier
  * can do. Every tick costs one Worker invocation and a handful of KV reads, and
@@ -57,6 +57,18 @@ export const ALERTS_CRON = "*/5 * * * *";
 export const BARS_KEY_PREFIX = "bars:v2";
 export const barsKey = (tf, symbol, light = false) =>
   `${BARS_KEY_PREFIX}${light ? "l" : ""}:${tf}:${String(symbol).toUpperCase()}`;
+
+/* Research is built from the daily bars above, so it shares their daily clock.
+ * The version prefix lets the brief shape change without serving a half-old
+ * entry until the TTL expires. `market` is a reserved symbol: the desk has no
+ * ticker called MARKET, and the market brief has its own cache entry. */
+export const researchKey = (symbol) => {
+  const raw = String(symbol || "market");
+  // The market brief has its own lowercase key; ticker keys are upper-case.
+  // That keeps a request for the literal ticker MARKET from reading the market
+  // brief out of the shared cache.
+  return raw === "market" ? "research:v1:market" : `research:v1:${raw.toUpperCase()}`;
+};
 
 /* --------------------------------------------------------- fetch budget --- */
 

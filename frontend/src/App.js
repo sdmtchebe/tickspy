@@ -14,6 +14,7 @@ import { Features } from "@/components/site/Features";
 import { HowItWorks } from "@/components/site/HowItWorks";
 import { SetupGuide } from "@/components/site/SetupGuide";
 import { TelegramAlerts } from "@/components/site/TelegramAlerts";
+import { Personalization } from "@/components/site/Personalization";
 import { Why } from "@/components/site/Why";
 import { Community } from "@/components/site/Community";
 import { Contact } from "@/components/site/Contact";
@@ -64,6 +65,7 @@ function App() {
         <AdSlot slot={AD_SLOTS.afterHow} className="pb-2" />
         <SetupGuide />
         <TelegramAlerts />
+        <Personalization />
         <Why />
         <Community />
         <Contact />

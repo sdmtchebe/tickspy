@@ -8,6 +8,8 @@ A small Cloudflare Worker that does the things a static site cannot:
 | `GET /api/news` | Market headlines aggregated from six free feeds |
 | `GET /api/calendar` | The economic calendar: the provider's rated week plus three weeks beyond it |
 | `GET /api/bars` | The previous completed session's prices, with no API key |
+| `GET /api/research/brief?symbol=SPY` | A computed daily brief and walk-forward range model for one symbol |
+| `GET /api/research/market` | The same brief for the symbols configured in `DESK_SYMBOLS` (the shipped `wrangler.toml` warms SPY, QQQ, AAPL, NVDA and TSLA) |
 | `GET /api/health` | Cache ages and per-source status |
 | `POST /api/alerts/*` | Telegram alerts: link a chat, save rules, send a test (see below) |
 | `POST /api/telegram/webhook` | The bot's updates, authenticated by Telegram's secret header |
@@ -164,6 +166,62 @@ error bodies are never echoed: a failure becomes a short sentence such as
 
 `tests/run.js` proves the important ones: 10,000 concurrent requests make exactly
 one upstream call, a warm cache makes none, and 200 further visits make none.
+
+## Research (`/api/research/*`)
+
+Two read-only endpoints that answer a narrower question than the AI overview:
+what do the daily bars themselves say, and how wide has the next session's
+range been in this volatility state?
+
+```
+GET /api/research/brief?symbol=SPY
+GET /api/research/market
+```
+
+There is **no language model** in this path. The brief is assembled in
+`src/research.js` from facts that are also returned in `evidence`, so every
+number in a sentence can be checked against the same response. That removes the
+hallucination surface entirely and makes the endpoint cheap enough to cache for
+the same 20 hours as the bars.
+
+### The range model
+
+A one-dimensional k-nearest-neighbour regression over completed daily bars:
+
+- score at close `t`: `0.65 * log(realized vol 20) + 0.35 * log(ATR14 / price)`
+- target: `(high[t+1] - low[t+1]) / close[t]`
+- prediction: the 5th/10th/25th/50th/75th/90th/95th percentiles of the 40
+  nearest historical sessions
+
+The neighbour set is restricted to `j < t`, so the session after `j` had
+already closed by the prediction close. The backtest repeats the exact same
+walk-forward procedure over the last 120 sessions and reports how often each
+nominal band contained the actual range. Those coverage numbers are returned
+and displayed; they are not assumed to be 80/50/90, and they change with the
+symbol and the data. The page shows the measured figure and the sample size,
+not a promise.
+
+### What it deliberately does not claim
+
+- No direction forecast, no price target, no buy/sell language.
+- No earnings dates, revenue or valuation: those are not in this feed.
+- No intraday or after-hours data: the brief uses completed daily bars.
+- No attribution of market-wide headlines to one ticker.
+
+### Caching and cost
+
+A brief is cached under `research:v1:<SYMBOL>` for 20 hours with a four-day
+stale grace, matching the daily bars. The daily cron rebuilds the brief for
+every symbol in `DESK_SYMBOLS` from the bars it just refreshed, so the first
+visitor after the cron reads a warm entry. Only those symbols get a durable KV
+entry; an arbitrary ticker is computed in the per-isolate memory cache, the same
+rule the bars path uses, so a script walking tickers cannot fill the namespace.
+The market brief is always durable and reads the default list's cached bars, not
+the visitor's browser-local watchlist.
+
+The work is CPU-only and small and no secret or upstream key is involved. The
+cron pays that computation once; later visitors read the cache. A symbol outside
+`DESK_SYMBOLS` pays it on its first request in each isolate.
 
 ## Telegram alerts (`/api/alerts/*`, `/api/telegram/webhook`)
 

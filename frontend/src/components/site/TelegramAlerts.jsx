@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, BellRing, Check, MessageCircle, ShieldCheck, Timer } from "lucide-react";
 import { Reveal, group, groupItem } from "@/components/site/motion";
 import { DESK_PATH } from "@/lib/site";
+import { TelegramConnect } from "@/components/site/TelegramConnect";
 
 /*
  * Alerts on Telegram.
@@ -22,8 +23,8 @@ const DESK_ALERTS = `${DESK_PATH}#alert`;
 const STEPS = [
   {
     n: "01",
-    title: "Open the Alerts tab in the desk",
-    body: "Set the price levels, headlines and calendar events you care about, then find Alerts on Telegram at the bottom of that tab and press Connect Telegram. The page makes a one-time code that expires in fifteen minutes.",
+    title: "Choose a rule below",
+    body: "Set a price, or ask for headlines and calendar releases. Press Connect Telegram and this page makes a one-time code that expires in fifteen minutes. The full rule editor stays in the desk for quiet hours, big moves and keywords.",
   },
   {
     n: "02",
@@ -33,7 +34,7 @@ const STEPS = [
   {
     n: "03",
     title: "Come back, and send yourself a test",
-    body: "The desk notices by itself, usually within three seconds, and switches the panel on. Add or change rules whenever you like — they apply to the chat immediately. Press Send a test message to see one arrive.",
+    body: "The panel below notices by itself, usually within three seconds, and switches on. Press Send a test message to see one arrive. Change the full rule set in the desk whenever you like; it applies to the chat immediately.",
   },
 ];
 
@@ -156,7 +157,7 @@ export const TelegramAlerts = () => (
           <motion.li variants={groupItem} className="mt-8">
             <div className="flex flex-wrap items-center gap-3">
               <a className="btn btn-solid" href={DESK_ALERTS} target="_blank" rel="noopener noreferrer" data-testid="telegram-open-desk">
-                Connect it in the desk
+                Open the full rule editor
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </a>
               <span className="inline-flex items-center gap-1.5 text-[12.5px] text-steel">
@@ -179,6 +180,10 @@ export const TelegramAlerts = () => (
           <ChatMock />
         </Reveal>
       </div>
+
+      <Reveal delay={0.08} className="mt-12">
+        <TelegramConnect />
+      </Reveal>
 
       <motion.ul
         variants={group(0.06)}

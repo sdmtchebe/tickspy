@@ -30,7 +30,8 @@ import { alertRoutes } from "./alertapi.js";
 import { commentRoutes, turnstileEnabled } from "./comments.js";
 import { telegramBot } from "./telegram.js";
 import { runAlertTick } from "./alerts.js";
-import { _memory as MEM, ALERTS_CRON, BARS_CRON, barsKey, budgetAllows } from "./internals.js";
+import { buildSymbolResearch, buildMarketResearch } from "./research.js";
+import { _memory as MEM, ALERTS_CRON, BARS_CRON, barsKey, budgetAllows, researchKey } from "./internals.js";
 
 /* Everything the tests need to reach - the per-isolate cache, the cron
  * expressions, the bearer of the fetch budget - lives in internals.js, and
@@ -67,6 +68,13 @@ const CALENDAR_GRACE = 21600;
  * error. */
 const BARS_TTL = 20 * 3600;
 const BARS_GRACE = 4 * 86400;
+
+/* A research brief is built from the same completed daily bars, so it follows
+ * the same clock. The longer grace means a failed rebuild still serves the last
+ * good brief rather than an error page; the brief says which session it is as
+ * of, so an old one cannot be mistaken for a fresh one. */
+const RESEARCH_TTL = 20 * 3600;
+const RESEARCH_GRACE = 4 * 86400;
 
 /* The cron expressions live in internals.js. /api/alerts/config reports the tick
  * interval from the same constant TICK_MINUTES in alertapi.js, so the schedule
@@ -197,6 +205,9 @@ export function upcomingEvents(events, { limit = 8, from = Date.now() } = {}) {
       const t = Date.parse(e.date);
       return Number.isFinite(t) && t >= from;
     })
+    // Calendar feeds can arrive week by week, so the order is not guaranteed.
+    // Sorting here makes "the next event" mean the next one in time.
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
     .slice(0, limit)
     .map((e) => ({
       title: e.title,
@@ -359,6 +370,99 @@ async function handleBars(request, env, ctx, url) {
   );
 }
 
+/* --------------------------------------------------------------- research --
+ * The brief is computed from daily bars, never from a language model. The
+ * endpoint takes a symbol, not a prompt: there is no user text in the request
+ * and therefore no prompt-injection surface. The facts and the model are the
+ * product; the prose is a deterministic rendering of them.
+ *
+ * Only the desk's default symbols get a durable KV entry. An arbitrary ticker
+ * is still researchable, but it lives in the per-isolate memory cache only,
+ * which is the same rule the bars path uses: a script walking the ticker
+ * universe must not be able to fill the namespace.
+ */
+
+async function produceSymbolResearch(env, ctx, symbol) {
+  const req = new Request("https://worker.local/api/research/brief");
+  const main = await getBars(req, env, ctx, symbol, "1Day");
+  const [bench, cal] = await Promise.all([
+    getBars(req, env, ctx, "QQQ", "1Day").catch(() => null),
+    getCalendar(req, env, ctx).catch(() => ({ value: [] })),
+  ]);
+  return buildSymbolResearch({
+    symbol,
+    bars: main.value.bars,
+    benchmarkBars: bench ? bench.value.bars : null,
+    benchmarkSymbol: "QQQ",
+    events: upcomingEvents(cal.value || [], { limit: 8 }),
+    source: main.value.source || null,
+    asOf: main.value.asOf || main.value.sessionDate || null,
+  });
+}
+
+async function produceMarketResearch(env, ctx) {
+  const req = new Request("https://worker.local/api/research/market");
+  const symbols = warmSymbols(env);
+  const settled = await Promise.all(
+    symbols.map(async (symbol) => {
+      try {
+        const r = await getBars(req, env, ctx, symbol, "1Day");
+        return {
+          symbol,
+          bars: r.value.bars,
+          source: r.value.source || null,
+          asOf: r.value.asOf || r.value.sessionDate || null,
+        };
+      } catch (_) {
+        return null;
+      }
+    })
+  );
+  const series = settled.filter((s) => s && Array.isArray(s.bars) && s.bars.length);
+  if (!series.length) {
+    throw new Error("No daily series were available for the market brief.");
+  }
+  const cal = await getCalendar(req, env, ctx).catch(() => ({ value: [] }));
+  const asOf = series
+    .map((s) => s.asOf)
+    .filter(Boolean)
+    .sort()
+    .at(-1) || null;
+  const brief = buildMarketResearch({
+    series,
+    events: upcomingEvents(cal.value || [], { limit: 8 }),
+    asOf,
+  });
+  // A transient SPY failure must not be cached for 20 hours as "unavailable".
+  if (!brief.available) throw new Error(brief.message || "The market brief is unavailable.");
+  return brief;
+}
+
+async function getSymbolResearch(request, env, ctx, symbol) {
+  const durable = warmSymbols(env).includes(symbol) ? env.CACHE || null : null;
+  return cached({
+    kv: durable,
+    mem: MEM,
+    key: researchKey(symbol),
+    ttlSeconds: RESEARCH_TTL,
+    graceSeconds: RESEARCH_GRACE,
+    ctx,
+    produce: () => produceSymbolResearch(env, ctx, symbol),
+  });
+}
+
+async function getMarketResearch(request, env, ctx) {
+  return cached({
+    kv: env.CACHE || null,
+    mem: MEM,
+    key: researchKey("market"),
+    ttlSeconds: RESEARCH_TTL,
+    graceSeconds: RESEARCH_GRACE,
+    ctx,
+    produce: () => produceMarketResearch(env, ctx),
+  });
+}
+
 async function getNews(request, env, ctx, q) {
   return cached({
     kv: env.CACHE || null,
@@ -507,7 +611,7 @@ export default {
                 commentTurnstile: turnstileEnabled(env),
               },
               cacheAgeSeconds: mem,
-              ttl: { overview: OVERVIEW_TTL, news: NEWS_TTL, calendar: CALENDAR_TTL, bars: BARS_TTL },
+              ttl: { overview: OVERVIEW_TTL, news: NEWS_TTL, calendar: CALENDAR_TTL, bars: BARS_TTL, research: RESEARCH_TTL },
               deskSymbols: warmSymbols(env),
             },
             { request, env }
@@ -538,6 +642,62 @@ export default {
 
         case "/api/bars":
           return await handleBars(request, env, ctx, url);
+
+        case "/api/research/brief": {
+          const raw = (url.searchParams.get("symbol") || "SPY").trim();
+          if (!/^[A-Za-z][A-Za-z0-9.-]{0,9}$/.test(raw)) {
+            return json(
+              { error: "bad_symbol", message: "That does not look like a US ticker symbol." },
+              { status: 400, request, env }
+            );
+          }
+          const symbol = raw.toUpperCase();
+          try {
+            const r = await getSymbolResearch(request, env, ctx, symbol);
+            return json(
+              {
+                ...r.value,
+                cache: { hit: r.cached, stale: r.stale, ageSeconds: r.ageSeconds },
+              },
+              {
+                request,
+                env,
+                cache: "public, max-age=600, s-maxage=3600",
+                extra: { "X-Cache": r.cached ? (r.stale ? "STALE" : "HIT") : "MISS" },
+              }
+            );
+          } catch (e) {
+            const message = String((e && e.message) || e);
+            const notFound = /no data for that symbol|recognisable ticker/i.test(message);
+            return json(
+              { error: notFound ? "unknown_symbol" : "research_unavailable", message },
+              { status: notFound ? 404 : 502, request, env }
+            );
+          }
+        }
+
+        case "/api/research/market": {
+          try {
+            const r = await getMarketResearch(request, env, ctx);
+            return json(
+              {
+                ...r.value,
+                cache: { hit: r.cached, stale: r.stale, ageSeconds: r.ageSeconds },
+              },
+              {
+                request,
+                env,
+                cache: "public, max-age=600, s-maxage=3600",
+                extra: { "X-Cache": r.cached ? (r.stale ? "STALE" : "HIT") : "MISS" },
+              }
+            );
+          } catch (e) {
+            return json(
+              { error: "research_unavailable", message: String((e && e.message) || e) },
+              { status: 502, request, env }
+            );
+          }
+        }
 
         case "/api/calendar": {
           const r = await getCalendar(request, env, ctx);
@@ -590,6 +750,8 @@ export default {
                 "/api/news",
                 "/api/calendar",
                 "/api/bars",
+                "/api/research/brief",
+                "/api/research/market",
                 "/api/health",
                 "/api/alerts/config",
                 "/api/alerts/link/start",
@@ -668,6 +830,35 @@ export default {
       );
       for (const r of results) {
         if (r.status === "rejected") console.error(`cron: bars fetch failed: ${(r.reason && r.reason.message) || r.reason}`);
+      }
+
+      // Research reads those same daily bars. Rebuilding it here means the
+      // first visitor after the cron reads a warm brief, and the walk-forward
+      // model is computed once for everyone rather than once per cold isolate.
+      const research = await Promise.allSettled([
+        ...warmSymbols(env).map(async (s) => {
+          const r = await warm({
+            kv,
+            mem: MEM,
+            key: researchKey(s),
+            produce: () => produceSymbolResearch(env, ctx, s),
+          });
+          console.log(
+            `cron: research ${s} refreshed (${r.value.available ? `${r.value.sessions} sessions` : "not enough history"})`
+          );
+        }),
+        (async () => {
+          const r = await warm({
+            kv,
+            mem: MEM,
+            key: researchKey("market"),
+            produce: () => produceMarketResearch(env, ctx),
+          });
+          console.log(`cron: research market refreshed (${r.value.facts.breadth.total} symbols)`);
+        })(),
+      ]);
+      for (const r of research) {
+        if (r.status === "rejected") console.error(`cron: research refresh failed: ${(r.reason && r.reason.message) || r.reason}`);
       }
       return;
     }

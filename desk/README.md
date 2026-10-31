@@ -1,8 +1,8 @@
 # Desk — the trading helper
 
 A self-contained trading dashboard: 14 indicators, candlestick and chart
-patterns, alerts, a risk calculator, a backtester, a scanner, and a volatility
-forecast. It works with **no account at all** (a bundled sample session, replayed, labelled
+patterns, alerts, a risk calculator, a backtester, a scanner, a volatility
+forecast, and a computed research brief with a walk-forward range model. It works with **no account at all** (a bundled sample session, replayed, labelled
 as generated demonstration data) and upgrades to live Alpaca data if you connect
 your own keys.
 Everything is a market-data view for your own research. **It is not investment
@@ -37,6 +37,21 @@ trade stream and the symbol's own news feed. Nothing in the desk requires them.
 The setup wizard only opens by itself when there is no data source at all,
 because in free mode there is nothing to fix.
 
+## Research
+
+The Research tab is the one part of the desk that is not a chart: it asks the edge
+API for a daily brief and a range model, then shows the evidence behind every
+sentence. The brief is assembled from the same completed daily bars in
+`worker/src/research.js`; it is not generated prose. The range model is a
+walk-forward k-nearest-neighbour estimate of the next session's high-low range,
+and the tab publishes how often each nominal band actually covered the next
+session. No Alpaca keys are needed, and no user text is sent to a model.
+
+The tab loads only when it is opened, caches the response in the Worker for 20
+hours, and degrades to a plain sentence when the edge API is unavailable. If you
+are running the frontend without `worker/`, the tab will say so rather than
+showing an empty chart.
+
 Files:
 
 | File | Purpose |
@@ -47,6 +62,7 @@ Files:
 | `volworker.js` | Runs the two-stage volatility model in a Web Worker so training never blocks the page |
 | `freesrc.js` | The no-key mode: the replay clock, the session reveal, derived quotes and symbol-news matching |
 | `edge-config.js` | Where the optional Cloudflare edge API lives (`window.DESK_EDGE_API`); public, no secret |
+| `research.js` | The Research tab: loads the Worker's symbol and market briefs, renders the evidence and the model scorecard |
 | `server.py` | Optional local server: API proxy and the `/vol` endpoint |
 | `volatility_predictor.py` | The reference two-stage model in Python (HAR + GARCH -> LSTM) |
 | `tests/volmodel_parity.js` | Checks browser stage 1 against the Python stage 1 |

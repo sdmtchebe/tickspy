@@ -6,7 +6,7 @@ One repository holding both halves of TickSPY:
 frontend/   React 19 (CRA + craco) marketing landing page — the website
 backend/    FastAPI contact/feedback API (MongoDB + email) — vestigial
 worker/     Cloudflare Worker: the edge API (hidden Gemini key, aggregated news,
-            calendar relay), globally cached
+            calendar relay, computed research briefs), globally cached
 desk/       The trading helper: a self-contained dashboard (index.html) with an
             optional local Python server and an in-browser volatility engine
 ```
@@ -87,8 +87,8 @@ build if you want the forms live there too.
 ## How the two connect
 
 - `frontend/scripts/sync-desk.js` copies `desk/index.html`, `desk/volmodel.js`,
-  `desk/volmodel2.js`, `desk/volworker.js`, `desk/freesrc.js` and
-  `desk/edge-config.js` into `frontend/public/desk/` before `npm start` and
+  `desk/volmodel2.js`, `desk/volworker.js`, `desk/freesrc.js`, `desk/research.js`
+  and `desk/edge-config.js` into `frontend/public/desk/` before `npm start` and
   `npm run build` (via the `prestart`/`prebuild` hooks). `public/desk/` is
   generated and git-ignored, so `desk/` stays the
   single source. `edge-config.js` holds only a public Worker URL, so it is safe
@@ -113,6 +113,15 @@ build if you want the forms live there too.
   a first-time visitor through getting free Alpaca keys, one click at a time, with
   an animated mock of each screen and a "why" under every step. It is linked from
   the nav and from the desk's Settings tab.
+- The desk's **Research** tab (`desk/research.js` + `worker/src/research.js`) shows
+  a computed symbol brief, a market-wide breadth brief and a walk-forward
+  next-session range model. Every sentence is rendered from the `evidence` rows
+  beside it; there is no language model in that path. The tab loads lazily and
+  reads `/api/research/brief` and `/api/research/market` from the Worker.
+- **Personalization** (`Personalization.jsx`, `#personalize`) is local-only. It
+  writes the same `wl` and `deskprefs` keys the desk already reads, so a visitor
+  can choose up to twelve tickers and an opening symbol, timeframe and tab with
+  no account, email or server profile.
 - `worker/` is a Cloudflare Worker that holds the Gemini key server-side and
   caches one shared market overview for every visitor, aggregates keyless news
   feeds that send no CORS headers, relays the economic calendar, and serves the
@@ -120,13 +129,14 @@ build if you want the forms live there too.
   The desk reaches it through `window.DESK_EDGE_API` in `desk/edge-config.js`;
   without that URL a visitor with no keys has no price source at all. See
   `worker/README.md`.
-- **Alerts on Telegram** are the one feature with server-side state. The desk asks
-  the Worker for a one-time code, opens `t.me/<bot>?start=<code>`, and the bot's
-  webhook attaches that chat to the rules. The Worker then re-checks them every
-  five minutes and messages the chat, so alerts arrive with the desk closed. The
-  older browser-push and SMS paths are gone: one channel, one bot token, and a
-  tutorial in the desk's Alerts tab (see `worker/README.md` for the bot, the two
-  secrets and `scripts/telegram-setup.mjs`).
+- **Alerts on Telegram** are the one feature with server-side state. The desk or
+  the landing page asks the Worker for a one-time code, opens
+  `t.me/<bot>?start=<code>`, and the bot's webhook attaches that chat to the
+  rules. The Worker then re-checks them every five minutes and messages the chat,
+  so alerts arrive with the desk closed. The landing page has a working setup
+  panel, not just instructions. The older browser-push and SMS paths are gone:
+  one channel, one bot token, and a tutorial in the desk's Alerts tab (see
+  `worker/README.md` for the bot, the two secrets and `scripts/telegram-setup.mjs`).
 - `.github/workflows/pages.yml` publishes `desk/` to GitHub Pages;
   `.github/workflows/deploy-worker.yml` type-checks and tests the Worker and
   deploys it once `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` are set.
