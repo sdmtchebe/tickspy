@@ -105,11 +105,12 @@ jobs:
           test -f frontend/build/desk/research.js || { echo "::error::desk research tab missing"; exit 1; }
           grep -q "research.js" frontend/build/desk/index.html || { echo "::error::desk does not load the research tab"; exit 1; }
           test -f frontend/build/desk/edge-config.js || { echo "::error::desk edge config missing"; exit 1; }
-          # Telegram alerts replaced browser push, so there is no service worker
-          # any more. A published one would be a stale worker whose only job was
-          # a feature that no longer exists; the published desk must not carry it.
+          # Browser push was retired long ago, so there is no service worker any
+          # more. A published one would be a stale worker whose only job was a
+          # feature that no longer exists; the published desk must not carry it.
           test ! -f frontend/build/desk/sw.js || { echo "::error::retired alert service worker sw.js was published"; exit 1; }
-          grep -q "Connect Telegram" frontend/build/desk/index.html || { echo "::error::desk is missing the Telegram alert panel"; exit 1; }
+          grep -q "Desktop alerts" frontend/build/desk/index.html || { echo "::error::desk is missing the desktop alert panel"; exit 1; }
+          grep -q "id=\"dwrap\"" frontend/build/desk/index.html || { echo "::error::desk is missing the desktop alert controls"; exit 1; }
           # The desk is served from /desk/ and reaches the calendar one level up,
           # so the file must exist at the site root and be a non-empty JSON list.
           # Regression guard: this is exactly what used to make the Calendar tab

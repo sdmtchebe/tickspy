@@ -15,11 +15,11 @@ const OUT_DIR = path.join(__dirname, "..", "public", "desk");
 // Only the static assets the page actually loads. Secrets (local-config.js) are
 // deliberately never copied. edge-config.js holds only a public Worker URL, so
 // it is safe to publish.
-// No service worker is published any more: alerts are delivered by Telegram on
-// the server, so there is nothing for the page to register and nothing to keep
-// in its cache. A stale sw.js from an older build is removed below, because a
-// browser that already installed it would otherwise keep it until it is
-// unregistered.
+// No service worker is published any more: alerts are made by the page itself
+// (a system notification, a sound and a badge, all of it local), so there is
+// nothing for the page to register and nothing to keep in its cache. A stale
+// sw.js from an older build is removed below, because a browser that already
+// installed it would otherwise keep it until it is unregistered.
 const FILES = ["index.html", "volmodel.js", "volmodel2.js", "volworker.js", "freesrc.js", "edge-config.js", "structure-engine.js", "structure-chart.js", "structure-view.js", "research.js", "structure.css", "profile.js"];
 const HFDATA_DIR = path.join(SRC_DIR, "hfdata");
 

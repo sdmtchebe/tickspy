@@ -1,8 +1,8 @@
 /*
  * The public address of the TickSPY edge API.
  *
- * Both the community wall and Telegram alerts need the Worker, and they used to
- * carry their own copy of this URL. One constant means a self-hosted deployment
+ * The community wall needs the Worker, and it used to carry its own copy of
+ * this URL. One constant means a self-hosted deployment
  * only has to set one environment variable, and a URL change cannot leave one
  * feature pointing at the old Worker.
  *

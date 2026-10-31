@@ -129,14 +129,13 @@ build if you want the forms live there too.
   The desk reaches it through `window.DESK_EDGE_API` in `desk/edge-config.js`;
   without that URL a visitor with no keys has no price source at all. See
   `worker/README.md`.
-- **Alerts on Telegram** are the one feature with server-side state. The desk or
-  the landing page asks the Worker for a one-time code, opens
-  `t.me/<bot>?start=<code>`, and the bot's webhook attaches that chat to the
-  rules. The Worker then re-checks them every five minutes and messages the chat,
-  so alerts arrive with the desk closed. The landing page has a working setup
-  panel, not just instructions. The older browser-push and SMS paths are gone:
-  one channel, one bot token, and a tutorial in the desk's Alerts tab (see
-  `worker/README.md` for the bot, the two secrets and `scripts/telegram-setup.mjs`).
+- **Desktop alerts** are made entirely in the browser: the desk checks its own
+  rules on the page's clock and the browser shows a system notification, plays a
+  synthesised tone and adds a badge count on the Alerts tab — each with its own
+  switch, tone, volume and quiet hours, stored under one `deskalerts` key. No
+  account, no server record, nothing sent anywhere. (Browser push and the
+  Telegram channel are both gone: one delivery path, and it is the visitor's own
+  machine.)
 - `.github/workflows/pages.yml` publishes `desk/` to GitHub Pages;
   `.github/workflows/deploy-worker.yml` type-checks and tests the Worker and
   deploys it once `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` are set.

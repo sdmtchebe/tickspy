@@ -164,20 +164,27 @@ same-origin server, or a full URL.
 
 Two kinds, and the difference between them is the whole point of the tab.
 
-**In the page:** a price alert on the current symbol, and scheduled
+**The rules:** a price alert on the current symbol, and scheduled
 economic-calendar warnings a chosen number of minutes before a release and
 optionally on the release itself. They fire while the desk is open, including
-when the tab is in the background. Alerts stop when the tab or browser is closed. off. They **do not** fire once the tab or the browser is closed, and the tab says
-so plainly.
+when the tab is in the background, and each alert is removed once it triggers.
+They **do not** fire once the tab or the browser is closed, and the tab says so
+plainly.
 
-**On Telegram:** the same kinds of rule, handed to the Worker, which re-checks
-them every five minutes and messages the chat you linked — so they arrive with
-the desk closed. Connecting is a one-time code: press **Connect Telegram**, the
-desk opens the bot with the code inside the link, and pressing START in the chat
-connects it. Nothing is sent to Telegram until that happens, the desk never sees
-the chat id, and **Disconnect and delete** (or `/stop` in the chat) removes the
-record. What the server keeps, and the limits, are in [PRIVACY.md](PRIVACY.md)
-and in `worker/README.md`.
+**How they reach you — Desktop alerts**, the block at the bottom of the Alerts
+tab. Every alert arrives three ways, each with its own switch:
+
+- a **system notification**, after you press *Allow notifications* and the
+  browser grants it;
+- a **sound** — four tones synthesised in the page with the Web Audio API, with
+  a volume slider, so nothing is downloaded and nothing plays until you ask;
+- a **badge** — a red count on the Alerts tab in the rail, cleared when you open
+  that tab.
+
+Quiet hours hold the sound and the notification while the badge keeps counting.
+Everything lives in this browser under one `deskalerts` key: no account, no
+server record, nothing sent anywhere, and the limits are stated in
+[PRIVACY.md](PRIVACY.md).
 
 ## Keys and privacy
 

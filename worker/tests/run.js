@@ -33,7 +33,7 @@ import {
 import worker, { upcomingEvents } from "../src/index.js";
 // The values the entry module used to export now live in internals.js, because a
 // Worker's entry module may only export functions (see that file's header).
-import { _memory, BARS_CRON, budgetAllows, _fetchBudget, BARS_KEY_PREFIX, ALERTS_CRON } from "../src/internals.js";
+import { _memory, BARS_CRON, budgetAllows, _fetchBudget, BARS_KEY_PREFIX } from "../src/internals.js";
 import * as entryModule from "../src/index.js";
 import {
   produceCalendar,
@@ -1429,10 +1429,6 @@ console.log("\nbars.js");
     );
     assert.equal(typeof entryModule.default.fetch, "function", "the handler is the default export");
     assert.equal(typeof entryModule.default.scheduled, "function");
-  });
-
-  await test("the alert cron is the one the schedule and the UI state", () => {
-    assert.equal(ALERTS_CRON, "*/5 * * * *");
   });
 
   /* ------------------------------------------------------------------ report */

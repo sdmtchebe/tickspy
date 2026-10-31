@@ -41,59 +41,37 @@ to a provider you chose.
 | `calc` | A cached copy of the public economic calendar |
 | `legal` | A timestamp recording that you accepted the disclosures |
 | `wiz` | Whether you have already seen the optional setup wizard, so it does not reopen |
-| `tgsub` | Your Telegram subscription's id and token — this browser's own key to change or delete it |
-| `tgrules` | The price, news and calendar rules you set for Telegram alerts |
+| `deskalerts` | How alerts reach you: notification on or off, tone, volume, badge, quiet hours |
 
 You can erase all of it at any time by clearing site data for this page in your
 browser. Nothing is backed up anywhere else.
 
-## Alerts on Telegram — the one feature that stores something off this device
+## Desktop alerts — made by your browser, in your browser
 
-Every alert above this section is client-side: it runs on the page's own ticking
-clock, keeps everything in `localStorage`, and stops the moment the page closes.
-**Telegram alerts are different on purpose** — the point of them is to reach you
-with the desk closed — so this is the one feature where something is deliberately
-sent to, and kept on, a server. It is off until you connect it, and it can be
-deleted in one press.
+Every alert in the desk is client-side: it runs on the page's own ticking clock,
+keeps everything in `localStorage`, and stops the moment the page closes. There
+is no feature that sends an alert to a server, and there is no account anywhere
+in the product.
 
-**It does not ask for your phone number, and it does not need one.** The channel
-is a Telegram bot. What is stored on the project's Worker is one record per
-connected chat:
+**How an alert reaches you is yours to set** in the *Desktop alerts* block at
+the bottom of the Alerts tab:
 
-- the **Telegram chat identifier** the bot may message. It is a number Telegram
-  assigns to that conversation, not an identity, and it is deleted with the
-  record;
-- the **display name** Telegram shows the bot for that chat (usually a first name
-  or a group title), only so the desk can say which chat is connected;
-- the **rules** you set (symbols, levels, which calendar releases);
-- a **timestamp** for when each rule last fired, so the same alert is not sent
-  twice, and when it last spoke.
+- **System notification** — off until you press *Allow notifications*, which asks
+  your browser for permission. The permission belongs to the browser, not to us:
+  TickSPY cannot grant itself one, and your own system settings (Do Not Disturb,
+  per-site blocking) still decide whether one appears.
+- **Sound** — one of four tones synthesised in the page with the Web Audio API,
+  at a volume you choose. No audio file is downloaded, and no sound plays before
+  you touch the control.
+- **Count badge** — a red number on the Alerts tab in the rail, cleared when you
+  open that tab.
+- **Quiet hours** — a window in your own local time during which the sound and
+  the notification are held back while the badge keeps counting, so nothing is
+  lost, only waiting.
 
-There is no email, no phone number, no IP address, no account and no identifier
-from any other service. Nothing is sold, shared or profiled, and the rule list is
-used for one thing: deciding whether to send you that message.
-
-**Connecting is a one-time code, not a login.** The landing page or the desk
-asks the server for a code valid for fifteen minutes and it travels to Telegram
-inside a `t.me` link you press. Pressing START in the chat is the only thing that
-attaches a chat to rules. Neither page learns your chat identifier, and the chat
-never receives the page's management key. The code is marked used and expires.
-
-**Telegram can read these messages.** They are private to your chat, but unlike
-the browser push notifications this replaced they are not end-to-end encrypted
-against the messaging platform. Telegram handles them under its own privacy
-policy, and it is the only other provider involved in delivering an alert.
-
-The **Disconnect button on the landing page or the delete button in the Alerts
-tab removes the record and the rules from the server**, and `/stop` in the chat
-does the same. Blocking the bot is noticed too:
-the failed delivery deletes the record on the next check rather than retrying
-forever.
-
-**Text messages are not offered.** Sending an SMS to an arbitrary number requires
-a paid messaging provider plus carrier registration, so this deployment does not
-do it, and says so on screen rather than offering a button that cannot work. No
-phone number is collected from anyone.
+The four switches and the two times are stored in this browser under the single
+key `deskalerts` and never leave your machine: no server is told that an alert
+fired. Clearing site data for the page removes them.
 
 ## What we collect through the contact forms, and why
 
@@ -127,12 +105,7 @@ one exception: the web fonts load with the page itself.
   overview. It is an ordinary public web request: it stores no accounts, keeps no
   per-visitor records beyond response caches, and receives only what any HTTP
   request carries — your IP address and user agent, which Cloudflare handles in
-  order to answer it. **Only if you connect Telegram**, it also stores the one
-  connection record described above.
-- **Telegram** — only if you connect a chat. It receives the alert text, the chat
-  it is addressed to and ordinary connection information, and it operates under
-  its own privacy policy. It is contacted when an alert fires, not while you
-  browse, and nothing is sent to it until you press START in the chat.
+  order to answer it.
 - **The bundled sample price file** — the keyless session ships inside the build
   itself, so your browser loads it from the same origin as the page. Those prices
   are generated demonstration data. No visitor request reaches any price provider,

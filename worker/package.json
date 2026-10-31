@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Edge API for TickSPY: a globally cached Gemini overview, aggregated market news, the economic calendar, and Telegram alerts. Keeps every API key server-side.",
+  "description": "Edge API for TickSPY: a globally cached Gemini overview, aggregated market news, the economic calendar and the research brief. Keeps every API key server-side.",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "tail": "wrangler tail",
     "secrets": "wrangler secret put GEMINI_API_KEY",
-    "telegram": "node scripts/telegram-setup.mjs",
     "test": "node tests/all.js"
   },
   "devDependencies": {

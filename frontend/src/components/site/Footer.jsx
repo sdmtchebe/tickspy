@@ -34,8 +34,8 @@ export const Footer = () => {
         <p className="t-label">The desk</p>
         <ul className="mt-4 space-y-2.5">
           <li>
-            <button onClick={() => scrollToId("telegram-alerts")} className="link-quiet text-[14px]" data-testid="footer-link-telegram">
-              Alerts on Telegram
+            <button onClick={() => scrollToId("desktop-alerts")} className="link-quiet text-[14px]" data-testid="footer-link-alerts">
+              Desktop alerts
             </button>
           </li>
           <li>

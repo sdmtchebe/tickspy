@@ -30,17 +30,6 @@ export const _memory = createMemory();
 /** The daily cron. Anything else on the schedule leaves price bars alone. */
 export const BARS_CRON = "17 5 * * *";
 
-/* The Telegram-alert cron.
- *
- * Five minutes is the shortest interval that is honest about what the free tier
- * can do. Every tick costs one Worker invocation and a handful of KV reads, and
- * this one runs 288 times a day, which is nothing against the 100,000-request
- * budget — but it is the reason the UI says "within about five minutes" instead
- * of promising an instant buzz. A minute-by-minute cron would spend 1,440
- * invocations to shave four minutes off a notification nobody acts on in four
- * minutes. */
-export const ALERTS_CRON = "*/5 * * * *";
-
 /* ------------------------------------------------------------ price keys --- */
 
 // Price bars are cached per symbol and timeframe. The version prefix means a

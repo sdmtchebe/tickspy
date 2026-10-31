@@ -5,8 +5,8 @@
  * Each suite below is a standalone program with its own tiny harness, so it can
  * still be run on its own while working on one area:
  *
- *   node tests/run.js         feeds, cache, bars, calendar, the handler, the cron
- *   node tests/alerts.js      rules, the tick, the Telegram link flow and webhook
+ *   node tests/run.js         feeds, cache, bars, calendar, the handler and the crons
+ *   node tests/comments.js    the anonymous community wall
  *   node tests/research.js    the brief, the range model and its walk-forward scorecard
  *   node tests/research-api.js the research routes, caching and symbol validation
  *
@@ -15,15 +15,15 @@
  * next one, and a suite that throws at load time fails only itself.
  *
  * The point of this file is that a new suite cannot be forgotten. Before it
- * existed, `npm test` ran run.js alone and the alert tests passed or failed
- * invisibly, which is the same as not having them.
+ * existed, `npm test` ran run.js alone and the rest of the suites passed or
+ * failed invisibly, which is the same as not having them.
  *
  * No dependencies: node:child_process is built in.
  */
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const SUITES = ["run.js", "alerts.js", "comments.js", "research.js", "research-api.js"];
+const SUITES = ["run.js", "comments.js", "research.js", "research-api.js"];
 
 const results = [];
 for (const name of SUITES) {
