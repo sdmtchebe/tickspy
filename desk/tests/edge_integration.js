@@ -81,6 +81,11 @@ function stubUpstream() {
 
 async function main() {
   const mod = await import("../../worker/src/index.js");
+  // The per-isolate cache lives in internals.js, not in the entry module:
+  // workerd validates the entry's export map and refuses a non-function export,
+  // so index.js deliberately exports only the handler. The worker's own suites
+  // reach the cache the same way.
+  const { _memory } = await import("../../worker/src/internals.js");
   const worker = mod.default;
   const env = { CACHE: null, ALLOWED_ORIGINS: "*" };
 
@@ -88,7 +93,7 @@ async function main() {
   try {
     console.log("free mode against the real /api/bars handler");
 
-    mod._memory.clear();
+    _memory.clear();
     const res = await worker.fetch(new Request("https://api.test/api/bars?symbol=SPY&tf=5Min"), env, {});
     eq("the endpoint answers without any API key", res.status, 200);
     const payload = await res.json();
@@ -138,7 +143,7 @@ async function main() {
     eq("and it is the right one", payload.daily[i - 1].c, 490);
 
     // ---- the watchlist path ---------------------------------------------
-    mod._memory.clear();
+    _memory.clear();
     const multi = await (
       await worker.fetch(new Request("https://api.test/api/bars?symbols=SPY,QQQ,BAD&tf=1Day"), env, {})
     ).json();
