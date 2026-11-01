@@ -1,0 +1,20 @@
+# The static site is built entirely from frontend/ (desk/ is copied into it by
+# frontend/scripts/sync-desk.js, and worker/scripts/write-calendar.mjs bakes the
+# calendar), so worker/ must stay in the upload.
+#
+# backend/ is a separate FastAPI service that Vercel was trying to build as a
+# Python app whenever the project root pointed at the repository root. Its
+# requirements pin `emergentintegrations`, which is not on PyPI, so that build
+# could never succeed. Ignoring it here keeps Vercel from detecting the project
+# as Python in the first place.
+backend/
+
+# Local tooling, test artifacts and OS noise — never needed for a build.
+.ruff_cache/
+.pytest_cache/
+tests/
+test_reports/
+.emergent/
+memory/
+*.log
+.DS_Store
