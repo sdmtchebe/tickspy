@@ -18,7 +18,11 @@
  * URL — so this file is committed and published.
  */
 window.DESK_EDGE_API = "https://tickspy-api.sdmtchebe.workers.dev";
-// Netlify proxies only the public API; Alpaca credentials never use this path.
-if (location.hostname === "tickspy.com" || location.hostname === "www.tickspy.com" || location.hostname.endsWith(".netlify.app") || location.hostname.endsWith(".netlify.com")) {
+// Netlify and Vercel proxy only the public API; Alpaca credentials never use
+// this path. The hosts below are the ones where a same-origin /edge rewrite
+// exists (see netlify.toml and frontend/vercel.json). A deploy-preview domain
+// belongs here too: calling the Worker directly from one would be refused by
+// its CORS allowlist, which only names the production origins.
+if (location.hostname === "tickspy.com" || location.hostname === "www.tickspy.com" || location.hostname.endsWith(".netlify.app") || location.hostname.endsWith(".netlify.com") || location.hostname.endsWith(".vercel.app")) {
   window.DESK_EDGE_API = location.origin + "/edge";
 }
