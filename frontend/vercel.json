@@ -1,11 +1,21 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
   "rewrites": [
     {
       "source": "/edge/api/:path*",
       "destination": "https://tickspy-api.sdmtchebe.workers.dev/api/:path*"
     }
   ],
+  "build": {
+    "env": {
+      "GENERATE_SOURCEMAP": "false",
+      "REACT_APP_ENABLE_ADS": "false",
+      "REACT_APP_SUPPORT_EMAIL": "tickspysupport@gmail.com"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

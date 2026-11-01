@@ -10,11 +10,11 @@
 backend/
 
 # Local tooling, test artifacts and OS noise — never needed for a build.
+# Nothing here strips anything the build reads: the desk tests stay in the
+# upload because `tests/` would also match desk/tests, and the calendar script
+# lives under worker/.
 .ruff_cache/
 .pytest_cache/
-tests/
 test_reports/
-.emergent/
-memory/
 *.log
 .DS_Store
