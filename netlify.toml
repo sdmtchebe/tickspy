@@ -52,6 +52,6 @@
 # Proxy for desk data API (same-origin on custom domain)
 [[redirects]]
   from = "/edge/api/*"
-  to = "https://tickspy-api.sdmtchebe.workers.dev/:splat"
+  to = "https://tickspy-api.sdmtchebe.workers.dev/api/:splat"
   status = 200
   force = false

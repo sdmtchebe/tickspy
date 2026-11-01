@@ -62,7 +62,7 @@
     const message = String(e?.message || e);
     return /failed to fetch|networkerror|load failed/i.test(message) ? 'Could not reach the data source. Check your connection or service availability.' : message;
   }
-  function section(title, content) { return `<div class="rgroup"><div class="rhead"><b>${esc(title)}</b></div>${content}</div>`; }
+  function section(title, content, id) { return `<div class="rgroup"${id?` id="${esc(id)}"`:''}><div class="rhead"><b>${esc(title)}</b></div>${content}</div>`; }
   function text(s) { return `<p class="x">${esc(s)}</p>`; }
   function empty(s) { return text('Unavailable: ' + s); }
   let ctx, settings, report, storedNews, schedule, busy = false, polling = null, pending = false, retryPending = false, lastPoll = 0, nextRetry = 0, version = 0;
@@ -112,7 +112,7 @@
       finally { clearTimeout(timer); }
       const bars=cleanBars(j.bars,tf,now);
       if(!bars.length)throw Error('Alpaca returned no completed bars.');
-      return {bars,source:'Alpaca / IEX · completed bars only; may include extended hours; IEX is not the consolidated market',asOf:bars.at(-1).t};
+      return {bars,sourceKey:'alpaca-iex',source:'Alpaca / IEX · completed bars only; may include extended hours; IEX is not the consolidated market',asOf:bars.at(-1).t};
     }
     if(tf==='1Min')throw Error('The free feed does not provide one-minute bars; choose 5 minutes, 15 minutes or 1 day, or connect Alpaca.');
     const j=await ctx.edgeGet(`/api/bars?symbol=${encodeURIComponent(symbol)}&tf=${tf}`,25000);
@@ -121,7 +121,7 @@
     if(tf!=='1Day' && (!j.sessionDate || j.sessionDate >= etDay(now))) throw Error('The free feed did not provide a verifiable earlier completed session.');
     const bars=cleanBars(j.bars,tf,now,j.sessionDate);
     if(!bars.length)throw Error('The free feed returned no completed bars.');
-    return {bars,source:j.source==='mock'?'Generated demonstration data · not real market prices':`${j.source||'Free feed'} · delayed, not a live quote${cacheLabel(j.cache)}`,asOf:bars.at(-1).t};
+    return {bars,sourceKey:j.source?`free:${j.source}`:null,source:j.source==='mock'?'Generated demonstration data · not real market prices':`${j.source||'Free feed'} · delayed, not a live quote${cacheLabel(j.cache)}`,asOf:bars.at(-1).t};
   }
   function previousSession(bars, now) {
     const days = new Map();
@@ -152,6 +152,60 @@
     }
     return out;
   }
+  // Compare only the immediately previous successful briefing. Each item keeps
+  // its own evidence so missing sections are never described as unchanged.
+  function compareBriefings(previous,current,symbol) {
+    const prev=previous && !previous.failed && previous.rows?.find(r=>r.symbol===symbol);
+    const next=current?.rows?.find(r=>r.symbol===symbol);
+    if(!prev||!next)return {message:'No previous briefing for this stock; changes will appear after the next successful update.',items:[]};
+    const items=[], sections=current.settings.sections, before=previous.settings?.sections||[];
+    const sameTf=previous.settings?.tf===current.settings.tf;
+    const sameSource=!!prev.price?.sourceKey&&prev.price.sourceKey===next.price?.sourceKey;
+    const validPrice=sameTf&&sameSource&&Number.isFinite(Date.parse(prev.price?.asOf))&&Number.isFinite(Date.parse(next.price?.asOf))&&Date.parse(next.price.asOf)>=Date.parse(prev.price.asOf);
+    const add=(title,detail,target,headline)=>items.push({title,detail,target,headline});
+    for(const key of ['patterns','volume']) {
+      if(!sections.includes(key))continue;
+      const old=prev.sections?.[key], now=next.sections?.[key];
+      if(!before.includes(key)||!old||old.error||!now||now.error){add(LABELS[key],'Comparison unavailable: this section was missing or unavailable in one briefing.',key);continue}
+      if(!validPrice){add(LABELS[key],'Comparison unavailable: timeframe, data source, or bar timestamps do not match.',key);continue}
+      if(key==='volume'){
+        if(!Number.isFinite(old.ratio)||!Number.isFinite(now.ratio)){add('Volume','Relative-volume comparison unavailable in one briefing.',key);continue}
+        const delta=now.ratio-old.ratio;
+        add('Volume',`Last-bar volume compared with its preceding 20 bars: ${fmt(old.ratio)}× → ${fmt(now.ratio)}× (${delta>=0?'+':''}${fmt(delta)}×); bar timestamps ${dateTime(prev.price.asOf)} → ${dateTime(next.price.asOf)}.`,key);
+      }else {
+        if(!Array.isArray(old.candles)||!Array.isArray(old.charts)||!Array.isArray(now.candles)||!Array.isArray(now.charts)){add('Patterns','Comparison unavailable: pattern details are missing.',key);continue}
+        if([...old.candles,...old.charts,...now.candles,...now.charts].some(p=>!p.time||!Number.isFinite(Date.parse(p.time)))){add('Patterns','Comparison incomplete: one or more pattern timestamps are missing or invalid.',key);continue}
+        const keyOf=(type,p)=>`${type}|${p.name}|${p.time||''}`;
+        const oldKeys=new Set([...old.candles.map(p=>keyOf('candle',p)),...old.charts.map(p=>keyOf('chart',p))]);
+        const fresh=[...now.candles.map(p=>({...p,type:'Candlestick'})),...now.charts.map(p=>({...p,type:'Chart'}))].filter(p=>p.name&&p.time&&!oldKeys.has(keyOf(p.type==='Chart'?'chart':'candle',p)));
+        if(fresh.length)for(const p of fresh)add('New pattern match',`${p.type}: ${p.name} · pattern bar ${dateTime(p.time)}. Newly appearing in the displayed list; a rule match, not a forecast.`,key);
+        else add('Patterns','No new pattern matches in the displayed list; it is limited to five per type.',key);
+      }
+    }
+    if(sections.includes('news')){
+      const old=prev.sections?.news,now=next.sections?.news;
+      if(!before.includes('news')||!old?.check?.ok||!now?.check?.ok||!Array.isArray(old.items)||!Array.isArray(now.items))add('News','Comparison unavailable: a headline check failed or news was not selected in both briefings.','news');
+      else {
+        const priorIds=new Set(old.items.map(n=>n.id||n.url||n.title));
+        const fresh=now.items.filter(n=>!priorIds.has(n.id||n.url||n.title));
+        if(fresh.length)for(const n of fresh)add('New in displayed headlines',`${n.source||'Unknown source'} · published ${dateTime(n.publishedAt)} · ${n.title}. The filtered list and feed coverage are limited${now.check.meta?.stale?'; the latest feed is stale':''}.`,'news',{url:safeUrl(n.url)});
+        else add('News',`No new headlines in the displayed filtered list; feed coverage is incomplete${now.check.meta?.stale?' and the latest feed is stale':''}.`,'news');
+      }
+    }
+    if(!items.length) return {message:'No comparable volume, pattern or news sections were selected.',items:[]};
+    return {message:`Compared with briefing built ${dateTime(previous.createdAt)}. Differences describe observed data, not predictions.`,items};
+  }
+  function renderChanges(changes,symbol) {
+    if(!changes)return text('No saved comparison is available for this briefing.');
+    const allowed=['patterns','volume','news'];
+    const rows=(changes.items||[]).map(x=>{
+      const target=allowed.includes(x.target)?`assistant-${symbol}-${x.target}`:'assistant-output';
+      const url=safeUrl(x.headline?.url);
+      const headline=url?` <a href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open headline</a>`:'';
+      return `<li><b>${esc(x.title)}:</b> ${esc(x.detail)} <button class="ask" type="button" data-assistant-evidence="${esc(target)}">View evidence</button>${headline}</li>`;
+    }).join('');
+    return text(changes.message)+(rows?`<ul class="x">${rows}</ul>`:'');
+  }
   async function build(reason) {
     if (!settings || busy) return;
     const captured=JSON.parse(JSON.stringify(settings)), generation=version, now=Date.now(); busy=true;
@@ -179,7 +233,7 @@
         const i=index++, symbol=captured.symbols[i];
         const row={symbol,sections:{}};
         if(captured.sections.some(s=>['patterns','volatility','volume'].includes(s))) {
-          try {const p=await prices(symbol,captured.tf,now); row.price={source:p.source,asOf:p.asOf,count:p.bars.length,previous:previousSession(p.bars,now)}; Object.assign(row.sections,priceSections(p,captured.tf,captured.sections)); successes++;}
+          try {const p=await prices(symbol,captured.tf,now); row.price={source:p.source,sourceKey:p.sourceKey,asOf:p.asOf,count:p.bars.length,previous:previousSession(p.bars,now)}; Object.assign(row.sections,priceSections(p,captured.tf,captured.sections)); successes++;}
           catch(e){for(const s of ['patterns','volatility','volume'])if(captured.sections.includes(s))row.sections[s]={error:errorMessage(e)};}
         }
         if(captured.sections.includes('research')) {
@@ -206,7 +260,9 @@
         if(!report || report.failed){report={createdAt:new Date().toISOString(),settings:captured,rows,market,unread:false,failed:true};render();}
         status('The selected data sources are unavailable. Any earlier briefing is kept; retrying in 15 minutes, or refresh manually.');return;
       }
-      report={createdAt:new Date().toISOString(),settings:captured,rows,market,unread:!isOpen() || document.hidden}; save(REPORT,report);
+      const next={createdAt:new Date().toISOString(),settings:captured,rows,market,unread:!isOpen() || document.hidden};
+      for(const row of rows) row.changes=compareBriefings(report,next,row.symbol);
+      report=next; save(REPORT,report);
       if(reason==='scheduled' || due(captured,schedule,new Date())){schedule=localDay(new Date());save(SCHEDULE,schedule);}
       nextRetry=0; retryPending=false; badge(); render(); status('Briefing built '+dateTime(report.createdAt)+'. Sources and limitations are shown below.');
     } finally { busy=false; if(pending){pending=false; build('manual');} }
@@ -241,7 +297,7 @@
     const out=$('assistant-output'); if(!out || !report || !Array.isArray(report.rows))return;
     const selected=report.settings.sections, order=[report.settings.priority,...selected.filter(x=>x!==report.settings.priority)];
     const market=report.settings.sections.includes('research') ? `<div class="panel"><h2>Market-wide research</h2><div class="pbody">${!report.market||report.market.error?empty(report.market?.error||'No market brief returned.'):text(`Daily market brief · as of ${report.market.asOf||'unknown'}${cacheLabel(report.market.cache)}.`)+text(report.market.brief?.headline||'')+(report.market.brief?.blocks||[]).map(b=>text(`${b.title}: ${b.text}`)).join('')}</div></div>` : '';
-    out.innerHTML=`<div class="panel"><div class="pbody"><p class="x">${report.failed?'Attempted':'Built'} ${esc(dateTime(report.createdAt))} · ${esc(TF[report.settings.tf])} chart timeframe · ${report.failed?'No briefing could be built from the selected sources.':'Snapshots may become stale.'} Refresh to check again. Nothing here is a recommendation.</p></div></div>`+market+report.rows.map(row=>`<div class="panel"><h2>${esc(row.symbol)}</h2><div class="pbody">${row.price?text(`${row.price.source} · last bar ${dateTime(row.price.asOf)} · ${row.price.count} completed bars`):''}${row.price?.previous?text(`Previous available session ${row.price.previous.day}: last close $${fmt(row.price.previous.close)}, high $${fmt(row.price.previous.high)}, low $${fmt(row.price.previous.low)}${row.price.previous.change==null?'':`; change from prior available close ${fmt(row.price.previous.change)}%`}. ${selected.includes('volume')?`Available-bar volume ${Number(row.price.previous.volume).toLocaleString()} shares${row.price.previous.volumeRatio==null?'':`, ${fmt(row.price.previous.volumeRatio)}× the mean of ${row.price.previous.volumeSessions} prior available sessions`}. `:''}This is the available bar window, not necessarily the official regular-session close; intraday coverage may be incomplete or include extended hours.`):''}${order.map(k=>section(LABELS[k],renderSection(k,row.sections[k],row))).join('')}</div></div>`).join('');
+    out.innerHTML=`<div class="panel"><div class="pbody"><p class="x">${report.failed?'Attempted':'Built'} ${esc(dateTime(report.createdAt))} · ${esc(TF[report.settings.tf])} chart timeframe · ${report.failed?'No briefing could be built from the selected sources.':'Snapshots may become stale.'} Refresh to check again. Nothing here is a recommendation.</p></div></div>`+market+report.rows.map(row=>`<div class="panel"><h2>${esc(row.symbol)}</h2><div class="pbody">${row.price?text(`${row.price.source} · last bar ${dateTime(row.price.asOf)} · ${row.price.count} completed bars`):''}${row.price?.previous?text(`Previous available session ${row.price.previous.day}: last close $${fmt(row.price.previous.close)}, high $${fmt(row.price.previous.high)}, low $${fmt(row.price.previous.low)}${row.price.previous.change==null?'':`; change from prior available close ${fmt(row.price.previous.change)}%`}. ${selected.includes('volume')?`Available-bar volume ${Number(row.price.previous.volume).toLocaleString()} shares${row.price.previous.volumeRatio==null?'':`, ${fmt(row.price.previous.volumeRatio)}× the mean of ${row.price.previous.volumeSessions} prior available sessions`}. `:''}This is the available bar window, not necessarily the official regular-session close; intraday coverage may be incomplete or include extended hours.`):''}${section('What changed',renderChanges(row.changes,row.symbol))}${order.map(k=>section(LABELS[k],renderSection(k,row.sections[k],row),`assistant-${row.symbol}-${k}`)).join('')}</div></div>`).join('');
   }
   async function tick() {
     if(!settings)return;
@@ -255,6 +311,7 @@
     if(report) { try { report.settings=normalize(report.settings); if(!report.settings || !Array.isArray(report.rows) || report.rows.some(r=>!r || !r.sections)) report=null; } catch(_) {report=null;} }
     form(); badge(); render();
     if(report)status('Saved briefing from '+dateTime(report.createdAt)+'. Refresh to check again.');
+    $('assistant-output').addEventListener('click',e=>{const button=e.target.closest('[data-assistant-evidence]');if(button)$(button.dataset.assistantEvidence)?.scrollIntoView({block:'start'});});
     $('assistant-watchlist').onclick=()=>{$('assistant-symbols').value=(ctx.watchlist()||[]).slice(0,MAX_SYMBOLS).join(', ')};
     $('assistant-form').onsubmit=e=>{e.preventDefault();
       try { const s=normalize({symbols:$('assistant-symbols').value,tf:$('assistant-tf').value,time:$('assistant-time').value,interval:$('assistant-interval').value,priority:$('assistant-priority').value,sections:[...document.querySelectorAll('#assistant-sections input:checked')].map(el=>el.value)});
@@ -267,5 +324,5 @@
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
     globalThis.addEventListener('online',tick); setInterval(tick,60000); tick();
   }
-  return {init,open,normalize,due,mergeNews,cleanBars};
+  return {init,open,normalize,due,mergeNews,cleanBars,compareBriefings};
 });

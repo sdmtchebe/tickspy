@@ -253,6 +253,7 @@ nav.tabs .grp:first-child{padding-top:3px}
 <button class="gear" id="gear" type="button" aria-label="Settings" title="Settings"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 5h7M12.4 5H14M2 11h2.6M8 11h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="10.7" cy="5" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="5.3" cy="11" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
 </header>
 <div class="watchbar">
+<details id="data-connection" style="flex-basis:100%"><summary class="tagline" style="cursor:pointer" id="data-connection-summary">Checking data connections…</summary><div class="x" id="data-connection-detail" role="status" aria-live="polite"></div></details>
 <span class="tagline">Watchlist</span>
 <div id="wl" style="display:flex;gap:6px;flex-wrap:wrap"></div>
 <input id="wadd" placeholder="Add symbol" aria-label="Add symbol to watchlist" style="width:110px">
@@ -498,6 +499,29 @@ async function edgeGet(path,ms){if(!EDGE_API)throw Error('The edge API is not co
   // so a quota or an unknown ticker reads as a sentence in the UI.
   if(!r.ok){const txt=await r.text();let msg='';try{msg=(JSON.parse(txt)||{}).message||''}catch(_){}throw Error(msg||(r.status+' '+txt.slice(0,120)))}
   return await r.json()}finally{clearTimeout(t)}}
+/* Health describes the API only; it does not prove that individual market
+   feeds or the chart are current. The chart state is reported separately. */
+const dataStatus={api:'checking',checkedAt:null,chartLoadedAt:null,lastTradeAt:null,stream:'not connected'};
+function dataStatusRender(){
+ const summary=$('#data-connection-summary'),detail=$('#data-connection-detail');if(!summary||!detail)return;
+ const stamp=t=>t?new Date(t).toLocaleString():'unknown';
+ const api=dataStatus.api==='reachable'?'reachable':dataStatus.api==='checking'?'checking':'unavailable';
+ let chart='No chart data loaded.';
+ const last=S.bars.at(-1), barTime=last&&Number.isFinite(+new Date(last.t))?stamp(+new Date(last.t)):'unknown';
+ if(last&&S.mode==='free'){
+  const source=S.free?.source||'unknown source',demo=source==='mock';
+  chart=`Chart: ${demo?'generated demonstration data, not real prices':`delayed replay from ${source}`}; last displayed bar ${barTime}; file loaded ${stamp(dataStatus.chartLoadedAt)}. Not a live quote.`;
+ }else if(last&&S.mode==='live'){
+  chart=`Chart: Alpaca/IEX; stream ${dataStatus.stream}; last received trade ${stamp(dataStatus.lastTradeAt)}; last bar ${barTime}; bars loaded ${stamp(dataStatus.chartLoadedAt)}. IEX is not the consolidated market.`;
+ }
+ summary.textContent=`Data status: API ${api} · ${last?(S.mode==='free'?(S.free?.source==='mock'?'demo chart':'delayed chart'):S.mode==='live'?'Alpaca chart':'chart available'):'chart unavailable'}`;
+ detail.textContent=`Market API: ${api}; last checked ${stamp(dataStatus.checkedAt)}. API health does not guarantee upstream data freshness. ${chart}`;
+}
+async function dataStatusCheck(){
+ if(dataStatus.checking)return;dataStatus.checking=true;
+ try{const j=await edgeGet('/api/health',10000);if(!j||j.ok!==true)throw Error('Invalid health response');dataStatus.api='reachable'}
+ catch(_){dataStatus.api='unavailable'}finally{dataStatus.checkedAt=Date.now();dataStatus.checking=false;dataStatusRender()}
+}
 /* A failed call has to read as a sentence. Alpaca answers a key it does not
    recognise with a whole HTML error page from its edge, and 140 characters of
    that markup in the status line tells a visitor nothing: prefer the JSON
@@ -578,7 +602,7 @@ let loadVersion=0;
 async function load(){
  const version=++loadVersion;
  if(volBusy){volCancel=true;if(volAbort)volAbort()}
-  S.bars=[];S.price=null;S.an=null;S.rep=null;S.allBars=null;S.daily=[];S.free=null;S.sessionDate=null;S.mtfRows=null;S.rs=null;S.focus=null;
+  S.bars=[];S.price=null;S.an=null;S.rep=null;S.allBars=null;S.daily=[];S.free=null;S.sessionDate=null;S.mtfRows=null;S.rs=null;S.focus=null;dataStatus.chartLoadedAt=null;dataStatus.lastTradeAt=null;dataStatus.stream='not connected';
  S.news=[];S.newsIds=new Set();S.newsFresh=new Set();S.vol=null;S.volKey=null;
  $('#vout').textContent='Open this tab or refresh the estimate after the new history loads.';$('#vbt').textContent='No estimate for this selection yet.';
  $('#px').textContent='--';$('#chg').textContent='';refresh();
@@ -587,7 +611,7 @@ async function load(){
  // selector pointing at something the current mode cannot serve.
  if(mode==='free'&&S.mode!=='free'){S.tfLive=S.tf;S.tf=freeTf(S.tf)}
  else if(mode!=='free'&&S.mode==='free')S.tf=S.tfLive||'1Min';
- S.mode=mode;tfOptions();$('#tf').value=S.tf;
+ S.mode=mode;tfOptions();$('#tf').value=S.tf;dataStatusRender();
  // Leaving live mode must not leave a socket open behind it.
   try{S.ws&&S.ws.close()}catch(_){}try{S.newsWs&&S.newsWs.close()}catch(_){}
   if(mode==='live')return loadLive(version);
@@ -598,7 +622,7 @@ async function loadLive(version){
   /* modeFor() calls a pair live as soon as either half is saved. The missing
      half cannot sign a request, so it is caught here rather than sent as an empty
      header and answered with an opaque 401. */
-  if(!keys.ak||!keys.as){$('#st').textContent='No keys';banner('<span class="pill off">No keys</span> <b>Live mode needs both halves of the Alpaca key pair.</b> '+esc('A Key ID on its own cannot sign a request.'),'<p><a href="#" id="fbn-go">Open Settings</a> to paste the Secret Key, or use free mode there to go back to the no-account feed.</p>');return}
+  if(!keys.ak||!keys.as){dataStatusRender();$('#st').textContent='No keys';banner('<span class="pill off">No keys</span> <b>Live mode needs both halves of the Alpaca key pair.</b> '+esc('A Key ID on its own cannot sign a request.'),'<p><a href="#" id="fbn-go">Open Settings</a> to paste the Secret Key, or use free mode there to go back to the no-account feed.</p>');return}
   /* Nothing has been asked of Alpaca yet at this point, so nothing can honestly
      be called connected: the banner says what is being checked, and the claim of
      a connection waits for the first successful response. */
@@ -606,12 +630,12 @@ async function loadLive(version){
   const st=new Date(Date.now()-6*864e5).toISOString();
   const j=await alp(`/v2/stocks/${S.sym}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`);
   if(version!==loadVersion)return;
-  S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;banner('<span class="pill live">Live</span> <b>Alpaca connected.</b> Current prices and bars come from Alpaca/IEX, using keys saved only in this browser.','<p>In live mode the trade stream and the symbol\u2019s own news feed are active, and alerts fire as prices move. To go back to the no-account session, open <b>Settings</b> and use <b>Use free mode instead</b>.</p>');refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
+  S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;S.allBars=S.bars;S.daily=[];S.sessionDate=null;S.lastPx=null;dataStatus.chartLoadedAt=Date.now();banner('<span class="pill live">Live</span> <b>Alpaca connected.</b> Current prices and bars come from Alpaca/IEX, using keys saved only in this browser.','<p>In live mode the trade stream and the symbol\u2019s own news feed are active, and alerts fire as prices move. To go back to the no-account session, open <b>Settings</b> and use <b>Use free mode instead</b>.</p>');refresh();stream();newsStream();news();mtf();rsq();wlQuotes();
   }catch(e){if(version!==loadVersion)return;
   /* A refusal is not a connection problem: the request arrived and Alpaca said
      no. Saying which of the two happened is the point of this strip. */
   const status=Number(e&&e.status)||0,hint=KEY_HINT[status]||'',line=hint||netErr(e);
-  $('#st').textContent='Error: '+line;
+  dataStatusRender();$('#st').textContent='Error: '+line;
   banner(`<span class="pill off">No connection</span> <b>Live mode could not connect.</b> ${esc(line)}`,hint?'<p><a href="#" id="fbn-go">Open Settings</a> to paste a fresh key pair, or use free mode there to return to the no-account session.</p>':'<p><a href="#" id="fbn-go">Use free mode in Settings</a> to return to the bundled sample session, which needs no account.</p>');}}
 function loadNone(){S.bars=[];S.allBars=null;S.price=null;S.an=null;S.rep=null;refresh();
   $('#st').textContent='No data source';
@@ -628,9 +652,9 @@ async function loadFree(version){
   S.free=j;S.sessionDate=j.sessionDate||j.asOf;S.tz=j.tz;
   S.daily=(j.daily||[]).map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));
   S.allBars=(j.bars||[]).map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));
-  S.lastPx=null;S.rep=null;freeRefresh();freeBanner();
+  S.lastPx=null;S.rep=null;dataStatus.chartLoadedAt=Date.now();freeRefresh();freeBanner();
   freeWatch();freeNews();mtf();rsq();
-   }catch(e){if(version!==loadVersion)return;$('#st').textContent='Previous session unavailable';
+   }catch(e){if(version!==loadVersion)return;dataStatusRender();$('#st').textContent='Previous session unavailable';
   banner(`<span class="pill off">Unavailable</span> <b>Could not load the previous session.</b> ${esc(netErr(e))}`,KEYS_MORE)}}
 /* The revealed slice of the previous session. Everything downstream reads S.bars,
    so the replay only has to move this one line. */
@@ -668,7 +692,7 @@ function structureRefresh(){
   const cutoff=S.mode==='live'?Date.now():S.tf==='1Day'?Infinity:S.rep?new Date(S.rep.at).getTime():0;
   window.StructureDesk.update({bars:S.mode==='live'?structureSnapshot:S.allBars,daily:S.daily,sessionDate:S.sessionDate,source:S.free?.source,symbol:S.sym,tf:S.tf,mode:S.mode,cutoff});
 }
-function refresh(){analyze();draw();head();render();structureRefresh();if(document.getElementById('t-interpret')?.classList.contains('on'))interpretRender();if(document.getElementById('t-research')?.classList.contains('on')&&window.DeskResearch)DeskResearch.setSymbol(S.sym,EDGE_API)}
+function refresh(){analyze();draw();head();render();structureRefresh();dataStatusRender();if(document.getElementById('t-interpret')?.classList.contains('on'))interpretRender();if(document.getElementById('t-research')?.classList.contains('on')&&window.DeskResearch)DeskResearch.setSymbol(S.sym,EDGE_API)}
 /* In free mode the change is measured against the previous session's close, not
    today's open, because there is no today - the bars on screen ARE the previous
    session, and the label has to say so. */
@@ -684,12 +708,12 @@ function head(){const B=S.bars;if(!B.length)return;const pxEl=$('#px'),prev=S.la
 function stream(){if(S.mode!=='live')return;S.ws?.close();const c=cfg(),w=S.ws=new WebSocket('wss://stream.data.alpaca.markets/v2/iex'),sym=S.sym;let lastRef=0;
  w.onopen=()=>w.send(JSON.stringify({action:'auth',key:c.ak,secret:c.as}));
   w.onmessage=m=>{if(S.ws!==w||S.mode!=='live'||sym!==S.sym)return;let data;try{data=JSON.parse(m.data)}catch(_){return}for(const d of [].concat(data)){
-  if(d.T=='success'&&d.msg=='authenticated'){w.send(JSON.stringify({action:'subscribe',trades:[sym],bars:[sym]}));$('#st').textContent='Live (IEX real-time)'}
-  else if(d.T=='error')$('#st').textContent='Stream: '+d.msg;
-   else if(d.T=='t'&&sym==S.sym){S.price=d.p;if(Date.now()-lastRef>1500){lastRef=Date.now();refresh()}}
+  if(d.T=='success'&&d.msg=='authenticated'){w.send(JSON.stringify({action:'subscribe',trades:[sym],bars:[sym]}));dataStatus.stream='authenticated';dataStatusRender();$('#st').textContent='Live (IEX real-time)'}
+  else if(d.T=='error'){dataStatus.stream='error';dataStatusRender();$('#st').textContent='Stream: '+d.msg}
+   else if(d.T=='t'&&sym==S.sym){dataStatus.stream='receiving trades';dataStatus.lastTradeAt=Date.now();S.price=d.p;if(Date.now()-lastRef>1500){lastRef=Date.now();refresh()}}
   else if(d.T=='b'&&sym==S.sym)load2()}};
- w.onclose=()=>{if(S.ws==w)$('#st').textContent='Disconnected'}}
- let l2=0;function load2(){if(S.mode!=='live'||Date.now()-l2<20000)return;l2=Date.now();const version=loadVersion,k=S.sym,st=new Date(Date.now()-6*864e5).toISOString();alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`).then(j=>{if(version!==loadVersion||k!=S.sym)return;S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;refresh()}).catch(()=>{})}
+ w.onclose=()=>{if(S.ws==w){dataStatus.stream='disconnected';dataStatusRender();$('#st').textContent='Disconnected'}};w.onerror=()=>{if(S.ws==w){dataStatus.stream='error';dataStatusRender()}}}
+ let l2=0;function load2(){if(S.mode!=='live'||Date.now()-l2<20000)return;l2=Date.now();const version=loadVersion,k=S.sym,st=new Date(Date.now()-6*864e5).toISOString();alp(`/v2/stocks/${k}/bars?timeframe=${S.tf}&start=${st}&limit=500&sort=desc&feed=iex&adjustment=raw`).then(j=>{if(version!==loadVersion||k!=S.sym)return;S.bars=(j.bars||[]).reverse().map(b=>({t:new Date(b.t),o:b.o,h:b.h,l:b.l,c:b.c,v:b.v}));S.price=S.bars.length?S.bars.at(-1).c:null;dataStatus.chartLoadedAt=Date.now();refresh()}).catch(()=>{})}
 /* One alignment rule, whichever timeframes the current mode can supply: the 9
    EMA above the 21 EMA with price above both is bullish, below both is bearish,
    anything else is mixed. */
@@ -1621,7 +1645,8 @@ setInterval(alerCheck,5000);setInterval(calAlertTick,10000);
 setInterval(()=>cal(),600000);
 // Coming back to the tab after a while: catch the replay up, re-read a stale
 // calendar and re-check alerts, none of which a throttled background tab can do.
-document.addEventListener('visibilitychange',()=>{if(document.hidden)return;freeTick();sessRender();cal();alerCheck();calAlertTick()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return;freeTick();sessRender();cal();alerCheck();calAlertTick();dataStatusCheck()});
+setInterval(dataStatusCheck,300000);window.addEventListener('online',dataStatusCheck);dataStatusCheck();
 sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
 $('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw();patternButtonsSync()};$('#conly').onchange=()=>calRender();

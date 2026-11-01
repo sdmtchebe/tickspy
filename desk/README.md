@@ -58,7 +58,19 @@ the tab glows until the new briefing is opened. The desk must remain open: a
 sleeping computer, closed tab, offline connection or background throttling may
 pause checks. On return it catches up, but cannot reconstruct headlines that
 were never available from the feed. Clearing site data removes these settings;
-when storage is blocked they last for the session only.
+when storage is blocked they last for the session only. Each stock’s “What
+changed” section compares the latest successful briefing with the immediately
+preceding one. It highlights newly displayed pattern matches and headlines and
+shows relative-volume changes with links to the underlying sections. A first
+briefing, missing data, or incompatible timeframes and price sources are reported
+as unavailable rather than as no change. Headline and pattern lists are limited,
+so they do not represent a complete history.
+
+The desk’s Data status control separately checks the Worker health endpoint and
+reports the chart source, last displayed bar and load time. A reachable API is
+not proof that its upstream data is fresh, and the bundled mock replay is marked
+as demonstration data. Live IEX stream status and last received trade are shown
+separately from the most recent bar load.
 
 Price and pattern observations use completed bars for the selected timeframe.
 With no Alpaca keys the assistant asks the edge API for delayed historical data,
