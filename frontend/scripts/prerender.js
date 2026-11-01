@@ -69,11 +69,7 @@ async function main() {
 
   let browser;
   try {
-    browser = await puppeteer.launch({
-      // Netlify's build container runs as an unprivileged user without a
-      // sandbox namespace, so the sandbox has to come off there.
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-    });
+    browser = await launchBrowser();
     const page = await browser.newPage();
     page.on("pageerror", (err) => console.warn(`[prerender] page error: ${err.message}`));
 
@@ -119,6 +115,35 @@ async function main() {
   } finally {
     if (browser) await browser.close();
     server.close();
+  }
+}
+
+/* Vercel's build image ships no browser and none of the shared libraries one
+ * needs (libnspr4 and friends are missing), so Puppeteer's downloaded Chrome
+ * cannot start there. @sparticuz/chromium carries its own libraries, extracts
+ * them to /tmp with no root access, and needs no system packages — the same
+ * trick serverless functions use — so the crawlable snapshot gets made on
+ * every host. The regular browser stays first choice everywhere it works
+ * (Netlify, GitHub Actions, local macOS); this is only the fallback after that
+ * launch fails on Linux. */
+async function launchBrowser() {
+  // Netlify's build container runs as an unprivileged user without a
+  // sandbox namespace, so the sandbox has to come off there.
+  const args = ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"];
+  try {
+    return await puppeteer.launch({ args });
+  } catch (err) {
+    if (process.platform !== "linux") throw err;
+    console.warn(
+      `[prerender] the regular browser failed to start (${String(err.message).split("\n")[0]}); retrying with the bundled serverless Chromium.`,
+    );
+    const mod = require("@sparticuz/chromium");
+    const chromium = mod.default || mod;
+    return await puppeteer.launch({
+      executablePath: await chromium.executablePath(),
+      headless: "shell",
+      args: [...args, "--disable-gpu", "--font-render-hinting=none"],
+    });
   }
 }
 
