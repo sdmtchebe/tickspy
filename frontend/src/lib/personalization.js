@@ -27,7 +27,9 @@ export const TIMEFRAMES = [
 
 export const DESK_TABS = [
   { id: "live", label: "Overview" },
+  { id: "assistant", label: "Assistant" },
   { id: "research", label: "Research" },
+  { id: "interpret", label: "Interpreter" },
   { id: "ind", label: "Indicators" },
   { id: "pat", label: "Patterns" },
   { id: "structure", label: "Structure" },

@@ -124,7 +124,7 @@
         ${stat("Neighbours", `${model.k}`, `from ${model.sample} prior sessions`)}
       </div>
       <p class="rnote">The amber marker is the last completed session's actual range; the green line is the median. Walk-forward means each prediction used only bars that had already closed; appending future bars cannot change an earlier band.</p>
-      <details class="exp"><summary>How this is calculated</summary><p class="iexp">For each close, the model takes the ${model.k} historical sessions with the closest volatility score, where the score is 0.65 × log(20-session realized volatility) + 0.35 × log(ATR14 ÷ price). The target is the next session's high-low range as a fraction of the close. The percentiles of those targets form the band. A session is only allowed to be a neighbour if it closed before the prediction. The coverage figures are the result of repeating that exact procedure over the last ${sessions} sessions, not a claim about the future.</p></details>`;
+      <details class="rmethod"><summary>How this is calculated</summary><p class="iexp">For each close, the model takes the ${model.k} historical sessions with the closest volatility score, where the score is 0.65 × log(20-session realized volatility) + 0.35 × log(ATR14 ÷ price). The target is the next session's high-low range as a fraction of the close. The percentiles of those targets form the band. A session is only allowed to be a neighbour if it closed before the prediction. The coverage figures are the result of repeating that exact procedure over the last ${sessions} sessions, not a claim about the future.</p></details>`;
   }
 
   function evidenceHTML(rows) {

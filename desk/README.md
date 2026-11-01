@@ -37,6 +37,41 @@ trade stream and the symbol's own news feed. Nothing in the desk requires them.
 The setup wizard only opens by itself when there is no data source at all,
 because in free mode there is nothing to fix.
 
+## Market interpreter
+
+The Interpreter tab explains the selected symbol and timeframe using the same
+volume, indicator and pattern calculations shown by the desk. It shows the
+result, what it describes, and how to examine it, alongside source, bar time and
+replay or live-bar limitations. Relative volume compares the last five bars with
+the preceding twenty; it is not adjusted for time of day. Pattern descriptions
+are heuristic observations, not forecasts or trading recommendations. The tab
+runs locally and follows the desk's loaded data, including demonstration data
+when the free replay uses the bundled sample.
+
+## Personal assistant
+
+The Assistant tab stores its selected symbols (up to eight), timeframe, sections,
+priority, local briefing time, latest briefing and observed headlines in this
+browser. Save the form to build a first briefing. It checks the market feed at
+its selected interval and builds one scheduled briefing per local calendar day;
+the tab glows until the new briefing is opened. The desk must remain open: a
+sleeping computer, closed tab, offline connection or background throttling may
+pause checks. On return it catches up, but cannot reconstruct headlines that
+were never available from the feed. Clearing site data removes these settings;
+when storage is blocked they last for the session only.
+
+Price and pattern observations use completed bars for the selected timeframe.
+With no Alpaca keys the assistant asks the edge API for delayed historical data,
+which can differ from the desk's bundled demonstration replay; one-minute bars
+require Alpaca. Alpaca's IEX bars are not a consolidated tape. The research and
+market briefs use the separate daily edge API, not the selected timeframe. If
+their source returns today's potentially incomplete daily candle, the assistant
+withholds that research until it can verify an earlier session. Volatility in
+the assistant describes the existing structure rules; the separately trained
+volatility model remains in its own tab. Each section reports missing data and
+source/cache information where available. Nothing in the briefing is a trading
+recommendation.
+
 ## Research
 
 The Research tab is the one part of the desk that is not a chart: it asks the edge

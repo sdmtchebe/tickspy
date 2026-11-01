@@ -82,6 +82,7 @@ label{color:var(--muted);display:inline-flex;gap:6px;align-items:center}
 /* The rail is the landing's recessed tab well: a darker plane with a lit edge. */
 nav.tabs{display:flex;flex-direction:column;gap:2px;position:sticky;top:12px;align-self:start;padding:6px;background:var(--well);border:1px solid var(--line);border-radius:var(--r-well);box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}nav.tabs button{background:none;border:0;border-left:2px solid transparent;color:var(--muted);padding:8px 10px;cursor:pointer;text-align:left;border-radius:8px;font:inherit;transition:color 150ms ease,background-color 150ms ease}
 nav.tabs button:hover{color:var(--text);background:var(--glass-2)}
+nav.tabs button.assistant-unread{color:var(--mint-ink);box-shadow:inset 0 0 0 1px rgba(0,229,160,.5),0 0 14px rgba(0,229,160,.25)}
 nav.tabs button.on{color:var(--ink);border-left-color:var(--mint);background:var(--surface-2);font-weight:600;box-shadow:inset 0 1px 0 var(--surface-light)}
 nav.tabs .grp{font-family:var(--mono);color:var(--faint);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;margin:0;padding:11px 10px 4px}
 nav.tabs .grp:first-child{padding-top:3px}
@@ -132,6 +133,10 @@ nav.tabs .grp:first-child{padding-top:3px}
 .rlist{margin:0;padding-left:16px;font-size:12px;line-height:1.6;color:var(--steel)}
 .rlist li{margin:2px 0}
 .rnote{font-size:11.5px;line-height:1.55;color:var(--faint);margin:8px 0 0}
+.rmethod{margin-top:10px;padding:8px 10px;border:1px solid var(--gb);border-radius:8px;background:var(--well)}
+.rmethod summary{cursor:pointer;color:var(--steel);font-size:12px;font-weight:600}
+.rmethod[open] summary{color:var(--mint-ink)}
+.rmethod .iexp{margin-top:8px;overflow-wrap:anywhere}
 @media(max-width:600px){.rheadline{font-size:16px}.rstat b{font-size:14px}}
 .cols{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
 .stack{display:flex;flex-direction:column}
@@ -264,6 +269,18 @@ nav.tabs .grp:first-child{padding-top:3px}
 <div class="panel"><h2>Timeframe alignment</h2><div id="mtf" class="pbody"></div></div>
 <div class="panel"><h2>Relative strength</h2><div id="rsx" class="pbody"></div></div>
 </div></section>
+<section class="tab" id="t-assistant">
+<div class="panel"><h2>Personal assistant <span class="tagline">your market briefing · no account</span></h2><div class="pbody">
+<p class="x">Choose what to follow. The assistant checks for headlines while this desk is open and prepares a briefing at your chosen local time. A sleeping device, closed tab or throttled browser can pause it; it catches up when you return. Prices, patterns and models are observations, not trading advice.</p>
+<form id="assistant-form">
+<div class="row"><label>Stocks <input id="assistant-symbols" type="text" placeholder="SPY, NVDA, AAPL" maxlength="130" required aria-describedby="assistant-help"></label><button class="btn" type="button" id="assistant-watchlist">Use watchlist</button></div>
+<p id="assistant-help" class="x">Up to 8 US symbols, separated by commas. Settings and saved briefings stay in this browser; clearing site data removes them.</p>
+<div class="row"><label>Timeframe <select id="assistant-tf"><option value="5Min">5 minutes</option><option value="15Min">15 minutes</option><option value="1Day">1 day</option><option value="1Min">1 minute (Alpaca only)</option></select></label><label>Morning briefing <input id="assistant-time" type="time" value="08:00" required></label><label>Check news <select id="assistant-interval"><option value="15">Every 15 minutes</option><option value="30">Every 30 minutes</option><option value="60">Every hour</option></select></label></div>
+<p class="x">Choose sections and the one to show first:</p><div class="row" id="assistant-sections"><label><input type="checkbox" value="patterns" checked> Patterns</label><label><input type="checkbox" value="volatility" checked> Volatility</label><label><input type="checkbox" value="volume" checked> Volume</label><label><input type="checkbox" value="research" checked> Research</label><label><input type="checkbox" value="news" checked> News</label><label><input type="checkbox" value="calendar" checked> Economic calendar</label></div>
+<div class="row"><label>First section <select id="assistant-priority"><option value="patterns">Patterns</option><option value="volatility">Volatility</option><option value="volume">Volume</option><option value="research">Research</option><option value="news">News</option><option value="calendar">Economic calendar</option></select></label><button class="btn primary" type="submit">Save and build briefing</button><button class="btn" id="assistant-refresh" type="button">Refresh briefing</button></div>
+</form><p class="x" id="assistant-status" role="status" aria-live="polite">Save your preferences to start.</p>
+</div></div><div id="assistant-output"><div class="panel"><div class="pbody"><p class="x">Your briefing will appear here.</p></div></div></div>
+</section>
 <section class="tab" id="t-research">
 <div class="panel"><h2>Research <span class="tagline" id="rstat">daily bars · delayed</span></h2>
 <div class="pbody"><p class="x" style="margin-top:0">A computed brief for the symbol above: what the daily bars say, how wide the next session's high-low range has tended to be in this volatility state, and how often that model has actually been right. No generated text, no price target and no recommendation.</p>
@@ -280,6 +297,7 @@ nav.tabs .grp:first-child{padding-top:3px}
 <div class="panel"><h2>What this cannot tell you</h2><div id="rlimits" class="pbody"><p class="x">Loading...</p></div></div>
 </div>
 </section>
+<section class="tab" id="t-interpret"><div class="panel"><h2>Market interpreter <span class="tagline">volume · indicators · patterns</span></h2><div class="pbody"><p class="x">A rule-based explanation of the currently selected symbol and timeframe. Each reading shows its result, what it describes, and how to examine it alongside the chart. The pattern section shows up to five distinct candlestick and five chart matches; see Patterns for the full list. This is not a forecast or a trading recommendation.</p><p class="x" id="interpret-context" role="status"></p><div id="interpret-summary"></div></div></div><div class="panel"><h2>Volume</h2><div id="interpret-volume" class="pbody"><p class="x">Waiting for data.</p></div></div><div class="panel"><h2>Indicators</h2><div id="interpret-indicators" class="pbody"><p class="x">Waiting for data.</p></div></div><div class="panel"><h2>Patterns</h2><div id="interpret-patterns" class="pbody"><p class="x">Waiting for data.</p></div></div></section>
 <section class="tab" id="t-ind"><div class="panel"><h2>Indicators</h2><div id="ind" class="stack"></div></div></section>
 <section class="tab" id="t-pat"><div class="cols">
 <div class="panel"><h2>Candlestick patterns</h2><div id="cp" class="stack"></div></div>
@@ -376,6 +394,8 @@ nav.tabs .grp:first-child{padding-top:3px}
 <script src="profile.js"></script>
 <script src="structure-view.js"></script>
 <script src="research.js"></script>
+<script src="assistant.js"></script>
+<script src="interpretation.js"></script>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -426,8 +446,8 @@ const S={sym:PREF.symbol,tf:PREF.timeframe,tfLive:PREF.timeframe,mode:null,bars:
    section at all - it is configuration - so it left the rail for the gear in the
    header, and "Market Structure" is now "Structure" because the rail is narrow
    and the two long words were the reason it wrapped. */
-const TABS=[['live','Overview'],['research','Research'],['ind','Indicators'],['pat','Patterns'],['structure','Structure'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Risk & testing'],['learn','Learn'],['set','Settings']];
-const NAV_GROUPS=[['Today',['live','research']],['Signals',['ind','pat','structure']],['Context',['vol','news','cal','alert']],['Learn & tools',['tools','learn']]];
+const TABS=[['live','Overview'],['assistant','Assistant'],['research','Research'],['interpret','Interpreter'],['ind','Indicators'],['pat','Patterns'],['structure','Structure'],['vol','Volatility'],['news','News'],['cal','Calendar'],['alert','Alerts'],['tools','Risk & testing'],['learn','Learn'],['set','Settings']];
+const NAV_GROUPS=[['Today',['live','assistant','research']],['Signals',['interpret','ind','pat','structure']],['Context',['vol','news','cal','alert']],['Learn & tools',['tools','learn']]];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* Which remote URL is safe to put in an href. esc() stops a value breaking out
    of the attribute, but it would happily pass "javascript:..." through, and a
@@ -448,7 +468,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-showall],[
  if(b.dataset.calrefresh){try{LS.calc='null'}catch(_){}calRender();cal();return}
  showAll[b.dataset.showall]=true;render()});
 const guideSlugs={live:'overview',ind:'indicators',pat:'patterns',vol:'volatility',news:'news',cal:'calendar',alert:'alerts',tools:'tools',structure:'structure',learn:'learn',set:'settings'};
-const learnTabs=TABS.filter(([k])=>k!=='learn'&&k!=='research');
+const learnTabs=TABS.filter(([k])=>k!=='learn'&&k!=='research'&&k!=='assistant'&&k!=='interpret');
 document.getElementById('learn-links').innerHTML='<nav aria-label="Learning guides"><ul style="display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none">'+learnTabs.map(([k,n])=>`<li><a href="./${guideSlugs[k]}/" style="display:block;padding:8px 12px;border:1px solid var(--gb);border-radius:6px;background:var(--glass-2);color:var(--text);text-decoration:none">${n}</a></li>`).join('')+'</ul></nav>';
 /* Switching tabs used to leave the scroll exactly where it was, so on a short
    screen the panel just chosen was still below the fold and it looked like the
@@ -458,7 +478,7 @@ function bringTab(k){const t=document.getElementById('t-'+k);if(!t)return;
  if(r.top>=0&&r.top<window.innerHeight*0.55)return;
  const smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
  window.scrollTo({top:Math.max(0,r.top+window.scrollY-10),behavior:smooth?'smooth':'auto'})}
-function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList();daRender();daClear()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='research'&&window.DeskResearch)DeskResearch.open({symbol:S.sym,edgeApi:EDGE_API});if(k=='live')drawVP();if(bring!==false)bringTab(k)}
+function go(k,bring){document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id=='t-'+k));document.querySelectorAll('#nav button').forEach(b=>{const on=b.dataset.k==k;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});const g=document.getElementById('gear');if(g)g.classList.toggle('on',k=='set');if(k=='cal')cal();if(k=='news'){news();marketNews();loadOverview()}if(k=='alert'){alertRender();calAList();daRender();daClear()}if(k=='tools'){if(!$('#re').value&&S.price)$('#re').value=S.price.toFixed(2);risk()}if(k=='vol'){volRun(false);if(S.vol)drawVolChart(S.vol.series)}if(k=='research'&&window.DeskResearch)DeskResearch.open({symbol:S.sym,edgeApi:EDGE_API});if(k=='assistant'&&window.DeskAssistant)DeskAssistant.open();if(k=='interpret')interpretRender();if(k=='live')drawVP();if(bring!==false)bringTab(k)}
 $('#nav').onclick=e=>{const b=e.target.closest('button[data-k]');if(b)go(b.dataset.k)};
 /* ---------- data ---------- */
 // With a server, route through its /p proxy; without one, call the provider
@@ -491,7 +511,7 @@ function briefBody(txt){const t=String(txt==null?'':txt);
    pair (401) needs new keys, a valid pair the account cannot read the feed with
    (403) does not. Anything else is passed through as the provider worded it. */
 const KEY_HINT={401:'Alpaca rejected these keys. Check that both halves come from the same paper account, or generate a new pair.',403:'These keys are valid, but this Alpaca account cannot read IEX market data.'};
-async function alp(path){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});
+async function alp(path,options={}){const c=cfg(),r=await fetch(P('https://data.alpaca.markets'+path),{signal:options.signal,headers:{'APCA-API-KEY-ID':c.ak||'','APCA-API-SECRET-KEY':c.as||''}});
  if(!r.ok){const body=briefBody(await r.text());throw Object.assign(Error(r.status+(body?' '+body:'')),{status:r.status})}
  return r.json()}
 /* Saving keys is a promise that prices will now be current, so the pair is
@@ -558,7 +578,7 @@ let loadVersion=0;
 async function load(){
  const version=++loadVersion;
  if(volBusy){volCancel=true;if(volAbort)volAbort()}
-  S.bars=[];S.price=null;S.an=null;S.rep=null;S.allBars=null;S.daily=[];S.free=null;S.sessionDate=null;S.mtfRows=null;S.rs=null;
+  S.bars=[];S.price=null;S.an=null;S.rep=null;S.allBars=null;S.daily=[];S.free=null;S.sessionDate=null;S.mtfRows=null;S.rs=null;S.focus=null;
  S.news=[];S.newsIds=new Set();S.newsFresh=new Set();S.vol=null;S.volKey=null;
  $('#vout').textContent='Open this tab or refresh the estimate after the new history loads.';$('#vbt').textContent='No estimate for this selection yet.';
  $('#px').textContent='--';$('#chg').textContent='';refresh();
@@ -648,7 +668,7 @@ function structureRefresh(){
   const cutoff=S.mode==='live'?Date.now():S.tf==='1Day'?Infinity:S.rep?new Date(S.rep.at).getTime():0;
   window.StructureDesk.update({bars:S.mode==='live'?structureSnapshot:S.allBars,daily:S.daily,sessionDate:S.sessionDate,source:S.free?.source,symbol:S.sym,tf:S.tf,mode:S.mode,cutoff});
 }
-function refresh(){analyze();draw();head();render();structureRefresh();if(document.getElementById('t-research')?.classList.contains('on')&&window.DeskResearch)DeskResearch.setSymbol(S.sym,EDGE_API)}
+function refresh(){analyze();draw();head();render();structureRefresh();if(document.getElementById('t-interpret')?.classList.contains('on'))interpretRender();if(document.getElementById('t-research')?.classList.contains('on')&&window.DeskResearch)DeskResearch.setSymbol(S.sym,EDGE_API)}
 /* In free mode the change is measured against the previous session's close, not
    today's open, because there is no today - the bars on screen ARE the previous
    session, and the label has to say so. */
@@ -755,7 +775,10 @@ function analyze(){const B=S.bars;if(B.length<40){S.an=null;return}
  const cp=candles(B),S150=B.slice(-150),[PH,PL]=pivots(S150),chp=charts(S150,PH,PL,B.length-S150.length);
  const sc=it.reduce((a,x)=>a+x.s,0),cs=Math.max(-2,Math.min(2,cp.reduce((a,x)=>a+x.s*(x.age<2?1:.4),0))),hs=Math.max(-3,Math.min(3,chp.reduce((a,x)=>a+x.s*1.5,0)));
  const up=Math.round(Math.max(3,Math.min(97,50+50*(sc+cs+hs)/(it.length+5)))),big=(sq<25?1:0)+(rv>1.5?1:0)+(atr/p*100>.12?1:0);
- S.an={e9,e21,vw,it,cp,chp,up,big,sq,rv,p,atr,vsd,vwap,lv:levels(B,p),fib:FIB};
+ const recent14=B.slice(-14),typical20=B.slice(-20).map(tpOf),mfiBars=B.slice(-15);
+ const metrics={rsi:r,macd:hist[L],macdPrior:hist[L-1],pb,bandWidthValid:bb.sd>0,adx:A.a,pdi:A.pdi,ndi:A.ndi,stoch:ST.k,cci:CC,willr:WR,mfi:MF,squeeze:sqz,obT,
+  rangeValid:Math.max(...recent14.map(b=>b.h))>Math.min(...recent14.map(b=>b.l)),cciValid:typical20.some(x=>x!==typical20[0]),mfiValid:mfiBars.some((b,i)=>i>0&&b.v>0&&tpOf(b)!==tpOf(mfiBars[i-1]))};
+ S.an={e9,e21,vw,it,cp,chp,up,big,sq,rv,p,atr,vsd,vwap,metrics,lv:levels(B,p),fib:FIB};
  // The bundled sample carries the session being replayed plus the two before it, so
  // `levels()` finds the prior day on its own. Only the wording needs adjusting:
  // in free mode the last session on screen is the previous one, not today.
@@ -786,6 +809,15 @@ function charts(B,PH,PL,base){const o=[],n=B.length,p=B[n-1].c,near=(a,b,t=.0015
   if(hd&&lu)o.push({n:'Symmetrical triangle',s:0,t:'The range is tightening. Historically this often precedes a larger move, though the direction is not indicated.',i0:s0,i1:s1})}
  const pr=B.slice(-21,-1);if(p>Math.max(...pr.map(b=>b.h)))o.push({n:'Range breakout up',s:1,t:'Price is above the highest high of the previous 20 bars.',i0:A(n-21),i1:A(n-1)});
  if(p<Math.min(...pr.map(b=>b.l)))o.push({n:'Range breakdown',s:-1,t:'Price is below the lowest low of the previous 20 bars.',i0:A(n-21),i1:A(n-1)});return o}
+/* The interpreter shares the exact calculations used by the visible desk. */
+function interpretRender(){
+ const api=window.DeskInterpretation;if(!api)return;
+ const a=S.an,last=S.bars.at(-1),when=last?new Date(last.t).toLocaleString('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'})+' ET':'no bar loaded';
+ const source=!last?'Waiting for price data':S.mode==='live'?'Alpaca/IEX; latest fetched bar may still be forming and volume is not consolidated':S.mode==='free'?(S.free?.source==='mock'?'Generated demonstration data, not real market prices; previous session replayed':FREE.labelled(S.free)):'Data source unavailable';
+ $('#interpret-context').textContent=`${S.sym} · ${tfName(S.tf)} · last bar ${when} · ${source}. Readings update with the desk and may change as a live bar forms.`;
+ const output=(id,rows)=>{$('#'+id).innerHTML=rows.map(r=>`<div class="rgroup"><div class="rhead"><b>${esc(r.title)}</b><span class="num">${esc(r.result)}</span></div><p class="x"><b>Meaning:</b> ${esc(r.meaning)}</p><p class="x"><b>How to use:</b> ${esc(r.use)}</p></div>`).join('')};
+ output('interpret-summary',api.summary(S.bars,a));output('interpret-volume',api.volume(S.bars,a,S.tf));output('interpret-indicators',api.indicators(a,S.bars,S.tf));output('interpret-patterns',api.patterns(a));
+}
 /* ---------- render ---------- */
 const tag=s=>`<span class="${cls(s)}">${lab(s)}</span>`;
 const exp=(id,txt)=>`<details class="exp"><summary aria-label="Explain ${esc(id)}">?</summary><p class="iexp">${esc(txt)}</p></details>`;
@@ -793,7 +825,16 @@ const exp=(id,txt)=>`<details class="exp"><summary aria-label="Explain ${esc(id)
    rest sit behind one button. `showAll` is session-only, so a reload restores the
    short view. */
 const moreRow=(key,label,total)=>`<div class="pbody"><button class="btn" type="button" data-showall="${esc(key)}">${esc(label)}${total?' ('+total+')':''}</button></div>`;
-function showPattern(i0,i1,name){if(i0==null)return;const L=S.bars.length,n=S.view.n;S.focus={i0,i1,name};S.view.end=Math.max(0,Math.min(Math.max(0,L-n),L-1-(i1+Math.round(n/2))));draw();const el=document.querySelector('.left .panel');if(el&&el.scrollIntoView)el.scrollIntoView({block:'nearest'})}
+function patternSelected(i0,i1,name){const f=S.focus;return !!f&&f.i0===i0&&f.i1===i1&&f.name===name}
+function patternButton(x){const selected=patternSelected(x.i0,x.i1,x.n);return `<button class="ask" type="button" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}" aria-pressed="${selected}" aria-label="${selected?'Hide':'Show'} ${esc(x.n)} on chart">${selected?'Hide':'Show on chart'}</button>`}
+function patternButtonsSync(){document.querySelectorAll('[data-show]').forEach(b=>{const selected=patternSelected(+b.dataset.i0,+b.dataset.i1,b.dataset.name);b.textContent=selected?'Hide':'Show on chart';b.setAttribute('aria-pressed',String(selected));b.setAttribute('aria-label',`${selected?'Hide':'Show'} ${b.dataset.name} on chart`)})}
+function showPattern(i0,i1,name){if(!Number.isInteger(i0)||!Number.isInteger(i1))return;
+ if(patternSelected(i0,i1,name)){S.focus=null;draw();patternButtonsSync();return}
+ const L=S.bars.length,n=S.view.n;S.focus={i0,i1,name,start:+new Date(S.bars[i0]?.t),end:+new Date(S.bars[i1]?.t)};S.view.end=Math.max(0,Math.min(Math.max(0,L-n),L-1-(i1+Math.round(n/2))));draw();patternButtonsSync();const el=document.querySelector('.left .panel');if(el&&el.scrollIntoView)el.scrollIntoView({block:'nearest'})}
+function reconcilePatternFocus(a){if(!S.focus)return;const f=S.focus,seen=new Set();
+ const visibleCandles=a?a.cp.filter(x=>!seen.has(x.n)&&seen.add(x.n)):[];
+ const match=a&&[...visibleCandles,...a.chp].find(x=>x.n===f.name&&+new Date(S.bars[x.i0]?.t)===f.start&&+new Date(S.bars[x.i1]?.t)===f.end);
+ if(!match){S.focus=null;draw();return}if(f.i0!==match.i0||f.i1!==match.i1){f.i0=match.i0;f.i1=match.i1;draw()}}
 document.addEventListener('click',e=>{const sh=e.target.closest('[data-show]');if(sh)showPattern(+sh.dataset.i0,+sh.dataset.i1,sh.dataset.name)});
 /* The on-ramp. Three lines and no ceremony: what you are looking at, what the
    desk is saying right now, and where to go next. Dismissing it is permanent for
@@ -816,7 +857,7 @@ function startHere(a){const el=$('#start');if(!el)return;
  const d=$('#sdismiss');if(d)d.onclick=()=>{LS.start='done';el.hidden=true};
  const l=$('#sgolook');if(l)l.onclick=()=>go('learn');
  const k2=$('#sgokeys');if(k2)k2.onclick=()=>go('set')}
- function render(){const a=S.an;
+ function render(){const a=S.an;reconcilePatternFocus(a);
   if(!a){startHere(null);$('#ov').innerHTML='<p class="x" style="padding:12px">Reading the session \u2014 the panels fill in once 40 bars have loaded.</p>';$('#top').innerHTML='';['ind','cp','chp'].forEach(id=>$('#'+id).innerHTML='<p class="x" style="padding:12px">Not enough bars for this selection yet. Try a shorter timeframe, or wait for the load to finish.</p>');lvRender(null);mtfRender();rsRender();wlRender();return}
 startHere(a);
 const c=a.up>=60?'up':a.up<=40?'dn':'nu';
@@ -826,11 +867,11 @@ const c=a.up>=60?'up':a.up<=40?'dn':'nu';
  $('#top').innerHTML=(sig.length?`<div class="iline" style="padding:4px 12px">${exp('Strongest readings','The indicator rows with a non-neutral direction, ranked by how strong the reading is. Every one of them is explained in full on the Indicators tab; this panel just points at which signals currently lean furthest away from neutral.')}</div>`:'')+(sig.map(x=>`<div class="mrow"><span>${esc(x.n)}</span><span class="num ${cls(x.s)}">${esc(x.val)}</span></div>`).join('')||'<p class="x" style="padding:12px">No directional signals.</p>');  const indRows=showAll.ind?a.it:a.it.slice(0,8);
   $('#ind').innerHTML=indRows.map(x=>`<div class="irow"><div class="iline"><span class="iname">${esc(x.n)}</span><span class="ival num">${esc(x.val)}</span><span class="dot ${/ATR|Keltner|volume/i.test(x.n)?(/volume/i.test(x.n)&&x.s?cls(x.s):'na'):cls(x.s)}" title="${lab(x.s)}"></span>${exp(x.n,x.t)}</div></div>`).join('')
    +(a.it.length>indRows.length?moreRow('ind','Show all '+a.it.length+' readings'):'');  const seen=new Set,cands=a.cp.filter(x=>!seen.has(x.n)&&seen.add(x.n)),candRows=showAll.cp?cands:cands.slice(0,3);
-  $('#cp').innerHTML=candRows.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<span class="muted num">${x.age?x.age+' bars ago':'latest bar'} (${x.time})</span><button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')
+  $('#cp').innerHTML=candRows.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<span class="muted num">${x.age?x.age+' bars ago':'latest bar'} (${x.time})</span>${patternButton(x)}</div>${exp(x.n,x.t)}</div>`).join('')
    +(cands.length>candRows.length?moreRow('cp','Show all '+cands.length+' candle patterns'):'')
    ||'<p class="x" style="padding:12px">No candlestick pattern in the last 6 bars. Patterns are matched on close, so a bar still forming can change the reading.</p>';
   const chartRows=showAll.chp?a.chp:a.chp.slice(0,3);
-  $('#chp').innerHTML=chartRows.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}<button class="ask" data-show data-i0="${x.i0}" data-i1="${x.i1}" data-name="${esc(x.n)}">Show on chart</button></div>${exp(x.n,x.t)}</div>`).join('')
+  $('#chp').innerHTML=chartRows.map(x=>`<div class="item"><div class="hrow"><b>${esc(x.n)}</b>${tag(x.s)}${patternButton(x)}</div>${exp(x.n,x.t)}</div>`).join('')
    +(a.chp.length>chartRows.length?moreRow('chp','Show all '+a.chp.length+' chart patterns'):'')
    ||'<p class="x" style="padding:12px">No clear chart pattern right now. The desk looks at the last 150 bars for the shapes it can name.</p>';
  lvRender(a.lv);mtfRender();rsRender();alerCheck();wlRender()}
@@ -1583,7 +1624,7 @@ setInterval(()=>cal(),600000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)return;freeTick();sessRender();cal();alerCheck();calAlertTick()});
 sessRender();
 ['ra','rr','re','stop'].forEach(id=>$('#'+id).oninput=risk);
-$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw()};$('#conly').onchange=()=>calRender();
+$('#cvlatest').onclick=()=>{S.view.end=0;draw()};$('#cvclear').onclick=()=>{S.focus=null;draw();patternButtonsSync()};$('#conly').onchange=()=>calRender();
 function requestedTab(){const id=location.hash.slice(1);if(TABS.some(([k])=>k===id))return id;
  const p=deskPrefs();return TABS.some(([k])=>k===p.tab)?p.tab:'live'}
 function activeTab(){const t=document.querySelector('.tab.on');return t?t.id.slice(2):'live'}
@@ -1601,5 +1642,7 @@ $('#prefclear').onclick=()=>{LS.deskprefs='';$('#prefstat').textContent='No save
 $('#prefstat').textContent=LS.deskprefs?'Current default: '+prefLabel():'No saved default; new visits start on '+prefLabel()+'.';
 window.addEventListener('hashchange',()=>go(requestedTab()));
 $('#sym').value=S.sym;tfOptions();$('#tf').value=S.tf;
-alertRender();daRender();daBadge();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();go(requestedTab(),false);load();
+alertRender();daRender();daBadge();wlRender();fill();calARender();cal();if(!LS.legal)gateShow();
+if(window.DeskAssistant)DeskAssistant.init({edgeGet,alp,cfg,storage:LS,free:FREE,structure:window.DeskStructure,patterns:(bars)=>{const list=bars.map(b=>({...b,t:new Date(b.t)})), slice=list.slice(-150),[h,l]=pivots(slice);return{candles:candles(list),charts:charts(slice,h,l,list.length-slice.length)}},watchlist:()=>{try{return JSON.parse(LS.wl||'null')||['SPY','QQQ','AAPL','NVDA','TSLA']}catch(_){return ['SPY','QQQ','AAPL','NVDA','TSLA']}}});
+go(requestedTab(),false);load();
 </script></body></html>
